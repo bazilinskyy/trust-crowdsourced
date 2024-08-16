@@ -324,14 +324,11 @@ if __name__ == '__main__':
                 # # create animation for stimulus
                 points_process = {}
                 # determin amount of points in duration for video_id
-<<<<<<< Updated upstream
-                dur = heroku_data['video_'+str(id_video)+'-dur-0'].tolist()
-                dur = [x for x in dur if str(x) != 'nan']
-                dur = int(round(mean(dur)/1000)*1000)
-=======
+
+
                 dur = mapping.iloc[id_video]['video_length']
                 hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))  # noqa: E501
->>>>>>> Stashed changes
+
                 # for individual
                 for points_dur in range(0, len(range(0, dur,
                                                tr.common.get_configs(
