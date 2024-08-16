@@ -357,9 +357,11 @@ class Analysis:
         self.g[0].set_ylabel("number Keypresses")
         self.g[0].set_xlim(0, 50)
         self.g[0].set_ylim(0, 50)
+<<<<<<< Updated upstream
         self.g[0].set_title('id_video=' + str(self.id_video))
         self.g[1] = sns.kdeplot(x=[item[0] for item in self.points[i]],
 =======
+        self.g[0].set_title('Number of keypresses', fontsize=25)
 
         length = int(len(self.event))
         for ev in range(len(self.event)):
