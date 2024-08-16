@@ -271,9 +271,7 @@ class Analysis:
         self.image = image
         self.id_video = id_video
         # calc amounts of steps from duration
-        dur = df['video_'+str(id_video)+'-dur-0'].tolist()
-        dur = [x for x in dur if str(x) != 'nan']
-        dur = int(round(mean(dur)/1000)*1000)
+        dur = mapping.iloc[id_video]['video_length']
         # Determing the amount of frames for given video
         self.framess = int(round(self.time/self.hm_resolution))
         # Determin time
@@ -361,6 +359,111 @@ class Analysis:
         self.g[0].set_ylim(0, 50)
         self.g[0].set_title('id_video=' + str(self.id_video))
         self.g[1] = sns.kdeplot(x=[item[0] for item in self.points[i]],
+=======
+
+        length = int(len(self.event))
+        for ev in range(len(self.event)):
+            self.g[0].axvline(x=int(self.event[ev])/1000,
+                              label="" + str(self.event_discription[ev]),
+                              c=plt.cm.RdYlBu(int(ev)/length),
+                              lw=2)
+            self.g[0].tick_params(axis='x', labelrotation=90)
+            self.g[0].legend()
+            self.g[1].axvline(x=int(self.event[ev])/1000,
+                              label="" + str(self.event_discription[ev]),
+                              c=plt.cm.RdYlBu(int(ev)/length),
+                              lw=2)
+            self.g[1].tick_params(axis='x', labelrotation=90)
+            self.g[1].legend()
+        # Subplot 2 AOI
+        self.g[1].set_title('Number of eye gazes in area of interest', fontsize=25)  # noqa: E501
+        self.g[1].set_xlabel('Time (s)', fontsize=10)
+        self.g[1].set_ylabel('Number of gazes in Area of Interest', fontsize=10)  # noqa: E501
+        self.g[1].set_xlim(0, 50)
+        self.g[1].set_ylim(0, 20)
+        # AOI data
+        aoi_x = float(self.aoi_x[i])
+        aoi_y = float(self.aoi_y[i])
+        aoi_t = float(self.aoi_t[i])
+        self.aoit.append(int(aoi_t)/1000)
+        # Defining boundaries of AOI
+        min_x = int(aoi_x) - 100
+        max_x = int(aoi_x) + 100
+        min_y = int(aoi_y) - 100
+        max_y = int(aoi_y) + 100
+        x = [item[0] for item in self.points[i]]
+        y = [item[1] for item in self.points[i]]
+        # stim 21 - 41
+        x1 = [item[0] for item in self.points1[i]]
+        y1 = [item[1] for item in self.points1[i]]
+        # stim 42 - 62
+        x2 = [item[0] for item in self.points2[i]]
+        y2 = [item[1] for item in self.points2[i]]
+        # stim 63 - 83
+        x3 = [item[0] for item in self.points3[i]]
+        y3 = [item[1] for item in self.points3[i]]
+        # Filtering data for if they are inside or outside coordinates
+        num = 0
+        num1 = 0
+        num2 = 0
+        num3 = 0
+        for v in range(len(x)):
+            if max_x > x[v] > min_x:
+                if max_y > y[v] > min_y:
+                    num = num + 1
+                else:
+                    continue
+            else:
+                continue
+        for v in range(len(x1)):
+            if max_x > x1[v] > min_x:
+                if max_y > y1[v] > min_y:
+                    num1 = num1 + 1
+                else:
+                    continue
+            else:
+                continue
+        for v in range(len(x2)):
+            if max_x > x2[v] > min_x:
+                if max_y > y2[v] > min_y:
+                    num2 = num2 + 1
+                else:
+                    continue
+            else:
+                continue
+        for v in range(len(x3)):
+            if max_x > x3[v] > min_x:
+                if max_y > y3[v] > min_y:
+                    num3 = num3 + 1
+                else:
+                    continue
+            else:
+                continue
+
+        self.number_in.append(int(num))
+        self.number_in1.append(int(num1))
+        self.number_in2.append(int(num2))
+        self.number_in3.append(int(num3))
+        self.g[1].plot(self.aoit,
+                       self.number_in,
+                       label='Stim 1',
+                       color='r')
+        self.g[1].plot(self.aoit,
+                       self.number_in1,
+                       label='Stim 2',
+                       color='b')
+        self.g[1].plot(self.aoit,
+                       self.number_in2,
+                       label='stim 3',
+                       color='g')
+        self.g[1].plot(self.aoit,
+                       self.number_in3,
+                       label='Stim 4',
+                       color='m')
+        self.g[1].legend()
+        # Subplot 3 Heatmap
+        self.g[2] = sns.kdeplot(x=[item[0] for item in self.points[i]],
+>>>>>>> Stashed changes
                                 y=[item[1] for item in self.points[i]],
                                 alpha=0.5,
                                 fill=True,

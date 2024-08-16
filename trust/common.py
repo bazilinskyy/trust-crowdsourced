@@ -10,7 +10,7 @@ import trust as tr
 logger = tr.CustomLogger(__name__)  # use custom logger
 
 
-def get_secrets(entry_name: str, secret_file_name: str = 'secret') -> Dict[str, str]:  # noqa: E501
+def get_secrets(entry_name: str, secret_file_name: str = 'secret example') -> Dict[str, str]:  # noqa: E501
     """
     Open the secrets file and return the requested entry.
     """

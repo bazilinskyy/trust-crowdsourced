@@ -2,6 +2,7 @@
 import json
 import os
 import pandas as pd
+import re
 import numpy as np
 from tqdm import tqdm
 from statistics import mean
@@ -133,6 +134,8 @@ class Heroku:
                 # record worker_code in the row. assuming that each row has at
                 # least one worker_code
                 worker_code = [d['worker_code'] for d in list_row['data'] if 'worker_code' in d][0]  # noqa: E501
+                if re.search("lab_pp_", worker_code) == None:
+                    continue
                 # go over cells in the row with data
                 for data_cell in list_row['data']:
                     # extract meta info form the call
@@ -430,9 +433,7 @@ class Heroku:
             # create empty list to store points for the stimulus
             points[id_video] = []
             # loop over durations of stimulus
-            dur = df['video_'+str(id_video)+'-dur-0'].tolist()
-            dur = [x for x in dur if str(x) != 'nan']
-            dur = int(round(mean(dur)/1000)*1000)
+            dur = video_len = self.mapping.loc[id_video]['video_length']
             number_dur = len(range(0, dur, hm_resolution))
             for duration in range(0, number_dur):
                 # create empty list to store points for the stimulus of given
