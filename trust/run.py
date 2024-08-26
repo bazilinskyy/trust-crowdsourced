@@ -200,6 +200,8 @@ if __name__ == '__main__':
                                                show_text_labels=True,
                                                stacked=True,
                                                yaxis_slider_show=False,
+                                               fig_save_width=1600,  # preserve ratio 225x152
+                                               fig_save_height=1080,  # preserve ratio 225x152
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]))
             # # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
