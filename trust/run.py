@@ -39,7 +39,8 @@ SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
-SHOW_OUTPUT_ET = True  # should figures for eye tracking be plotted
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+# todo: code for eye gaze analysis does not run on mac
 
 file_mapping = 'mapping.p'  # file to save updated mapping
 file_coords = 'coords.p'  # file to save lists with coordinates
