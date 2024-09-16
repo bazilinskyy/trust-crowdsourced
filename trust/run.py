@@ -36,10 +36,10 @@ REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = True  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
-SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+SHOW_OUTPUT_ET = True  # should figures for eye tracking be plotted
 # todo: code for eye gaze analysis does not run on mac
 
 file_mapping = 'mapping.p'  # file to save updated mapping
@@ -218,12 +218,6 @@ if __name__ == '__main__':
             analysis.plot_kp_variable(mapping, 'target_car', show_menu=False)
             # keypress based on the pp group
             analysis.plot_kp_variable(mapping, 'group', show_menu=False)
-            # TODO: make plot_video_data work
-            # plot of multiple combined AND variables
-            # analysis.plot_video_data(mapping, 'video_5',
-            #                          ['group', 'criticality'],
-            #                          yaxis_title='Type of ego car and number of pedestrians',
-            #                          conf_interval=0.95)
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
@@ -337,14 +331,14 @@ if __name__ == '__main__':
                         tr.common.get_configs('num_stimuli'))
             if tr.common.get_configs('combined_animation') == 1:
                 num_anim = 21
-                logger.info('Animation is set to combined animations of all for scenarios in one figure')  # noqa: E501
+                logger.info('Animation is set to combined animations of all for scenarios in one figure')
             else:
                 num_anim = tr.common.get_configs('num_stimuli')
-                logger.info('Animation is set to single stimuli animations in one figure')  # noqa: E501
+                logger.info('Animation is set to single stimuli animations in one figure')
 
             # source video/stimulus for a given individual.
             for id_video in tqdm(range(0, num_anim)):
-                logger.info('Producing visualisations of eye gaze data for stimulus {}.',  # noqa: E501
+                logger.info('Producing visualisations of eye gaze data for stimulus {}.',
                             id_video)
                 # Deconstruct the source video into its individual frames.
                 stim_path = os.path.join(tr.settings.output_dir, 'frames')
@@ -354,25 +348,6 @@ if __name__ == '__main__':
                                          id_video=id_video,
                                          t='video_length'
                                          )
-                # construct the gazes lines just as an example for how
-                # that looks compared to the heatmap.
-
-                # analysis.create_gazes(heroku_data,
-                #                       x='video_'+str(id_video)+'-x-0',
-                #                       y='video_'+str(id_video)+'-y-0',
-
-                #                       # pp='R51701252541887JF46247X',
-                #                       id_video=id_video,
-                #                       save_file=True)
-                # Construct heatmap over each video frame previously created
-                # from the source video.
-                # create histogram for stimulus`
-
-                # analysis.create_histogram(stim_path,
-                #                   points[id_video],
-                #                   id_video=id_video,
-                #                   density_coef=20,
-                #                   save_file=True)
                 # create animation for stimulus
                 points_process = {}
                 points_process1 = {}
@@ -380,7 +355,7 @@ if __name__ == '__main__':
                 points_process3 = {}
                 # determin amount of points in duration for video_id
                 dur = mapping.iloc[id_video]['video_length']
-                hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))  # noqa: E501
+                hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))
                 # To create animation for scenario 1,2,3 & 4 in the
                 # same animation extract for all senarios.
                 # for individual animations or scenario
@@ -399,19 +374,19 @@ if __name__ == '__main__':
                     # Scenario 2
                     for points_dur in range(0, hm_resolution_range, 1):
                         try:
-                            points_process1[points_dur] = points_duration[points_dur][id_video+21]  # noqa: E501
+                            points_process1[points_dur] = points_duration[points_dur][id_video+21]
                         except KeyError:
                             break
                     # Scenario 3
                     for points_dur in range(0, hm_resolution_range, 1):
                         try:
-                            points_process2[points_dur] = points_duration[points_dur][id_video+42]  # noqa: E501
+                            points_process2[points_dur] = points_duration[points_dur][id_video+42]
                         except KeyError:
                             break
                     # Scenario 4
                     for points_dur in range(0, hm_resolution_range, 1):
                         try:
-                            points_process3[points_dur] = points_duration[points_dur][id_video+63]  # noqa: E501
+                            points_process3[points_dur] = points_duration[points_dur][id_video+63]
                         except KeyError:
                             break
                 analysis.create_animation(heroku_data,
@@ -425,67 +400,6 @@ if __name__ == '__main__':
                                           t='video_length',
                                           save_anim=True,
                                           save_frames=True)
-                # analysis.create_heatmap(heroku_data,
-                #                         x='video_'+str(id_video)+'-x-0',
-                #                         y='video_'+str(id_video)+'-y-0',
-                #                         pp='R51701252541887JF46247X',
-                #                         id_video=id_video,
-                #                         type_heatmap='contourf',
-                #                         add_corners=True,
-                #                         save_file=True)
-                # # Animate the kp for given source video.
-                # analysis.plot_kp_animate(mapping,
-                #                          'video_'+str(id_video),
-                #                          conf_interval=0.95)
-                #
-                # # Create an animation from individual frames
-                # #
-                # analysis.create_animation(heroku_data,
-                #                           x='video_'+str(id_video)+'-x-0',
-                #                           y='video_'+str(id_video)+'-y-0',
-                #                           t='video_'+str(id_video)+'-t-0',
-                #                           pp='R51701252541887JF46247X',
-                #                           id_video=id_video,
-                #                           save_anim=True,
-                #                           save_frames=True)
-                # # remove temp folder with frames
-                # shutil.rmtree(os.path.join(tr.settings.output_dir, 'frames'))
-                # Creating a for loop that makes an eye gazes/heatmap for every
-                # create animation for stimulus
-                # analysis.scatter_mult(mapping[mapping['avg_person'] != ''],
-                #                       x=['avg_object', 'avg_person', 'avg_car'],
-                #                       y='avg_kp',
-                #                       trendline='ols',
-                #                       xaxis_title='Object count',
-                #                       yaxis_title='Mean keypresses (%)',
-                #                       marginal_y=None,
-                #                       marginal_x='rug',
-                #                       save_file=True)
-                # todo: add comment with description
-                analysis.scatter_mult(heroku_data,
-                                      x=['video_0-x-0', 'video_1-x-0'],
-                                      y='video_0-y-0',
-                                      color='browser_major_version',
-                                      pretty_text=True,
-                                      save_file=True)
-                # Create individual scatter plot for given video and participant.
-                analysis.scatter_et(heroku_data,
-                                    x='video_0-x-0',
-                                    y='video_0-y-0',
-                                    t='video_0-t-0',
-                                    pp='R51701252541887JF46247X',
-                                    id_video='video_0',
-                                    pretty_text=True,
-                                    save_file=True)
-                # Create individual heatmap for given video and participant.
-                # analysis.heatmap(heroku_data,
-                #                     x='video_0-x-0',
-                #                     y='video_0-y-0',
-                #                     t='video_0-t-0',
-                #                     pp='R51701252541887JF46247X',
-                #                     id_video='video_0',
-                #                     pretty_text=True,self.event_discription
-                #                     save_file=True)
         # stitch animations into 1 long videos
         analysis.create_animation_all_stimuli(num_stimuli)
 

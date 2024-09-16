@@ -380,7 +380,7 @@ class Analysis:
         # Subplot 2 AOI
         self.g[1].set_title('Number of eye gazes in area of interest', fontsize=25)
         self.g[1].set_xlabel('Time (s)', fontsize=15)
-        self.g[1].set_ylabel('Number of gazes in Area of Interest', fontsize=15)  # noqa: E501
+        self.g[1].set_ylabel('Number of gazes in Area of Interest', fontsize=15)
         if tr.common.get_configs('only_lab') == 1:
             self.g[1].set_ylim(0, 35)
             self.g[0].set_ylim(0, 80)
@@ -497,32 +497,31 @@ class Analysis:
                                 fill=True,
                                 cmap='RdBu_r')
         self.g[2].invert_yaxis()
-        self.g[2].plot([min_x, max_x, max_x, min_x, min_x], [min_y, min_y, max_y, max_y, min_y], color="red")  # noqa: E501
+        self.g[2].plot([min_x, max_x, max_x, min_x, min_x], [min_y, min_y, max_y, max_y, min_y], color="red")
 
         if tr.common.get_configs('plotly_plot') == 1:
             if i == self.framess-1:
                 fig = go.Figure()
-                print(np.array(self.kp_data[it]))
                 fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
                                          y=np.array(self.kp_data[:it]),
                                          mode='lines',
-                                         name='video_' + str(self.id_video)))     # noqa: E501
+                                         name='video_' + str(self.id_video)))
                 fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
                                          y=np.array(self.kp_data1[:it]),
                                          mode='lines',
-                                         name='video_' + str(self.id_video+21)))  # noqa: E501
+                                         name='video_' + str(self.id_video+21)))
                 fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
                                          y=np.array(self.kp_data2[:it]),
                                          mode='lines',
-                                         name='video_' + str(self.id_video+42)))  # noqa: E501
+                                         name='video_' + str(self.id_video+42)))
                 fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
                                          y=np.array(self.kp_data3[:it]),
                                          mode='lines',
-                                         name='video_' + str(self.id_video+63)))  # noqa: E501
+                                         name='video_' + str(self.id_video+63)))
                 fig.update_layout(template=self.template,
                                   xaxis_title='time(ms)',
                                   yaxis_title="Number of KP")
-                file_name = 'Lab_only_KP_' + str(self.id_video)
+                file_name = 'lab_only_KP_' + str(self.id_video)
                 self.save_plotly(fig,
                                  file_name,
                                  self.folder)
@@ -974,16 +973,13 @@ class Analysis:
                                       yanchor='bottom',
                                       y=1.02,
                                       xanchor='right',
-                                      x=0.78
-                                      ))
+                                      x=0.78))
         # change marker size
         if marker_size:
             fig.update_traces(marker=dict(size=marker_size))
         # save file
         if save_file:
-            self.save_plotly(fig,
-                             'scatter_' + ','.join(x) + '-' + y,
-                             self.folder)
+            self.save_plotly(fig, 'scatter_' + ','.join(x) + '-' + y, self.folder)
         # open it in localhost instead
         else:
             fig.show()
