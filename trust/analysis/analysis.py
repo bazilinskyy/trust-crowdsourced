@@ -356,8 +356,8 @@ class Analysis:
                            color='m')
         # Adding legend and formating to figure
         self.g[0].legend()
-        self.g[0].set_xlabel("Time (s)", fontsize=10)
-        self.g[0].set_ylabel("Percentage of Keypresses", fontsize=10)
+        self.g[0].set_xlabel("Time (s)", fontsize=15)
+        self.g[0].set_ylabel("Percentage of Keypresses", fontsize=15)
         self.g[0].set_xlim(0, 50)
         self.g[0].set_title('Number of keypresses', fontsize=25)
         # Extract time stamps for events from appen data to dislay in plot
@@ -379,7 +379,7 @@ class Analysis:
             self.g[1].legend(fontsize=15)
         # Subplot 2 AOI
         self.g[1].set_title('Number of eye gazes in area of interest', fontsize=25)
-        self.g[1].set_xlabel('Time (s)', fontsize=10)
+        self.g[1].set_xlabel('Time (s)', fontsize=15)
         self.g[1].set_ylabel('Number of gazes in Area of Interest', fontsize=15)  # noqa: E501
         if tr.common.get_configs('only_lab') == 1:
             self.g[1].set_ylim(0, 35)
@@ -535,7 +535,8 @@ class Analysis:
         #                          hue=[item[0] for item in self.points[i]],
         #                          legend='auto')
         # read original image
-        im = plt.imread(self.image + '\\frame_' + str([i]) + '.jpg')
+        path = self.image
+        im = plt.imread(os.path.join(path, "frame_" + str([i]) + ".jpg"))
         plt.imshow(im)
 
         # remove axis
