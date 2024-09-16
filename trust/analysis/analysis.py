@@ -251,7 +251,7 @@ class Analysis:
         aoi = pd.read_csv(tr.common.get_configs('aoi'))
         aoi.set_index('video_id', inplace=True)
         self.number_in = []
-        if tr.common.get_configs('Combined_animation') == 1:
+        if tr.common.get_configs('combined_animation') == 1:
             self.number_in1 = []
             self.number_in2 = []
             self.number_in3 = []
@@ -338,7 +338,7 @@ class Analysis:
                        label='Video_' + str(self.id_video),
                        color='r')
         # If animations are combined scenarios
-        if tr.common.get_configs('Combined_animation') == 1:
+        if tr.common.get_configs('combined_animation') == 1:
             self.g[0].plot(np.array(self.times[:it]),
                            np.array(self.kp_data1[:it]),
                            lw=1,
@@ -401,7 +401,7 @@ class Analysis:
         # stim 0 - 20 or all stim when not combined
         x = [item[0] for item in self.points[i]]
         y = [item[1] for item in self.points[i]]
-        if tr.common.get_configs('Combined_animation') == 1:
+        if tr.common.get_configs('combined_animation') == 1:
             # stim 21 - 41
             x1 = [item[0] for item in self.points1[i]]
             y1 = [item[1] for item in self.points1[i]]
@@ -499,7 +499,7 @@ class Analysis:
         self.g[2].invert_yaxis()
         self.g[2].plot([min_x, max_x, max_x, min_x, min_x], [min_y, min_y, max_y, max_y, min_y], color="red")  # noqa: E501
 
-        if tr.common.get_configs('plotlyplot') == 1:
+        if tr.common.get_configs('plotly_plot') == 1:
             if i == self.framess-1:
                 fig = go.Figure()
                 print(np.array(self.kp_data[it]))
