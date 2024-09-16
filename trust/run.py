@@ -32,14 +32,14 @@ LOAD_P = True  # load pickle files with data
 SAVE_CSV = True  # load csv files with data
 FILTER_DATA = True  # filter Appen and heroku data
 CLEAN_DATA = True  # clean Appen data
-REJECT_CHEATERS = True  # reject cheaters on Appen
+REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = True  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
-SHOW_OUTPUT_ET = True  # should figures for eye tracking be plotted
+SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 file_mapping = 'mapping.p'  # file to save updated mapping
 file_coords = 'coords.p'  # file to save lists with coordinates
@@ -334,7 +334,7 @@ if __name__ == '__main__':
             # create eye gaze visualisations for all videos
             logger.info('Producing visualisations of eye gaze data for {} stimuli.',
                         tr.common.get_configs('num_stimuli'))
-            if tr.common.get_configs('Combined_animation') == 1:
+            if tr.common.get_configs('combined_animation') == 1:
                 num_anim = 21
                 logger.info('Animation is set to combined animations of all for scenarios in one figure')  # noqa: E501
             else:
@@ -394,7 +394,7 @@ if __name__ == '__main__':
                     except KeyError:
                         break
                 # check if animations is set for combined
-                if tr.common.get_configs('Combined_animation') == 1:
+                if tr.common.get_configs('combined_animation') == 1:
                     # Scenario 2
                     for points_dur in range(0, hm_resolution_range, 1):
                         try:
