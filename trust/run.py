@@ -36,9 +36,9 @@ REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = True  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = True  # should figures for eye tracking be plotted
 # todo: code for eye gaze analysis does not run on mac
 
@@ -282,14 +282,14 @@ if __name__ == '__main__':
                              y='end-slider-0-0',
                              xaxis_title='Before',
                              yaxis_title='After',
-                             pretty_text=True,
+                             pretty_text=False,
                              save_file=True)
             analysis.scatter(df,
                              x='driving_in_ad',
                              y='end-slider-1-0',
                              xaxis_title='Before',
                              yaxis_title='After',
-                             pretty_text=True,
+                             pretty_text=False,
                              save_file=True)
         # Visualisation of data about participants
         if SHOW_OUTPUT_PP:
