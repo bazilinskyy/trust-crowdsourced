@@ -14,6 +14,8 @@ import io
 import pickle
 import plotly.express as px
 from plotly import subplots
+# For OneEuroFilter, see https://github.com/casiez/OneEuroFilter
+from OneEuroFilter import OneEuroFilter
 import warnings
 import unicodedata
 import re
@@ -1266,6 +1268,11 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
         """
         logger.info('Creating visualisations of keypresses for all data.')
+                    # Initialize the OneEuroFilter
+        freq = tr.common.get_configs('freq')  # Sampling frequency (adjust based on your data)
+        mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+        beta = tr.common.get_configs('beta')  # Beta value
+        filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # calculate times
         times = np.array(range(self.res,  df['video_length'].max() + self.res, self.res)) / 1000
         # add all data together. Must be converted to np array to add together
@@ -1273,6 +1280,8 @@ class Analysis:
         for i, data in enumerate(df['kp']):
             # append zeros to match longest duration
             data = np.pad(data, (0, len(times) - len(data)), 'constant')
+                         # Apply the OneEuroFilter to the keypress data
+            data = [filter_kp(value) for value in data]
             # add data
             kp_data += np.array(data)
         kp_data = (kp_data / i)
@@ -1347,12 +1356,19 @@ class Analysis:
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
         """
+                    # Initialize the OneEuroFilter
+        freq = tr.common.get_configs('freq')
+        mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+        beta = tr.common.get_configs('beta')  # Beta value
+        filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # extract video length
         video_len = df.loc[stimulus]['video_length']
         # calculate times
         times = np.array(range(self.res, video_len + self.res, self.res)) / 1000
         # keypress data
-        kp_data = df.loc[stimulus]['kp']
+        kp_data_raw = df.loc[stimulus]['kp']
+        # Apply the OneEuroFilter to keypress data
+        kp_data = [filter_kp(value) for value in kp_data_raw]
         # plot keypresses
         fig = px.line(y=df.loc[stimulus]['kp'],
                       x=times,
@@ -1715,6 +1731,12 @@ class Analysis:
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
         """
+                  # Initialize OneEuroFilter
+        freq = tr.common.get_configs('freq')  # Sampling frequency (adjust based on your data)
+        mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+        beta = tr.common.get_configs('beta')  # Beta value
+        filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
+    
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
@@ -1728,7 +1750,8 @@ class Analysis:
                                      shared_xaxes=False)
         # Plot keypress data
         for index, row in df.iterrows():
-            values = row['kp']
+                        # Apply OneEuroFilter to smooth the keypress data
+            values = [filter_kp(value) for value in row['kp']]
             fig.add_trace(go.Scatter(y=values,
                                      mode='lines',
                                      x=times,
