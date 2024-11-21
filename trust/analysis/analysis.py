@@ -1268,7 +1268,7 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
         """
         logger.info('Creating visualisations of keypresses for all data.')
-                    # Initialize the OneEuroFilter
+        # Initialize the OneEuroFilter
         freq = tr.common.get_configs('freq')  # Sampling frequency (adjust based on your data)
         mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
         beta = tr.common.get_configs('beta')  # Beta value
@@ -1280,7 +1280,7 @@ class Analysis:
         for i, data in enumerate(df['kp']):
             # append zeros to match longest duration
             data = np.pad(data, (0, len(times) - len(data)), 'constant')
-                         # Apply the OneEuroFilter to the keypress data
+            # Apply the OneEuroFilter to the keypress data
             data = [filter_kp(value) for value in data]
             # add data
             kp_data += np.array(data)
@@ -1356,7 +1356,7 @@ class Analysis:
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
         """
-                    # Initialize the OneEuroFilter
+        # Initialize the OneEuroFilter
         freq = tr.common.get_configs('freq')
         mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
         beta = tr.common.get_configs('beta')  # Beta value
@@ -1731,7 +1731,7 @@ class Analysis:
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
         """
-                  # Initialize OneEuroFilter
+        # Initialize OneEuroFilter
         freq = tr.common.get_configs('freq')  # Sampling frequency (adjust based on your data)
         mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
         beta = tr.common.get_configs('beta')  # Beta value
@@ -1750,7 +1750,7 @@ class Analysis:
                                      shared_xaxes=False)
         # Plot keypress data
         for index, row in df.iterrows():
-                        # Apply OneEuroFilter to smooth the keypress data
+            # Apply OneEuroFilter to smooth the keypress data
             values = [filter_kp(value) for value in row['kp']]
             fig.add_trace(go.Scatter(y=values,
                                      mode='lines',
