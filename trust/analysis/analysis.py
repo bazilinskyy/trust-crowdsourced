@@ -1736,7 +1736,7 @@ class Analysis:
         mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
         beta = tr.common.get_configs('beta')  # Beta value
         filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
-    
+
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
