@@ -128,47 +128,47 @@ Plot of AOI Video_20 Lab only Participants
 
 ## Key press (KP)
 ### All participants
-[![plot_all_0](figures/all_KP_0.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_0.html)
+[![plot_all_0](figures/kp_videos_sliders_0_21_42_63.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_0_21_42_63.html)
 Plot of KP Video_0 All Participants
-[![plot_all_1](figures/all_KP_1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_1.html)
+[![plot_all_1](figures/kp_videos_sliders_1_22_43_64.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_1_22_43_64.html)
 Plot of KP Video_1 All Participants
-[![plot_all_2](figures/all_KP_2.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_2.html)
+[![plot_all_2](figures/kp_videos_sliders_2_23_44_65.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_2_23_44_65.html)
 Plot of KP Video_2 All Participants
-[![plot_all_3](figures/all_KP_3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_3.html)
+[![plot_all_3](figures/kp_videos_sliders_3_24_45_66.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_3_24_45_66.html)
 Plot of KP Video_3 All Participants
-[![plot_all_4](figures/all_KP_4.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_4.html)
+[![plot_all_4](figures/kp_videos_sliders_4_25_46_67.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_4_25_46_67.html)
 Plot of KP Video_4 All Participants
-[![plot_all_5](figures/all_KP_5.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_5.html)
+[![plot_all_5](figures/kp_videos_sliders_5_26_47_68.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_5_26_47_68.html)
 Plot of KP Video_5 All Participants
-[![plot_all_6](figures/all_KP_6.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_6.html)
+[![plot_all_6](figures/kp_videos_sliders_6_27_48_69.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_6_27_48_69.html)
 Plot of KP Video_6 All Participants
-[![plot_all_7](figures/all_KP_7.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_7.html)
+[![plot_all_7](figures/kp_videos_sliders_7_28_49_70.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_7_28_49_70.html)
 Plot of KP Video_7 All Participants
-[![plot_all_8](figures/all_KP_8.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_8.html)
+[![plot_all_8](figures/kp_videos_sliders_8_29_50_71.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_8_29_50_71.html)
 Plot of KP Video_8 All Participants
-[![plot_all_9](figures/all_KP_9.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_9.html)
+[![plot_all_9](figures/kp_videos_sliders_9_30_51_72.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_9_30_51_72.html)
 Plot of KP Video_9 All Participants
-[![plot_all_10](figures/all_KP_10.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_10.html)
+[![plot_all_10](figures/kp_videos_sliders_10_31_52_73.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_10_31_52_73.html)
 Plot of KP Video_10 All Participants
-[![plot_all_11](figures/all_KP_11.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_11.html)
+[![plot_all_11](figures/kp_videos_sliders_11_32_53_74.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_11_32_53_74.html)
 Plot of KP Video_11 All Participants
-[![plot_all_12](figures/all_KP_12.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_12.html)
+[![plot_all_12](figures/kp_videos_sliders_12_33_54_75.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_12_33_54_75.html)
 Plot of KP Video_12 All Participants
-[![plot_all_13](figures/all_KP_13.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_13.html)
+[![plot_all_13](figures/kp_videos_sliders_13_34_55_76.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_13_34_55_76.html)
 Plot of KP Video_13 All Participants
-[![plot_all_14](figures/all_KP_14.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_14.html)
+[![plot_all_14](figures/kp_videos_sliders_14_35_56_77.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_14_35_56_77.html)
 Plot of KP Video_14 All Participants
-[![plot_all_15](figures/all_KP_15.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_15.html)
+[![plot_all_15](figures/kp_videos_sliders_15_36_57_78.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_15_36_57_78.html)
 Plot of KP Video_15 All Participants
-[![plot_all_16](figures/all_KP_16.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_16.html)
+[![plot_all_16](figures/kp_videos_sliders_16_37_58_79.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_16_37_58_79.html)
 Plot of KP Video_16 All Participants
-[![plot_all_17](figures/all_KP_17.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_17.html)
+[![plot_all_17](figures/kp_videos_sliders_17_38_59_80.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_17_38_59_80.html)
 Plot of KP Video_17 All Participants
-[![plot_all_18](figures/all_KP_18.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_18.html)
+[![plot_all_18](figures/kp_videos_sliders_18_39_60_81.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_18_39_60_81.html)
 Plot of KP Video_18 All Participants
-[![plot_all_19](figures/all_KP_19.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_19.html)
+[![plot_all_19](figures/kp_videos_sliders_19_40_61_82.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_19_40_61_82.html)
 Plot of KP Video_19 All Participants
-[![plot_all_20](figures/all_KP_20.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/all_KP_20.html)
+[![plot_all_20](figures/kp_videos_sliders_20_41_62_83.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_20_41_62_83.html)
 Plot of KP Video_20 All Participants
 
 ### For only lab participants
