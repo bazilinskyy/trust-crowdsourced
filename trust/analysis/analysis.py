@@ -233,9 +233,15 @@ class Analysis:
         self.framess = int(round(self.time/self.hm_resolution))
         # Determin time
         self.t = mapping.loc['video_'+str(id_video)][t]
+        
+        
+        # Initialize the OneEuroFilter
+        freq = 1000/tr.common.get_configs('hm_resolution')  # Sampling frequency (adjust based on your data)
+        mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+        beta = tr.common.get_configs('beta')  # Beta value
+        filter_points = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # Call eye-tracking points
-        self.points = points
-        self.save_frames = save_frames
+        self.points = filter_points(points)
         # Create subplot figure with heatmap and kp plot
         self.fig, self.g = plt.subplots(nrows=3,
                                         ncols=1,
@@ -501,7 +507,7 @@ class Analysis:
         self.g[2].invert_yaxis()
         self.g[2].plot([min_x, max_x, max_x, min_x, min_x], [min_y, min_y, max_y, max_y, min_y], color="red")
 
-        if tr.common.get_configs('plotly_plot') == 1:
+        if tr.common.get_configs('plotlyplot') == 1:
             if i == self.framess-1:
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
