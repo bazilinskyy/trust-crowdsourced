@@ -68,7 +68,9 @@ class Analysis:
         if not os.path.exists(path):
             os.makedirs(path)
         # video file in the folder with stimuli
-        cap = cv2.VideoCapture(os.path.join(tr.common.get_configs('path_stimuli'), 'video_' + str(id_video) + '.mp4'))
+        cap = cv2.VideoCapture(
+            os.path.join(tr.common.get_configs('path_stimuli'),
+                         'video_' + str(id_video) + '.mp4'))
         # timestamp
         t = mapping.loc['video_' + str(id_video)][t]
         self.time = int(t)
@@ -82,13 +84,17 @@ class Analysis:
         for k in tqdm(range(0, self.time, hm_resolution_int)):
             os.makedirs(os.path.dirname(path), exist_ok=True)
             fps = cap.get(cv2.CAP_PROP_FPS)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, round(fps * k/1000))
+            cap.set(cv2.CAP_PROP_POS_FRAMES,
+                    round(fps * k / 1000))
             ret, frame = cap.read()
             if ret:
-                filename = os.path.join(path, 'frame_' + str([round(k/hm_resolution_int)]) + '.jpg')
+                filename = os.path.join(path, 'frame_'
+                                        + str([round(k / hm_resolution_int)])
+                                        + '.jpg')
                 cv2.imwrite(filename, frame, [cv2.IMWRITE_JPEG_QUALITY, 20])
 
-    def create_histogram(self, image, points, id_video, density_coef=10, suffix='_histogram.jpg', save_file=False):
+    def create_histogram(self, image, points, id_video, density_coef=10,
+                         suffix='_histogram.jpg', save_file=False):
         """
         Create histogram for image based on the list of lists of points.
         density_coef: coeficient for division of dimensions for density of
@@ -96,7 +102,8 @@ class Analysis:
         """
         # check if data is present
         if not points:
-            logger.error('Not enough data. Histogram was not created for {}.', image)
+            logger.error('Not enough data. Histogram was not created for {}.',
+                         image)
             return
         # get dimensions of stimulus
         width = tr.common.get_configs('stimulus_width')
@@ -108,11 +115,12 @@ class Analysis:
         y = xy[:, 1]
         # create figure object with given dpi and dimensions
         dpi = 150
-        fig = plt.figure(figsize=(width/dpi, height/dpi), dpi=dpi)
+        fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
         # build histogram
         plt.hist2d(x=x,
                    y=-y,  # convert to the reference system in image
-                   bins=[round(width/density_coef), round(height/density_coef)],
+                   bins=[round(width / density_coef),
+                         round(height / density_coef)],
                    cmap=plt.cm.jet)
         plt.colorbar()
         # remove white spaces around figure
@@ -120,9 +128,10 @@ class Analysis:
         # save image
         if save_file:
             self.save_fig(image, fig,
-                          self.folder, '_video_' + str(id_video)+suffix)
+                          self.folder, '_video_' + str(id_video) + suffix)
 
-    def create_heatmap(self, image, points, type_heatmap='contourf', add_corners=True, save_file=False):
+    def create_heatmap(self, image, points, type_heatmap='contourf',
+                       add_corners=True, save_file=False):
         """
         Create heatmap for image based on the list of lists of points.
         add_corners: add points to the corners to have the heatmap ovelay the
@@ -132,7 +141,8 @@ class Analysis:
         # todo: remove datapoints in corners in heatmaps
         # check if data is present
         if not points:
-            logger.error('Not enough data. Heatmap was not created for {}.', image)
+            logger.error('Not enough data. Heatmap was not created for {}.',
+                         image)
             return
         # get dimensions of base image
         width = tr.common.get_configs('stimulus_width')
@@ -151,14 +161,16 @@ class Analysis:
         # compute data for the heatmap
         try:
             k = gaussian_kde(np.vstack([x, y]))
-            xi, yi = np.mgrid[x.min():x.max():x.size**0.5*1j, y.min():y.max():y.size**0.5*1j]
+            xi, yi = np.mgrid[x.min():x.max():x.size**0.5*1j,
+                     y.min():y.max():y.size**0.5*1j]
             zi = k(np.vstack([xi.flatten(), yi.flatten()]))
         except (np.linalg.LinAlgError, np.linalg.LinAlgError, ValueError):
-            logger.error('Not enough data. Heatmap was not created for {}.', image)
+            logger.error('Not enough data. Heatmap was not created for {}.',
+                         image)
             return
         # create figure object with given dpi and dimensions
         dpi = 150
-        fig = plt.figure(figsize=(width/dpi, height/dpi), dpi=dpi)
+        fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
         # alpha=0.5 makes the plot semitransparent
         suffix_file = ''  # suffix to add to saved image
         if type_heatmap == 'contourf':
@@ -168,18 +180,23 @@ class Analysis:
                 plt.gca().xaxis.set_major_locator(plt.NullLocator())
                 plt.gca().yaxis.set_major_locator(plt.NullLocator())
             except TypeError:
-                logger.error('Not enough data. Heatmap was not created for {}.', image)
+                logger.error(
+                    'Not enough data. Heatmap was not created for {}.',
+                    image)
                 plt.close(fig)  # clear figure from memory
                 return
             suffix_file = '_contourf.jpg'
         elif type_heatmap == 'pcolormesh':
             try:
-                g = plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto', alpha=0.5)
+                g = plt.pcolormesh(xi, yi, zi.reshape(xi.shape),
+                                   shading='auto', alpha=0.5)
                 plt.margins(0, 0)
                 plt.gca().xaxis.set_major_locator(plt.NullLocator())
                 plt.gca().yaxis.set_major_locator(plt.NullLocator())
             except TypeError:
-                logger.error('Not enough data. Heatmap was not created for {}.', image)
+                logger.error(
+                    'Not enough data. Heatmap was not created for {}.',
+                    image)
                 plt.close(fig)  # clear figure from memory
                 return
             suffix_file = '_pcolormesh.jpg'
@@ -187,7 +204,9 @@ class Analysis:
             try:
                 g = sns.kdeplot(x=x, y=y, alpha=0.5, fill=True, cmap="RdBu_r")
             except TypeError:
-                logger.error('Not enough data. Heatmap was not created for {}.', image)
+                logger.error(
+                             'Not enough data. Heatmap was not created for {}.',
+                             image)
                 fig.clf()  # clear figure from memory
                 return
             suffix_file = '_kdeplot.jpg'

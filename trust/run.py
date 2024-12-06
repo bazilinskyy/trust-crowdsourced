@@ -39,8 +39,8 @@ SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
-SHOW_OUTPUT_ET = True  # should figures for eye tracking be plotted
-USE_ONEEURO_FILTER = False
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+USE_ONEEURO_FILTER = True
 # todo: code for eye gaze analysis does not run on mac
 
 file_mapping = 'mapping.p'  # file to save updated mapping
@@ -79,8 +79,9 @@ if __name__ == '__main__':
     appen_data_keys = appen_data.keys()
     # flag and reject cheaters
     if REJECT_CHEATERS:
-        qa = tr.analysis.QA(file_cheaters=tr.common.get_configs('file_cheaters'),
-                            job_id=tr.common.get_configs('appen_job'))
+        qa = tr.analysis.QA(
+            file_cheaters=tr.common.get_configs('file_cheaters'),
+            job_id=tr.common.get_configs('appen_job'))
         qa.reject_users()
         qa.ban_users()
     # merge heroku and appen dataframes into one
@@ -140,7 +141,8 @@ if __name__ == '__main__':
             # # all keypresses with confidence interval
             # analysis.plot_kp(mapping, conf_interval=0.95)
             # # keypresses of all individual stimuli
-            # logger.info('Creating figures for keypress data of individual stimuli.')
+            # logger.info(
+            #'Creating figures for keypress data of individual stimuli.')
             # for stim in tqdm(range(num_stimuli)):  # tqdm adds progress bar
             #     # extract timestamps of events
             #     vert_lines = list(map(int, re.findall(r'\d+', mapping.loc['video_' + str(stim), 'events'])))
