@@ -68,7 +68,9 @@ class Analysis:
         if not os.path.exists(path):
             os.makedirs(path)
         # video file in the folder with stimuli
-        cap = cv2.VideoCapture(os.path.join(tr.common.get_configs('path_stimuli'), 'video_' + str(id_video) + '.mp4'))
+        cap = cv2.VideoCapture(
+            os.path.join(tr.common.get_configs('path_stimuli'),
+                         'video_' + str(id_video) + '.mp4'))
         # timestamp
         t = mapping.loc['video_' + str(id_video)][t]
         self.time = int(t)
@@ -82,13 +84,17 @@ class Analysis:
         for k in tqdm(range(0, self.time, hm_resolution_int)):
             os.makedirs(os.path.dirname(path), exist_ok=True)
             fps = cap.get(cv2.CAP_PROP_FPS)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, round(fps * k/1000))
+            cap.set(cv2.CAP_PROP_POS_FRAMES,
+                    round(fps * k / 1000))
             ret, frame = cap.read()
             if ret:
-                filename = os.path.join(path, 'frame_' + str([round(k/hm_resolution_int)]) + '.jpg')
+                filename = os.path.join(path, 'frame_'
+                                        + str([round(k / hm_resolution_int)])
+                                        + '.jpg')
                 cv2.imwrite(filename, frame, [cv2.IMWRITE_JPEG_QUALITY, 20])
 
-    def create_histogram(self, image, points, id_video, density_coef=10, suffix='_histogram.jpg', save_file=False):
+    def create_histogram(self, image, points, id_video, density_coef=10,
+                         suffix='_histogram.jpg', save_file=False):
         """
         Create histogram for image based on the list of lists of points.
         density_coef: coeficient for division of dimensions for density of
@@ -96,7 +102,8 @@ class Analysis:
         """
         # check if data is present
         if not points:
-            logger.error('Not enough data. Histogram was not created for {}.', image)
+            logger.error('Not enough data. Histogram was not created for {}.',
+                         image)
             return
         # get dimensions of stimulus
         width = tr.common.get_configs('stimulus_width')
@@ -108,11 +115,12 @@ class Analysis:
         y = xy[:, 1]
         # create figure object with given dpi and dimensions
         dpi = 150
-        fig = plt.figure(figsize=(width/dpi, height/dpi), dpi=dpi)
+        fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
         # build histogram
         plt.hist2d(x=x,
                    y=-y,  # convert to the reference system in image
-                   bins=[round(width/density_coef), round(height/density_coef)],
+                   bins=[round(width / density_coef),
+                         round(height / density_coef)],
                    cmap=plt.cm.jet)
         plt.colorbar()
         # remove white spaces around figure
@@ -120,9 +128,10 @@ class Analysis:
         # save image
         if save_file:
             self.save_fig(image, fig,
-                          self.folder, '_video_' + str(id_video)+suffix)
+                          self.folder, '_video_' + str(id_video) + suffix)
 
-    def create_heatmap(self, image, points, type_heatmap='contourf', add_corners=True, save_file=False):
+    def create_heatmap(self, image, points, type_heatmap='contourf',
+                       add_corners=True, save_file=False):
         """
         Create heatmap for image based on the list of lists of points.
         add_corners: add points to the corners to have the heatmap ovelay the
@@ -132,7 +141,8 @@ class Analysis:
         # todo: remove datapoints in corners in heatmaps
         # check if data is present
         if not points:
-            logger.error('Not enough data. Heatmap was not created for {}.', image)
+            logger.error('Not enough data. Heatmap was not created for {}.',
+                         image)
             return
         # get dimensions of base image
         width = tr.common.get_configs('stimulus_width')
@@ -151,14 +161,16 @@ class Analysis:
         # compute data for the heatmap
         try:
             k = gaussian_kde(np.vstack([x, y]))
-            xi, yi = np.mgrid[x.min():x.max():x.size**0.5*1j, y.min():y.max():y.size**0.5*1j]
+            xi, yi = np.mgrid[x.min():x.max():x.size**0.5*1j,
+                     y.min():y.max():y.size**0.5*1j]
             zi = k(np.vstack([xi.flatten(), yi.flatten()]))
         except (np.linalg.LinAlgError, np.linalg.LinAlgError, ValueError):
-            logger.error('Not enough data. Heatmap was not created for {}.', image)
+            logger.error('Not enough data. Heatmap was not created for {}.',
+                         image)
             return
         # create figure object with given dpi and dimensions
         dpi = 150
-        fig = plt.figure(figsize=(width/dpi, height/dpi), dpi=dpi)
+        fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
         # alpha=0.5 makes the plot semitransparent
         suffix_file = ''  # suffix to add to saved image
         if type_heatmap == 'contourf':
@@ -168,18 +180,23 @@ class Analysis:
                 plt.gca().xaxis.set_major_locator(plt.NullLocator())
                 plt.gca().yaxis.set_major_locator(plt.NullLocator())
             except TypeError:
-                logger.error('Not enough data. Heatmap was not created for {}.', image)
+                logger.error(
+                    'Not enough data. Heatmap was not created for {}.',
+                    image)
                 plt.close(fig)  # clear figure from memory
                 return
             suffix_file = '_contourf.jpg'
         elif type_heatmap == 'pcolormesh':
             try:
-                g = plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto', alpha=0.5)
+                g = plt.pcolormesh(xi, yi, zi.reshape(xi.shape),
+                                   shading='auto', alpha=0.5)
                 plt.margins(0, 0)
                 plt.gca().xaxis.set_major_locator(plt.NullLocator())
                 plt.gca().yaxis.set_major_locator(plt.NullLocator())
             except TypeError:
-                logger.error('Not enough data. Heatmap was not created for {}.', image)
+                logger.error(
+                    'Not enough data. Heatmap was not created for {}.',
+                    image)
                 plt.close(fig)  # clear figure from memory
                 return
             suffix_file = '_pcolormesh.jpg'
@@ -187,7 +204,9 @@ class Analysis:
             try:
                 g = sns.kdeplot(x=x, y=y, alpha=0.5, fill=True, cmap="RdBu_r")
             except TypeError:
-                logger.error('Not enough data. Heatmap was not created for {}.', image)
+                logger.error(
+                             'Not enough data. Heatmap was not created for {}.',
+                             image)
                 fig.clf()  # clear figure from memory
                 return
             suffix_file = '_kdeplot.jpg'
@@ -1251,9 +1270,9 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp(self, df, conf_interval=None, xaxis_title='Time (s)',
-                yaxis_title='Percentage of trials with response key pressed', xaxis_range=None, yaxis_range=None,
-                save_file=True, fig_save_width=1320, fig_save_height=680):
+    def plot_kp(self, df, use_one_euro_filter=False, conf_interval=None, xaxis_title='Time (s)',
+                yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
+                yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680):
         """Plot keypress data.
 
         Args:
@@ -1268,23 +1287,27 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
         """
         logger.info('Creating visualisations of keypresses for all data.')
-        # Initialize the OneEuroFilter
-        freq = tr.common.get_configs('freq')  # Sampling frequency (adjust based on your data)
-        mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
-        beta = tr.common.get_configs('beta')  # Beta value
-        filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # calculate times
         times = np.array(range(self.res,  df['video_length'].max() + self.res, self.res)) / 1000
         # add all data together. Must be converted to np array to add together
         kp_data = np.array([0.0] * len(times))
+        # Initialize the OneEuroFilter
+        if use_one_euro_filter:
+            freq = tr.common.get_configs('freq')
+            mincutoff = tr.common.get_configs('mincutoff')
+            beta = tr.common.get_configs('beta')
+            filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         for i, data in enumerate(df['kp']):
             # append zeros to match longest duration
             data = np.pad(data, (0, len(times) - len(data)), 'constant')
-            # Apply the OneEuroFilter to the keypress data
-            data = [filter_kp(value) for value in data]
+            # Apply filtering if enabled
+            if use_one_euro_filter:
+                data = [filter_kp(value) for value in data]
+
             # add data
             kp_data += np.array(data)
-        kp_data = (kp_data / i)
+
+        kp_data = kp_data / (i + 1)
         # create figure
         fig = go.Figure()
         # plot keypresses
@@ -1356,19 +1379,22 @@ class Analysis:
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
         """
-        # Initialize the OneEuroFilter
-        freq = tr.common.get_configs('freq')
-        mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
-        beta = tr.common.get_configs('beta')  # Beta value
-        filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # extract video length
         video_len = df.loc[stimulus]['video_length']
         # calculate times
         times = np.array(range(self.res, video_len + self.res, self.res)) / 1000
         # keypress data
         kp_data_raw = df.loc[stimulus]['kp']
-        # Apply the OneEuroFilter to keypress data
-        kp_data = [filter_kp(value) for value in kp_data_raw]
+        # Apply the OneEuroFilter conditionally
+        if use_one_euro_filter:
+            freq = tr.common.get_configs('freq')
+            mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+            beta = tr.common.get_configs('beta')  # Beta value
+            filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
+            kp_data = [filter_kp(value) for value in kp_data_raw]
+        else:
+            kp_data = kp_data_raw  # Use raw data if filter is not applied
+
         # plot keypresses
         fig = px.line(y=df.loc[stimulus]['kp'],
                       x=times,
@@ -1606,7 +1632,7 @@ class Analysis:
                        vert_lines_annotations_colour='blue', xaxis_title='Time (s)',
                        yaxis_title='Percentage of trials with response key pressed',
                        xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680,
-                       show_menu=False, name_file=None):
+                       show_menu=False, name_file=None, use_one_euro_filter=False):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1631,11 +1657,20 @@ class Analysis:
         """
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
+        # Initialize OneEuroFilter if required
+        if use_one_euro_filter:
+            freq = tr.common.get_configs('freq')  # Sampling frequency
+            mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+            beta = tr.common.get_configs('beta')  # Beta value
+            filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # plotly
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
         # plot for all videos
         for index, row in df.iterrows():
-            values = row['kp']
+            if use_one_euro_filter:
+                values = [filter_kp(value) for value in row['kp']]
+            else:
+                values = row['kp']  # Use raw data if filter is not applied
             fig.add_trace(go.Scatter(y=values,
                                      mode='lines',
                                      x=times,
@@ -1700,7 +1735,7 @@ class Analysis:
                               xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
-                              fig_save_width=1320, fig_save_height=680):
+                              fig_save_width=1320, fig_save_height=680, use_one_euro_filter=False):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -1731,13 +1766,13 @@ class Analysis:
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
         """
-        # Initialize OneEuroFilter
-        freq = tr.common.get_configs('freq')  # Sampling frequency (adjust based on your data)
-        mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
-        beta = tr.common.get_configs('beta')  # Beta value
-        filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
 
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
+        if use_one_euro_filter:
+            freq = tr.common.get_configs('freq')  # Sampling frequency (adjust based on your data)
+            mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+            beta = tr.common.get_configs('beta')  # Beta value
+            filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
         # plotly
@@ -1750,8 +1785,11 @@ class Analysis:
                                      shared_xaxes=False)
         # Plot keypress data
         for index, row in df.iterrows():
-            # Apply OneEuroFilter to smooth the keypress data
-            values = [filter_kp(value) for value in row['kp']]
+            # Smooth the keypress data if the filter is enabled
+            if use_one_euro_filter:
+                values = [filter_kp(value) for value in row['kp']]
+            else:
+                values = row['kp']  # Use raw data if filter is not applied
             fig.add_trace(go.Scatter(y=values,
                                      mode='lines',
                                      x=times,
@@ -1829,7 +1867,7 @@ class Analysis:
 
     def plot_kp_variable(self, df, variable, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                         yaxis_range=None, show_menu=False, save_file=True, fig_save_width=1320, fig_save_height=680):
+                         yaxis_range=None, show_menu=False, save_file=True, fig_save_width=1320, fig_save_height=680, use_one_euro_filter=False):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -1848,6 +1886,12 @@ class Analysis:
         logger.info('Creating visualisation of keypresses based on values {} of variable {} .', values, variable)
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
+        # Initialize OneEuroFilter if required
+        if use_one_euro_filter:
+            freq = tr.common.get_configs('freq')  # Sampling frequency
+            mincutoff = tr.common.get_configs('mincutoff')  # Minimum cutoff frequency
+            beta = tr.common.get_configs('beta')  # Beta value
+            filter_kp = OneEuroFilter(freq=freq, mincutoff=mincutoff, beta=beta)
         # if no values specified, plot value
         if not values:
             values = df[variable].unique()
@@ -1864,6 +1908,9 @@ class Analysis:
             # go over extracted videos
             for index, row in df_f.iterrows():
                 data_row = np.array(row['kp'])
+                # Apply OneEuroFilter if enabled
+                if use_one_euro_filter:
+                    data_row = [filter_kp(value) for value in data_row]
                 # append zeros to match longest duration
                 data_row = np.pad(data_row, (0, len(times) - len(data_row)), 'constant')
                 kp_data = kp_data + data_row

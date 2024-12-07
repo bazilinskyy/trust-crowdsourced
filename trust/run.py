@@ -39,7 +39,8 @@ SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
-SHOW_OUTPUT_ET = True  # should figures for eye tracking be plotted
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+USE_ONEEURO_FILTER = True
 # todo: code for eye gaze analysis does not run on mac
 
 file_mapping = 'mapping.p'  # file to save updated mapping
@@ -55,6 +56,14 @@ if __name__ == '__main__':
     # read heroku data
     heroku_data = heroku.read_data(filter_data=FILTER_DATA)
 
+    # Directly count participants in each group
+    if 'participant_group' in heroku_data.columns:
+        group_counts = heroku_data['participant_group'].value_counts()
+        print("Participant Counts by Group:")
+        for group, count in group_counts.items():
+            print(f"Group {group}: {count} participants")
+    else:
+        print("'participant_group' column not found in the data.")
     # create object for working with appen data
     file_appen = tr.common.get_configs('file_appen')
     appen = tr.analysis.Appen(file_data=file_appen,
@@ -70,8 +79,9 @@ if __name__ == '__main__':
     appen_data_keys = appen_data.keys()
     # flag and reject cheaters
     if REJECT_CHEATERS:
-        qa = tr.analysis.QA(file_cheaters=tr.common.get_configs('file_cheaters'),
-                            job_id=tr.common.get_configs('appen_job'))
+        qa = tr.analysis.QA(
+            file_cheaters=tr.common.get_configs('file_cheaters'),
+            job_id=tr.common.get_configs('appen_job'))
         qa.reject_users()
         qa.ban_users()
     # merge heroku and appen dataframes into one
@@ -131,7 +141,8 @@ if __name__ == '__main__':
             # # all keypresses with confidence interval
             # analysis.plot_kp(mapping, conf_interval=0.95)
             # # keypresses of all individual stimuli
-            # logger.info('Creating figures for keypress data of individual stimuli.')
+            # logger.info(
+            #'Creating figures for keypress data of individual stimuli.')
             # for stim in tqdm(range(num_stimuli)):  # tqdm adds progress bar
             #     # extract timestamps of events
             #     vert_lines = list(map(int, re.findall(r'\d+', mapping.loc['video_' + str(stim), 'events'])))
@@ -203,21 +214,25 @@ if __name__ == '__main__':
                                                show_text_labels=True,
                                                stacked=True,
                                                yaxis_slider_show=False,
-                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]))
+                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
+                                               use_one_euro_filter=USE_ONEEURO_FILTER  # Pass the global flag
+                                            )
             # # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,
             #                           pp='R51701197342646JF16777X',
             #                           stimulus='video_2',
-            #                           conf_interval=0.95)
+            #                           conf_interval=0.95,
+            #                           use_one_euro_filter=USE_ONEEURO_FILTER  # Pass the global flag
+            #                       )
             # keypresses of all videos individually
-            analysis.plot_kp_videos(mapping, show_menu=False)
+            analysis.plot_kp_videos(mapping, show_menu=False, use_one_euro_filter=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'ego_car', show_menu=False)
+            analysis.plot_kp_variable(mapping, 'ego_car', show_menu=False, use_one_euro_filter=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'target_car', show_menu=False)
+            analysis.plot_kp_variable(mapping, 'target_car', show_menu=False, use_one_euro_filter=False)
             # keypress based on the pp group
-            analysis.plot_kp_variable(mapping, 'group', show_menu=False)
+            analysis.plot_kp_variable(mapping, 'group', show_menu=False, use_one_euro_filter=False)
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
