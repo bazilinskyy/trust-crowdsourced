@@ -12,23 +12,8 @@ tr.logs(show_level='info', show_color=True)
 logger = tr.CustomLogger(__name__)  # use custom logger
 
 # const
-SAVE_P = True  # save pickle files with data
-LOAD_P = False  # load pickle files with data
-SAVE_CSV = True  # load csv files with data
-FILTER_DATA = True  # filter Appen and heroku data
-CLEAN_DATA = True  # clean Appen data
-REJECT_CHEATERS = False  # reject cheaters on Appen
-CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = True  # update mapping with keypress data
-SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted-
-SHOW_OUTPUT_ST = True  # should figures with stimulus data to be plotted
-SHOW_OUTPUT_PP = True  # should figures with info about participants
-SHOW_OUTPUT_ET = False  # should figures for eye tracking
-
-# for debugging, skip processing
-# SAVE_P = False  # save pickle files with data
-# LOAD_P = True  # load pickle files with data
+# SAVE_P = True  # save pickle files with data
+# LOAD_P = False  # load pickle files with data
 # SAVE_CSV = True  # load csv files with data
 # FILTER_DATA = True  # filter Appen and heroku data
 # CLEAN_DATA = True  # clean Appen data
@@ -36,10 +21,25 @@ SHOW_OUTPUT_ET = False  # should figures for eye tracking
 # CALC_COORDS = False  # extract points from heroku data
 # UPDATE_MAPPING = True  # update mapping with keypress data
 # SHOW_OUTPUT = True  # should figures be plotted
-# SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-# SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
-# SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
-# SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+# SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted-
+# SHOW_OUTPUT_ST = True  # should figures with stimulus data to be plotted
+# SHOW_OUTPUT_PP = True  # should figures with info about participants
+# SHOW_OUTPUT_ET = False  # should figures for eye tracking
+
+# for debugging, skip processing
+SAVE_P = False  # save pickle files with data
+LOAD_P = True  # load pickle files with data
+SAVE_CSV = True  # load csv files with data
+FILTER_DATA = True  # filter Appen and heroku data
+CLEAN_DATA = True  # clean Appen data
+REJECT_CHEATERS = False  # reject cheaters on Appen
+CALC_COORDS = False  # extract points from heroku data
+UPDATE_MAPPING = True  # update mapping with keypress data
+SHOW_OUTPUT = True  # should figures be plotted
+SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 # todo: code for eye gaze analysis does not run on mac
 
 file_mapping = 'mapping.p'  # file to save updated mapping
@@ -214,13 +214,13 @@ if __name__ == '__main__':
             #                           stimulus='video_2',
             #                           conf_interval=0.95)
             # keypresses of all videos individually
-            analysis.plot_kp_videos(mapping, show_menu=False, use_one_euro_filter=False)
+            analysis.plot_kp_videos(mapping, show_menu=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'ego_car', show_menu=False, use_one_euro_filter=False)
+            analysis.plot_kp_variable(mapping, 'ego_car', show_menu=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'target_car', show_menu=False, use_one_euro_filter=False)
+            analysis.plot_kp_variable(mapping, 'target_car', show_menu=False)
             # keypress based on the pp group
-            analysis.plot_kp_variable(mapping, 'group', show_menu=False, use_one_euro_filter=False)
+            analysis.plot_kp_variable(mapping, 'group', show_menu=False)
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
@@ -243,7 +243,9 @@ if __name__ == '__main__':
                              pretty_text=True,
                              save_file=True)
             # columns to drop in correlation matrix and scatter matrix
-            columns_drop = ['events_description', 'description', 'video_length', 'min_dur', 'max_dur', 'kp', 'events']
+            columns_drop = ['description', 'video_length', 'min_dur', 'max_dur', 'kp', 'events', 'events_name',
+                            'events_description', 'events_id', 'description']
+            print(df.columns)
             # set nan to -1
             df = mapping.fillna(-1)
             # create correlation matrix

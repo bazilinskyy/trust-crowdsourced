@@ -2166,21 +2166,21 @@ class Analysis:
             height (int, optional): height of figures to be saved.
         """
         # build path
-        path = tr.settings.output_dir + output_subdir
+        path = os.path.join(tr.settings.output_dir, output_subdir)
         if not os.path.exists(path):
             os.makedirs(path)
         # limit name to 255 char
         if len(path) + len(name) > 250:
             name = name[:255 - len(path) - 5]
         # save as html
-        py.offline.plot(fig, filename=os.path.join(path + name + '.html'))
+        py.offline.plot(fig, filename=os.path.join(path, name + '.html'))
         # remove white margins
         if remove_margins:
             fig.update_layout(margin=dict(l=2, r=2, t=20, b=12))
         # save as eps
-        fig.write_image(os.path.join(path + name + '.eps'), width=width, height=height)
+        fig.write_image(os.path.join(path, name + '.eps'), width=width, height=height)
         # save as png
-        fig.write_image(os.path.join(path + name + '.png'), width=width, height=height)
+        fig.write_image(os.path.join(path, name + '.png'), width=width, height=height)
 
     def save_fig(self, image, fig, output_subdir, suffix, pad_inches=0):
         """
