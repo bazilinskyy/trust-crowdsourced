@@ -79,7 +79,7 @@ class Heroku:
         # save data as csv file
         self.save_csv = save_csv
         # read in durarions of stimuli from a config file
-        self.hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))  # noqa: E501
+        self.hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))
         self.num_stimuli = tr.common.get_configs('num_stimuli')
 
     def set_data(self, heroku_data):
@@ -134,7 +134,7 @@ class Heroku:
                 elapsed_l_stim = 0
                 # record worker_code in the row. assuming that each row has at
                 # least one worker_code
-                worker_code = [d['worker_code'] for d in list_row['data'] if 'worker_code' in d][0]  # noqa: E501
+                worker_code = [d['worker_code'] for d in list_row['data'] if 'worker_code' in d][0]
                 if tr.common.get_configs('only_lab') == 1:
                     if re.search("lab_pp_", worker_code) is None:
                         continue
@@ -155,14 +155,14 @@ class Heroku:
                             # record timestamp at the black frame to compute
                             # the length of the stimulus
                             if 'time_elapsed' in data_cell.keys():
-                                elapsed_l_stim = float(data_cell['time_elapsed'])  # noqa: E501
+                                elapsed_l_stim = float(data_cell['time_elapsed'])
                         # extract name of stimulus after last slash
                         # list of stimuli. use 1st
                         if isinstance(data_cell['stimulus'], list):
-                            stim_no_path = data_cell['stimulus'][0].rsplit('/', 1)[-1]  # noqa: E501
+                            stim_no_path = data_cell['stimulus'][0].rsplit('/', 1)[-1]
                         # single stimulus
                         else:
-                            stim_no_path = data_cell['stimulus'].rsplit('/', 1)[-1]  # noqa: E501
+                            stim_no_path = data_cell['stimulus'].rsplit('/', 1)[-1]
                         # remove extension
                         stim_no_path = os.path.splitext(stim_no_path)[0]
                         # skip is videos from instructions
@@ -188,18 +188,17 @@ class Heroku:
                                     # non-positive time elapsed. use value from
                                     # the known cell for worker
                                     else:
-                                        time = prev_row_info.loc[worker_code, 'time_elapsed']  # noqa: E501
+                                        time = prev_row_info.loc[worker_code, 'time_elapsed']
                                     # calculate duration
-                                    dur = float(data_cell['time_elapsed']) - time  # noqa: E501
-                                    if stim_name + '-dur' not in dict_row.keys() and dur > 0:  # noqa: E501
+                                    dur = float(data_cell['time_elapsed']) - time
+                                    if stim_name + '-dur' not in dict_row.keys() and dur > 0:
                                         # first value
                                         dict_row[stim_name + '-dur'] = dur
                     # keypresses
                     if 'rts' in data_cell.keys() and stim_name != '':
                         # record given keypresses
                         responses = data_cell['rts']
-                        logger.debug('Found {} points in keypress data.',
-                                     len(responses))
+                        logger.debug('Found {} points in keypress data.', len(responses))
                         # extract pressed keys and rt values
                         key = [point['key'] for point in responses]
                         rt = [point['rt'] for point in responses]
@@ -219,10 +218,9 @@ class Heroku:
                             dict_row[stim_name + '-rt'].extend(rt)
                     # eye tracking data
                     if 'webgazer_data' in data_cell.keys() and stim_name != '':
-                        # record given keypresses
+                        # record eye tracking data
                         et_data = data_cell['webgazer_data']
-                        logger.debug('Found {} points in eye tracking data.',
-                                     len(et_data))
+                        logger.debug('Found {} points in eye tracking data.', len(et_data))
                         # extract x,y,t values
                         x = [point['x'] for point in et_data]
                         y = [point['y'] for point in et_data]
@@ -281,8 +279,7 @@ class Heroku:
                     # browser interaction events
                     if 'interactions' in data_cell.keys() and stim_name != '':
                         interactions = data_cell['interactions']
-                        logger.debug('Found {} browser interactions.',
-                                     len(interactions))
+                        logger.debug('Found {} browser interactions.', len(interactions))
                         # extract events and timestamps
                         event = []
                         time = []
@@ -326,7 +323,7 @@ class Heroku:
                     if 'time_elapsed' in data_cell.keys():
                         elapsed_l = float(data_cell['time_elapsed'])
                 # update last time_elapsed for worker
-                prev_row_info.loc[dict_row['worker_code'], 'time_elapsed'] = elapsed_l  # noqa: E501
+                prev_row_info.loc[dict_row['worker_code'], 'time_elapsed'] = elapsed_l
                 # worker_code was encountered before
                 if dict_row['worker_code'] in data_dict.keys():
                     # iterate over items in the data dictionary
@@ -336,16 +333,16 @@ class Heroku:
                             data_dict[dict_row['worker_code']][key] = value
                             continue
                         # new value
-                        if key + '-0' not in data_dict[dict_row['worker_code']].keys():  # noqa: E501
-                            data_dict[dict_row['worker_code']][key + '-0'] = value  # noqa: E501
+                        if key + '-0' not in data_dict[dict_row['worker_code']].keys():
+                            data_dict[dict_row['worker_code']][key + '-0'] = value
                         # update old value
                         else:
                             # traverse repetition ids until get new repetition
                             for rep in range(0, self.num_repeat):
                                 # build new key with id of repetition
                                 new_key = key + '-' + str(rep)
-                                if new_key not in data_dict[dict_row['worker_code']].keys():  # noqa: E501
-                                    data_dict[dict_row['worker_code']][new_key] = value  # noqa: E501
+                                if new_key not in data_dict[dict_row['worker_code']].keys():
+                                    data_dict[dict_row['worker_code']][new_key] = value
                                     break
                 # worker_code is encountered for the first time
                 else:
@@ -363,8 +360,7 @@ class Heroku:
             df = df.transpose()
             # report people that attempted study
             unique_worker_codes = df['worker_code'].drop_duplicates()
-            logger.info('People who attempted to participate: {}',
-                        unique_worker_codes.shape[0])
+            logger.info('People who attempted to participate: {}', unique_worker_codes.shape[0])
             # filter data
             if filter_data:
                 df = self.filter_data(df)
@@ -379,10 +375,8 @@ class Heroku:
             tr.common.save_to_p(self.file_p, df, 'heroku data')
         # save to csv
         if self.save_csv:
-            df.to_csv(os.path.join(tr.settings.output_dir, self.file_data_csv),
-                      index=False)
-            logger.info('Saved heroku data to csv file {}',
-                        self.file_data_csv + '.csv')
+            df.to_csv(os.path.join(tr.settings.output_dir, self.file_data_csv), index=False)
+            logger.info('Saved heroku data to csv file {}', self.file_data_csv + '.csv')
         # update attribute
         self.heroku_data = df
         # return df with data
@@ -475,28 +469,28 @@ class Heroku:
                                 point = Point(given_x[val]*norm_x,
                                               given_y[val]*norm_y)
 
-                                # check if point is within a polygon in the middle   # noqa: E501
+                                # check if point is within a polygon in the middle 
                                 if polygon.contains(point):
                                     # point in the middle detected
                                     detected += 1
                                 # Check if for the worker there were more than
                                 # allowed limit of points in the middle
-                                if detected / length_points > allowed_percentage:     # noqa: E501
+                                if detected / length_points > allowed_percentage:   
                                     break
-                            if detected / length_points < allowed_percentage:     # noqa: E501
-                                for value in range(length_points):                # noqa: E501
-                                    t_step = round(given_t[value]/hm_resolution)  # noqa: E501
+                            if detected / length_points < allowed_percentage:   
+                                for value in range(length_points):              
+                                    t_step = round(given_t[value]/hm_resolution)
                                     if duration == t_step:
-                                        if id_video not in points_duration[duration]:                      # noqa: E501
-                                            points_duration[duration][id_video] = [[given_x[value]*norm_x,  # noqa: E501
-                                                                                    given_y[value]*norm_y]]  # noqa: E501
+                                        if id_video not in points_duration[duration]:                    
+                                            points_duration[duration][id_video] = [[given_x[value]*norm_x,
+                                                                                    given_y[value]*norm_y]]
                                         else:
-                                            points_duration[duration][id_video].append([given_x[value]*norm_x,  # noqa: E501
-                                                                                        given_y[value]*norm_y])  # noqa: E501
+                                            points_duration[duration][id_video].append([given_x[value]*norm_x,
+                                                                                        given_y[value]*norm_y])
                                     if duration < t_step:
                                         break
-                                    # start adding points to the points_duration list    # noqa: E501
-                                # iterate over all values given by the participand   # noqa: E501
+                                    # start adding points to the points_duration list  
+                                # iterate over all values given by the participand 
                                 # for val in range(len(given_y)-1):
                                 #     # add coordinates
                                 #     if id_video not in points:
@@ -505,17 +499,17 @@ class Heroku:
                                 #     else:
                                 #         points[id_video].append([(coords[0]),
                                 #                                 (coords[1])])
-                                    # if stim_from_df.index[pp] not in points_worker:             # noqa: E501
-                                    #     points_worker[stim_from_df.index[pp]] = [[(coords[0]),  # noqa: E501
-                                    #                                              (coords[1])]]  # noqa: E501
+                                    # if stim_from_df.index[pp] not in points_worker:           
+                                    #     points_worker[stim_from_df.index[pp]] = [[(coords[0]),
+                                    #                                              (coords[1])]]
                                     # else:
-                                    #     points_worker[stim_from_df.index[pp]].append([(coords[0]),  # noqa: E501
-                                    #                                                   (coords[1])])  # noqa: E501
+                                    #     points_worker[stim_from_df.index[pp]].append([(coords[0]),
+                                    #                                                   (coords[1])])
         # save to csv
         if save_csv:
             # # all points for each image
             # # create a dataframe to save to csv
-            # df_csv = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in points.items()]))  # noqa: E501
+            # df_csv = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in points.items()]))
             # df_csv = df_csv.transpose()
             # # save to csv
             # df_csv.to_csv(tr.settings.output_dir + '/' +
@@ -524,19 +518,19 @@ class Heroku:
             #             self.file_points_csv)
             # all points for each worker
             # create a dataframe to save to csv
-            # df_csv = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in points_worker.items()]))  # noqa: E501
+            # df_csv = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in points_worker.items()]))
             # df_csv = df_csv.transpose()
             # # save to csv
             # df_csv.to_csv(tr.settings.output_dir + '/' +
             #               self.file_points_worker_csv + '.csv')
-            # logger.info('Saved dictionary of points for each worker to csv ' +  # noqa: E501
+            # logger.info('Saved dictionary of points for each worker to csv ' +
             #             'file {}.csv',
             #             self.file_points_worker_csv)
             # points for each image for each stimulus duration
             # create a dataframe to save to csv
             for duration in range(0, self.hm_resolution_range):
                 try:
-                    df_csv = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in points_duration[duration].items()]))  # noqa: E501
+                    df_csv = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in points_duration[duration].items()]))
                 except KeyError:
                     break
                 df_csv = df_csv.transpose()
@@ -590,17 +584,17 @@ class Heroku:
                             if (video_dur in self.heroku_data.keys()
                                     and filter_length):
                                 # extract recorded duration
-                                dur = self.heroku_data.iloc[row_index][video_dur]  # noqa: E501
+                                dur = self.heroku_data.iloc[row_index][video_dur]
                                 # check if duration is within limits
                                 if (dur < self.mapping['min_dur'][video_id]
-                                        or dur > self.mapping['max_dur'][video_id]):  # noqa: E501
+                                        or dur > self.mapping['max_dur'][video_id]):
                                     # increase counter of filtered videos
                                     logger.debug('Filtered keypress data from '
                                                  + 'video {} of detected '
                                                  + 'duration of {} for '
                                                  + 'worker {}.',
                                                  video_id, dur,
-                                                 self.heroku_data.index[row_index])  # noqa: E501
+                                                 self.heroku_data.index[row_index])
                                     # increase counter of filtered videos
                                     counter_filtered = counter_filtered + 1
                                     continue
@@ -706,7 +700,7 @@ class Heroku:
                         for pp, row in enumerate(col_data):
                             # filter out empty values
                             if type(row) is list:
-                                order = self.heroku_data.iloc[pp][video_order]  # noqa: E501
+                                order = self.heroku_data.iloc[pp][video_order]
                                 # check if injection question is present
                                 if 'injection' in order:
                                     # delete injection
@@ -806,8 +800,8 @@ class Heroku:
                     else:
                         # up data count when data is found
                         data_count = data_count + 1
-                        if (row[video_dur] < (self.mapping['min_dur'].iloc[i])  # noqa: E501
-                           or row[video_dur] > (self.mapping['max_dur'].iloc[i])):  # noqa: E501
+                        if (row[video_dur] < (self.mapping['min_dur'].iloc[i])
+                           or row[video_dur] > (self.mapping['max_dur'].iloc[i])):
                             # up counter if data with wrong length is found
                             counter_filtered = counter_filtered + 1
             # Only check for participants that watched all videos

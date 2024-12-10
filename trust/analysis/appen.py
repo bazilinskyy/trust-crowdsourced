@@ -203,7 +203,7 @@ class Appen:
                         self.file_cheaters_csv)
         # people with nan for worker_id
         df_7 = df[df['worker_id'].isnull()]
-        logger.info('Filter-a7. People who have not valid worker_id: {}',
+        logger.info('Filter-a7. People who had not valid worker_id: {}',
                     df_7.shape[0])
         # concatenate dfs with filtered data
         old_size = df.shape[0]
