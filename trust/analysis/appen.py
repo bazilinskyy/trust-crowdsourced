@@ -4,7 +4,7 @@ import numpy as np
 import os
 import datetime as dt
 from collections import Counter
-from pycountry_convert import country_alpha2_to_country_name, country_name_to_country_alpha3  # noqa: E501
+from pycountry_convert import country_alpha2_to_country_name, country_name_to_country_alpha3
 
 
 import trust as tr

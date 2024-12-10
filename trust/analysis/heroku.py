@@ -9,7 +9,6 @@ from statistics import mean
 import warnings
 from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point
-# import math
 import trust as tr
 
 # warning about partial assignment
@@ -554,8 +553,7 @@ class Heroku:
         Returns:
             mapping: updated mapping df.
         Args:
-            filter_length (bool, optional): filter out stimuli with unexpected
-                                            length.
+            filter_length (bool, optional): filter out stimuli with unexpected length.
         """
         logger.info('Processing keypress data with res={} ms.', self.res)
         # array to store all binned rt data in

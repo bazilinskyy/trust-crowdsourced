@@ -40,7 +40,6 @@ SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
-USE_ONEEURO_FILTER = True
 # todo: code for eye gaze analysis does not run on mac
 
 file_mapping = 'mapping.p'  # file to save updated mapping
@@ -117,18 +116,13 @@ if __name__ == '__main__':
         # process keypresses and update mapping
         mapping = heroku.process_kp(filter_length=False)
         # post-trial questions to process
-        questions = [{'question': 'slider-0',
-                      'type': 'num'},
-                     {'question': 'slider-1',
-                      'type': 'num'},
-                     {'question': 'slider-2',
-                      'type': 'num'}]
+        questions = [{'question': 'slider-0', 'type': 'num'},
+                     {'question': 'slider-1', 'type': 'num'},
+                     {'question': 'slider-2', 'type': 'num'}]
         # process post-trial questions and update mapping
         mapping = heroku.process_stimulus_questions(questions)
         # export to pickle
-        tr.common.save_to_p(file_mapping,
-                            mapping,
-                            'mapping of stimuli')
+        tr.common.save_to_p(file_mapping,  mapping, 'mapping of stimuli')
     else:
         mapping = tr.common.load_from_p(file_mapping, 'mapping of stimuli')
     # Output
@@ -138,11 +132,10 @@ if __name__ == '__main__':
         logger.info('Creating figures.')
         # Visualisation of keypress data
         if SHOW_OUTPUT_KP:
-            # # all keypresses with confidence interval
-            # analysis.plot_kp(mapping, conf_interval=0.95)
+            # all keypresses with confidence interval
+            analysis.plot_kp(mapping, conf_interval=0.95)
             # # keypresses of all individual stimuli
-            # logger.info(
-            #'Creating figures for keypress data of individual stimuli.')
+            # logger.info('Creating figures for keypress data of individual stimuli.')
             # for stim in tqdm(range(num_stimuli)):  # tqdm adds progress bar
             #     # extract timestamps of events
             #     vert_lines = list(map(int, re.findall(r'\d+', mapping.loc['video_' + str(stim), 'events'])))
@@ -186,7 +179,7 @@ if __name__ == '__main__':
                 vert_line_annotations_num = []
                 for x in range(1, len(vert_line_annotations) + 1):
                     vert_line_annotations_num.append(x)
-                # # plot keypresses for each video€
+                # # plot keypresses for each video
                 # analysis.plot_kp_videos(df,
                 #                         vert_lines=vert_lines,
                 #                         vert_lines_width=1,
@@ -214,17 +207,13 @@ if __name__ == '__main__':
                                                show_text_labels=True,
                                                stacked=True,
                                                yaxis_slider_show=False,
-                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
-                                               use_one_euro_filter=USE_ONEEURO_FILTER  # Pass the global flag
-                                            )
-            # # keypresses of an individual stimulus for an individual pp
-            # analysis.plot_kp_video_pp(mapping,
-            #                           heroku_data,
-            #                           pp='R51701197342646JF16777X',
-            #                           stimulus='video_2',
-            #                           conf_interval=0.95,
-            #                           use_one_euro_filter=USE_ONEEURO_FILTER  # Pass the global flag
-            #                       )
+                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]))
+            # keypresses of an individual stimulus for an individual pp
+            analysis.plot_kp_video_pp(mapping,
+                                      heroku_data,
+                                      pp='R51701197342646JF16777X',
+                                      stimulus='video_2',
+                                      conf_interval=0.95)
             # keypresses of all videos individually
             analysis.plot_kp_videos(mapping, show_menu=False, use_one_euro_filter=False)
             # keypress based on the type of ego car
@@ -350,19 +339,13 @@ if __name__ == '__main__':
             else:
                 num_anim = tr.common.get_configs('num_stimuli')
                 logger.info('Animation is set to single stimuli animations in one figure')
-
             # source video/stimulus for a given individual.
             for id_video in tqdm(range(0, num_anim)):
-                logger.info('Producing visualisations of eye gaze data for stimulus {}.',
-                            id_video)
+                logger.info('Producing visualisations of eye gaze data for stimulus {}.', id_video)
                 # Deconstruct the source video into its individual frames.
                 stim_path = os.path.join(tr.settings.output_dir, 'frames')
                 # To allow for overlaying the heatmap for each frame later on.
-                analysis.save_all_frames(heroku_data,
-                                         mapping,
-                                         id_video=id_video,
-                                         t='video_length'
-                                         )
+                analysis.save_all_frames(heroku_data, mapping, id_video=id_video, t='video_length')
                 # create animation for stimulus
                 points_process = {}
                 points_process1 = {}
@@ -370,14 +353,14 @@ if __name__ == '__main__':
                 points_process3 = {}
                 # determin amount of points in duration for video_id
                 dur = mapping.iloc[id_video]['video_length']
-                hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))
+                hm_resolution_range = int(50000 / tr.common.get_configs('hm_resolution'))
                 # To create animation for scenario 1,2,3 & 4 in the
                 # same animation extract for all senarios.
                 # for individual animations or scenario
                 dur = heroku_data['video_'+str(id_video)+'-dur-0'].tolist()
                 dur = [x for x in dur if str(x) != 'nan']
-                dur = int(round(mean(dur)/1000)*1000)
-                hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))
+                dur = int(round(mean(dur) / 1000) * 1000)
+                hm_resolution_range = int(50000 / tr.common.get_configs('hm_resolution'))
                 # for individual stim
                 for points_dur in range(0, hm_resolution_range, 1):
                     try:
@@ -389,19 +372,19 @@ if __name__ == '__main__':
                     # Scenario 2
                     for points_dur in range(0, hm_resolution_range, 1):
                         try:
-                            points_process1[points_dur] = points_duration[points_dur][id_video+21]
+                            points_process1[points_dur] = points_duration[points_dur][id_video + 21]
                         except KeyError:
                             break
                     # Scenario 3
                     for points_dur in range(0, hm_resolution_range, 1):
                         try:
-                            points_process2[points_dur] = points_duration[points_dur][id_video+42]
+                            points_process2[points_dur] = points_duration[points_dur][id_video + 42]
                         except KeyError:
                             break
                     # Scenario 4
                     for points_dur in range(0, hm_resolution_range, 1):
                         try:
-                            points_process3[points_dur] = points_duration[points_dur][id_video+63]
+                            points_process3[points_dur] = points_duration[points_dur][id_video + 63]
                         except KeyError:
                             break
                 analysis.create_animation(heroku_data,
@@ -417,7 +400,7 @@ if __name__ == '__main__':
                                           save_frames=True)
         # stitch animations into 1 long videos
         analysis.create_animation_all_stimuli(num_stimuli)
-
+        # collect figure objects
         figures = [manager.canvas.figure
                    for manager in
                    matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]

@@ -1,4 +1,5 @@
 """Contain function to display or store logging messages."""
+# by Pavlo Bazilinskyy <pavlo.bazilinskyy@gmail.com>
 import logging
 import sys
 import os

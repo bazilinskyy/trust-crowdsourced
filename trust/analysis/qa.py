@@ -58,7 +58,7 @@ class QA:
                             + 'validator was bypassed).'
             params = {'reason': reason_text,
                       'key': tr.common.get_secrets('appen_api_key')}
-            headers = {'Authorization': 'Token token=' + tr.common.get_secrets('appen_api_key')}  # noqa: E501
+            headers = {'Authorization': 'Token token=' + tr.common.get_secrets('appen_api_key')}
             # send PUT request
             try:
                 # TODO: This API call seems to be broken and it returns 401.
@@ -125,7 +125,7 @@ class QA:
             params = {'reason': reason_text,
                       'manual': 'true',
                       'key': tr.common.get_secrets('appen_api_key')}
-            headers = {'Authorization': 'Token token=' + tr.common.get_secrets('appen_api_key')}  # noqa: E501
+            headers = {'Authorization': 'Token token=' + tr.common.get_secrets('appen_api_key')}
 
             # send PUT request
             try:
