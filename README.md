@@ -37,136 +37,6 @@ Check that you are indeed in the parent folder for running command `pip install 
 
 ## Figures
 For the analysis plots of the AOI data were made for two groups. 
-## Area of Interest (AOI)
-### For all participants
-
-[![plot_all_0](figures/aoi_0.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_0.html)
-Plot of AOI analysis for video 0 for all participants.
-
-[![plot_all_1](figures/aoi_1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_1.html)
-Plot of AOI analysis for video 1 for all participants.
-
-[![plot_all_2](figures/aoi_2.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_2.html)
-Plot of AOI analysis for video 2 for all participants.
-
-[![plot_all_3](figures/aoi_3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_3.html)
-Plot of AOI analysis for video 3 for all participants.
-
-[![plot_all_4](figures/aoi_4.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_4.html)
-Plot of AOI analysis for video 4 for all participants.
-
-[![plot_all_5](figures/aoi_5.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_5.html)
-Plot of AOI analysis for video 5 for all participants.
-
-[![plot_all_6](figures/aoi_6.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_6.html)
-Plot of AOI analysis for video 6 for all participants.
-
-[![plot_all_7](figures/aoi_7.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_7.html)
-Plot of AOI analysis for video 7 for all participants.
-
-[![plot_all_8](figures/aoi_8.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_8.html)
-Plot of AOI analysis for video 8 for all participants.
-
-[![plot_all_9](figures/aoi_9.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_9.html)
-Plot of AOI analysis for video 9 for all participants.
-
-[![plot_all_10](figures/aoi_10.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_10.html)
-Plot of AOI analysis for video 10 for all participants.
-
-[![plot_all_11](figures/aoi_11.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_11.html)
-Plot of AOI analysis for video 11 for all participants.
-
-[![plot_all_12](figures/aoi_12.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_12.html)
-Plot of AOI analysis for video 12 for all participants.
-
-[![plot_all_13](figures/aoi_13.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_13.html)
-Plot of AOI analysis for video 13 for all participants.
-
-[![plot_all_14](figures/aoi_14.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_14.html)
-Plot of AOI analysis for video 14 for all participants.
-
-[![plot_all_15](figures/aoi_15.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_15.html)
-Plot of AOI analysis for video 15 for all participants.
-
-[![plot_all_16](figures/aoi_16.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_16.html)
-Plot of AOI analysis for video 16 for all participants.
-
-[![plot_all_17](figures/aoi_17.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_17.html)
-Plot of AOI analysis for video 17 for all participants.
-
-[![plot_all_18](figures/aoi_18.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_18.html)
-Plot of AOI analysis for video 18 for all participants.
-
-[![plot_all_19](figures/aoi_19.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_19.html)
-Plot of AOI analysis for video 19 for all participants.
-
-[![plot_all_20](figures/aoi_20.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_20.html)
-Plot of AOI analysis for video 20 for all participants.
-
-### For only lab participants
-
-[![plot_lab_only_0](figures/lab_only_aoi_0.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_0.html)
-Plot of AOI analysis for video 0 for lab participants.
-
-[![plot_lab_only_1](figures/lab_only_aoi_1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_1.html)
-Plot of AOI analysis for video 1 for lab participants.
-
-[![plot_lab_only_2](figures/lab_only_aoi_2.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_2.html)
-Plot of AOI analysis for video 2 for lab participants.
-
-[![plot_lab_only_3](figures/lab_only_aoi_3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_3.html)
-Plot of AOI analysis for video 3 for lab participants.
-
-[![plot_lab_only_4](figures/lab_only_aoi_4.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_4.html)
-Plot of AOI analysis for video 4 for lab participants.
-
-[![plot_lab_only_5](figures/lab_only_aoi_5.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_5.html)
-Plot of AOI analysis for video 5 for lab participants.
-
-[![plot_lab_only_6](figures/lab_only_aoi_6.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_6.html)
-Plot of AOI analysis for video 6 for lab participants.
-
-[![plot_lab_only_7](figures/lab_only_aoi_7.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_7.html)
-Plot of AOI analysis for video 7 for lab participants.
-
-[![plot_lab_only_8](figures/lab_only_aoi_8.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_8.html)
-Plot of AOI analysis for video 8 for lab participants.
-
-[![plot_lab_only_9](figures/lab_only_aoi_9.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_9.html)
-Plot of AOI analysis for video 9 for lab participants.
-
-[![plot_lab_only_10](figures/lab_only_aoi_10.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_10.html)
-Plot of AOI analysis for video 10 for lab participants.
-
-[![plot_lab_only_11](figures/lab_only_aoi_11.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_11.html)
-Plot of AOI analysis for video 11 for lab participants.
-
-[![plot_lab_only_12](figures/lab_only_aoi_12.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_12.html)
-Plot of AOI analysis for video 12 for lab participants.
-
-[![plot_lab_only_13](figures/lab_only_aoi_13.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_13.html)
-Plot of AOI analysis for video 13 for lab participants.
-
-[![plot_lab_only_14](figures/lab_only_aoi_14.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_14.html)
-Plot of AOI analysis for video 14 for lab participants.
-
-[![plot_lab_only_15](figures/lab_only_aoi_15.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_15.html)
-Plot of AOI analysis for video 15 for lab participants.
-
-[![plot_lab_only_16](figures/lab_only_aoi_16.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_16.html)
-Plot of AOI analysis for video 16 for lab participants.
-
-[![plot_lab_only_17](figures/lab_only_aoi_17.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_17.html)
-Plot of AOI analysis for video 17 for lab participants.
-
-[![plot_lab_only_18](figures/lab_only_aoi_18.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_18.html)
-Plot of AOI analysis for video 18 for lab participants.
-
-[![plot_lab_only_19](figures/lab_only_aoi_19.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_19.html)
-Plot of AOI analysis for video 19 for lab participants.
-
-[![plot_lab_only_20](figures/lab_only_aoi_20.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_aoi_20.html)
-Plot of AOI analysis for video 20 for lab participants.
 
 ## Keypress analysis
 ### All participants
@@ -235,6 +105,135 @@ Plot of keypress analysis and slider data of video 20 for all participants.
 
 ### For only lab participants
 todo
+
+## Area of Interest (AOI)
+### For all participants
+[![plot_all_0](figures/AOI_0.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_0.html)
+Plot of AOI analysis for video 0 for all participants.
+
+[![plot_all_1](figures/AOI_1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_1.html)
+Plot of AOI analysis for video 1 for all participants.
+
+[![plot_all_2](figures/AOI_2.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_2.html)
+Plot of AOI analysis for video 2 for all participants.
+
+[![plot_all_3](figures/AOI_3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_3.html)
+Plot of AOI analysis for video 3 for all participants.
+
+[![plot_all_4](figures/AOI_4.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_4.html)
+Plot of AOI analysis for video 4 for all participants.
+
+[![plot_all_5](figures/AOI_5.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_5.html)
+Plot of AOI analysis for video 5 for all participants.
+
+[![plot_all_6](figures/AOI_6.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_6.html)
+Plot of AOI analysis for video 6 for all participants.
+
+[![plot_all_7](figures/AOI_7.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_7.html)
+Plot of AOI analysis for video 7 for all participants.
+
+[![plot_all_8](figures/AOI_8.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_8.html)
+Plot of AOI analysis for video 8 for all participants.
+
+[![plot_all_9](figures/AOI_9.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_9.html)
+Plot of AOI analysis for video 9 for all participants.
+
+[![plot_all_10](figures/AOI_10.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_10.html)
+Plot of AOI analysis for video 10 for all participants.
+
+[![plot_all_11](figures/AOI_11.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_11.html)
+Plot of AOI analysis for video 11 for all participants.
+
+[![plot_all_12](figures/AOI_12.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_12.html)
+Plot of AOI analysis for video 12 for all participants.
+
+[![plot_all_13](figures/AOI_13.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_13.html)
+Plot of AOI analysis for video 13 for all participants.
+
+[![plot_all_14](figures/AOI_14.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_14.html)
+Plot of AOI analysis for video 14 for all participants.
+
+[![plot_all_15](figures/AOI_15.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_15.html)
+Plot of AOI analysis for video 15 for all participants.
+
+[![plot_all_16](figures/AOI_16.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_16.html)
+Plot of AOI analysis for video 16 for all participants.
+
+[![plot_all_17](figures/AOI_17.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_17.html)
+Plot of AOI analysis for video 17 for all participants.
+
+[![plot_all_18](figures/AOI_18.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_18.html)
+Plot of AOI analysis for video 18 for all participants.
+
+[![plot_all_19](figures/AOI_19.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_19.html)
+Plot of AOI analysis for video 19 for all participants.
+
+[![plot_all_20](figures/AOI_20.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/aoi_20.html)
+Plot of AOI analysis for video 20 for all participants.
+
+### For only lab participants
+[![plot_lab_only_0](figures/Lab_only_AOI_0.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_0.html)
+Plot of AOI analysis for video 0 for lab participants.
+
+[![plot_lab_only_1](figures/Lab_only_AOI_1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_1.html)
+Plot of AOI analysis for video 1 for lab participants.
+
+[![plot_lab_only_2](figures/Lab_only_AOI_2.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_2.html)
+Plot of AOI analysis for video 2 for lab participants.
+
+[![plot_lab_only_3](figures/Lab_only_AOI_3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_3.html)
+Plot of AOI analysis for video 3 for lab participants.
+
+[![plot_lab_only_4](figures/Lab_only_AOI_4.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_4.html)
+Plot of AOI analysis for video 4 for lab participants.
+
+[![plot_lab_only_5](figures/Lab_only_AOI_5.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_5.html)
+Plot of AOI analysis for video 5 for lab participants.
+
+[![plot_lab_only_6](figures/Lab_only_AOI_6.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_6.html)
+Plot of AOI analysis for video 6 for lab participants.
+
+[![plot_lab_only_7](figures/Lab_only_AOI_7.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_7.html)
+Plot of AOI analysis for video 7 for lab participants.
+
+[![plot_lab_only_8](figures/Lab_only_AOI_8.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_8.html)
+Plot of AOI analysis for video 8 for lab participants.
+
+[![plot_lab_only_9](figures/Lab_only_AOI_9.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_9.html)
+Plot of AOI analysis for video 9 for lab participants.
+
+[![plot_lab_only_10](figures/Lab_only_AOI_10.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_10.html)
+Plot of AOI analysis for video 10 for lab participants.
+
+[![plot_lab_only_11](figures/Lab_only_AOI_11.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_11.html)
+Plot of AOI analysis for video 11 for lab participants.
+
+[![plot_lab_only_12](figures/Lab_only_AOI_12.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_12.html)
+Plot of AOI analysis for video 12 for lab participants.
+
+[![plot_lab_only_13](figures/Lab_only_AOI_13.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_13.html)
+Plot of AOI analysis for video 13 for lab participants.
+
+[![plot_lab_only_14](figures/Lab_only_AOI_14.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_14.html)
+Plot of AOI analysis for video 14 for lab participants.
+
+[![plot_lab_only_15](figures/Lab_only_AOI_15.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_15.html)
+Plot of AOI analysis for video 15 for lab participants.
+
+[![plot_lab_only_16](figures/Lab_only_AOI_16.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_16.html)
+Plot of AOI analysis for video 16 for lab participants.
+
+[![plot_lab_only_17](figures/Lab_only_AOI_17.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_17.html)
+Plot of AOI analysis for video 17 for lab participants.
+
+[![plot_lab_only_18](figures/Lab_only_AOI_18.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_18.html)
+Plot of AOI analysis for video 18 for lab participants.
+
+[![plot_lab_only_19](figures/Lab_only_AOI_19.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_19.html)
+Plot of AOI analysis for video 19 for lab participants.
+
+[![plot_lab_only_20](figures/Lab_only_AOI_20.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/Lab_only_AOI_20.html)
+Plot of AOI analysis for video 20 for lab participants.
 
 #### Information on participants
 [![driving frequency](figures/hist_driving_freq.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/crossing-crowdsourcing/blob/main/figures/hist_driving_freq.html)  
