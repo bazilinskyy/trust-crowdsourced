@@ -272,6 +272,13 @@ if __name__ == '__main__':
                           nbins=100,
                           pretty_text=True,
                           save_file=True)
+            # browser window dimensions
+            analysis.scatter(heroku_data,
+                             x='window_width',
+                             y='window_height',
+                             color='browser_name',
+                             pretty_text=True,
+                             save_file=True)
             # mapping to convert likert values to numeric
             likert_mapping = {'Strongly disagree': 1,
                               'Disagree': 2,
