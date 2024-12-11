@@ -2320,3 +2320,6 @@ class Analysis:
         else:
             logger.error('Specified filter {} not implemented.', type_flter)
             return -1
+
+    def ttest(self, signal_1, signal_2):
+        return
