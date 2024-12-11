@@ -170,134 +170,71 @@ Plot of AOI analysis for video 20 for lab participants.
 
 ## Keypress analysis
 ### All participants
+[![plot_all_0](figures/kp_videos_sliders_0,21,42,63.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_0,21,42,63.html)
+Plot of keypress analysis and slider data for videos 0, 21, 42, 63 for all participants.
 
-[![plot_all_0](figures/kp_videos_sliders_0_21_42_63.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_0_21_42_63.html)
-Plot of keypress analysis and slider data of video 0 for all participants.
+[![plot_all_1](figures/kp_videos_sliders_1,22,43,64.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_1,22,43,64.html)
+Plot of keypress analysis and slider data for videos 1, 22, 43, 64 for all participants.
 
-[![plot_all_1](figures/kp_videos_sliders_1_22_43_64.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_1_22_43_64.html)
-Plot of keypress analysis and slider data of video 1 for all participants.
-
-[![plot_all_2](figures/kp_videos_sliders_2_23_44_65.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_2_23_44_65.html)
+[![plot_all_2](figures/kp_videos_sliders,2,23,44,65.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,2,23,44,65.html)
 Plot of keypress analysis and slider data of video 2 for all participants.
 
-[![plot_all_3](figures/kp_videos_sliders_3_24_45_66.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_3_24_45_66.html)
+[![plot_all_3](figures/kp,videos,sliders,3,24,45,66.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,3,24,45,66.html)
 Plot of keypress analysis and slider data of video 3 for all participants.
 
-[![plot_all_4](figures/kp_videos_sliders_4_25_46_67.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_4_25_46_67.html)
+[![plot_all_4](figures/kp,videos,sliders,4,25,46,67.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,4,25,46,67.html)
 Plot of keypress analysis and slider data of video 4 for all participants.
 
-[![plot_all_5](figures/kp_videos_sliders_5_26_47_68.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_5_26_47_68.html)
+[![plot_all_5](figures/kp,videos,sliders,5,26,47,68.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,5,26,47,68.html)
 Plot of keypress analysis and slider data of video 5 for all participants.
 
-[![plot_all_6](figures/kp_videos_sliders_6_27_48_69.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_6_27_48_69.html)
+[![plot_all_6](figures/kp,videos,sliders,6,27,48,69.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,6,27,48,69.html)
 Plot of keypress analysis and slider data of video 6 for all participants.
 
-[![plot_all_7](figures/kp_videos_sliders_7_28_49_70.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_7_28_49_70.html)
+[![plot_all_7](figures/kp,videos,sliders,7,28,49,70.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,7,28,49,70.html)
 Plot of keypress analysis and slider data of video 7 for all participants.
 
-[![plot_all_8](figures/kp_videos_sliders_8_29_50_71.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_8_29_50_71.html)
+[![plot_all_8](figures/kp,videos,sliders,8,29,50,71.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,8,29,50,71.html)
 Plot of keypress analysis and slider data of video 8 for all participants.
 
-[![plot_all_9](figures/kp_videos_sliders_9_30_51_72.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_9_30_51_72.html)
+[![plot_all_9](figures/kp,videos,sliders,9,30,51,72.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,9,30,51,72.html)
 Plot of keypress analysis and slider data of video 9 for all participants.
 
-[![plot_all_10](figures/kp_videos_sliders_10_31_52_73.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_10_31_52_73.html)
+[![plot_all_10](figures/kp,videos,sliders,10,31,52,73.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,10,31,52,73.html)
 Plot of keypress analysis and slider data of video 10 for all participants.
 
-[![plot_all_11](figures/kp_videos_sliders_11_32_53_74.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_11_32_53_74.html)
+[![plot_all_11](figures/kp,videos,sliders,11,32,53,74.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,11,32,53,74.html)
 Plot of keypress analysis and slider data of video 11 for all participants.
 
-[![plot_all_12](figures/kp_videos_sliders_12_33_54_75.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_12_33_54_75.html)
+[![plot_all_12](figures/kp,videos,sliders,12,33,54,75.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,12,33,54,75.html)
 Plot of keypress analysis and slider data of video 12 for all participants.
 
-[![plot_all_13](figures/kp_videos_sliders_13_34_55_76.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_13_34_55_76.html)
+[![plot_all_13](figures/kp,videos,sliders,13,34,55,76.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,13,34,55,76.html)
 Plot of keypress analysis and slider data of video 13 for all participants.
 
-[![plot_all_14](figures/kp_videos_sliders_14_35_56_77.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_14_35_56_77.html)
+[![plot_all_14](figures/kp,videos,sliders,14,35,56,77.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,14,35,56,77.html)
 Plot of keypress analysis and slider data of video 14 for all participants.
 
-[![plot_all_15](figures/kp_videos_sliders_15_36_57_78.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_15_36_57_78.html)
+[![plot_all_15](figures/kp,videos,sliders,15,36,57,78.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,15,36,57,78.html)
 Plot of keypress analysis and slider data of video 15 for all participants.
 
-[![plot_all_16](figures/kp_videos_sliders_16_37_58_79.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_16_37_58_79.html)
+[![plot_all_16](figures/kp,videos,sliders,16,37,58,79.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,16,37,58,79.html)
 Plot of keypress analysis and slider data of video 16 for all participants.
 
-[![plot_all_17](figures/kp_videos_sliders_17_38_59_80.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_17_38_59_80.html)
+[![plot_all_17](figures/kp,videos,sliders,17,38,59,80.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,17,38,59,80.html)
 Plot of keypress analysis and slider data of video 17 for all participants.
 
-[![plot_all_18](figures/kp_videos_sliders_18_39_60_81.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_18_39_60_81.html)
+[![plot_all_18](figures/kp,videos,sliders,18,39,60,81.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,18,39,60,81.html)
 Plot of keypress analysis and slider data of video 18 for all participants.
 
-[![plot_all_19](figures/kp_videos_sliders_19_40_61_82.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_19_40_61_82.html)
+[![plot_all_19](figures/kp,videos,sliders,19,40,61,82.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,19,40,61,82.html)
 Plot of keypress analysis and slider data of video 19 for all participants.
 
-[![plot_all_20](figures/kp_videos_sliders_20_41_62_83.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp_videos_sliders_20_41_62_83.html)
+[![plot_all_20](figures/kp,videos,sliders,20,41,62,83.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/smooth-kp-one-euro-filter/figures/kp,videos,sliders,20,41,62,83.html)
 Plot of keypress analysis and slider data of video 20 for all participants.
 
 ### For only lab participants
-
-[![plot_lab_only_0](figures/lab_only_kp_0.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_0.html)
-Plot of keypress analysis and slider data of video 0 for lab participants.
-
-[![plot_lab_only_1](figures/lab_only_kp_1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_1.html)
-Plot of keypress analysis and slider data of video 1 for lab participants.
-
-[![plot_lab_only_2](figures/lab_only_kp_2.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_2.html)
-Plot of keypress analysis and slider data of video 2 for lab participants.
-
-[![plot_lab_only_3](figures/lab_only_kp_3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_3.html)
-Plot of keypress analysis and slider data of video 3 for lab participants.
-
-[![plot_lab_only_4](figures/lab_only_kp_4.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_4.html)
-Plot of keypress analysis and slider data of video 4 for lab participants.
-
-[![plot_lab_only_5](figures/lab_only_kp_5.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_5.html)
-Plot of keypress analysis and slider data of video 5 for lab participants.
-
-[![plot_lab_only_6](figures/lab_only_kp_6.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_6.html)
-Plot of keypress analysis and slider data of video 6 for lab participants.
-
-[![plot_lab_only_7](figures/lab_only_kp_7.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_7.html)
-Plot of keypress analysis and slider data of video 7 for lab participants.
-
-[![plot_lab_only_8](figures/lab_only_kp_8.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_8.html)
-Plot of keypress analysis and slider data of video 8 for lab participants.
-
-[![plot_lab_only_9](figures/lab_only_kp_9.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_9.html)
-Plot of keypress analysis and slider data of video 9 for lab participants.
-
-[![plot_lab_only_10](figures/lab_only_kp_10.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_10.html)
-Plot of keypress analysis and slider data of video 10 for lab participants.
-
-[![plot_lab_only_11](figures/lab_only_kp_11.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_11.html)
-Plot of keypress analysis and slider data of video 11 for lab participants.
-
-[![plot_lab_only_12](figures/lab_only_kp_12.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_12.html)
-Plot of keypress analysis and slider data of video 12 for lab participants.
-
-[![plot_lab_only_13](figures/lab_only_kp_13.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_13.html)
-Plot of keypress analysis and slider data of video 13 for lab participants.
-
-[![plot_lab_only_14](figures/lab_only_kp_14.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_14.html)
-Plot of keypress analysis and slider data of video 14 for lab participants.
-
-[![plot_lab_only_15](figures/lab_only_kp_15.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_15.html)
-Plot of keypress analysis and slider data of video 15 for lab participants.
-
-[![plot_lab_only_16](figures/lab_only_kp_16.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_16.html)
-Plot of keypress analysis and slider data of video 16 for lab participants.
-
-[![plot_lab_only_17](figures/lab_only_kp_17.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_17.html)
-Plot of keypress analysis and slider data of video 17 for lab participants.
-
-[![plot_lab_only_18](figures/lab_only_kp_18.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_18.html)
-Plot of keypress analysis and slider data of video 18 for lab participants.
-
-[![plot_lab_only_19](figures/lab_only_kp_19.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_19.html)
-Plot of keypress analysis and slider data of video 19 for lab participants.
-
-[![plot_lab_only_20](figures/lab_only_kp_20.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/lab_only_kp_20.html)
-Plot of keypress analysis and slider data of video 20 for lab participants.
+todo
 
 #### Information on participants
 [![driving frequency](figures/hist_driving_freq.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/crossing-crowdsourcing/blob/main/figures/hist_driving_freq.html)  
