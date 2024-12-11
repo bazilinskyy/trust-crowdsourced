@@ -57,14 +57,14 @@ class Analysis:
     def save_all_frames(self, df, mapping, id_video, t):
         """
         Outputs individual frames as png from inputted video mp4.
-        
-        Args:
+    
+    Args:
             df (dataframe): dataframe of heroku.
             mapping (TYPE): mapping to extract timestamp.
             id_video (int): stimulus video ID.
             t (list): column in dataframe containing time data.
-        
-        Returns:
+    
+    Returns:
             None
         """
         logger.info('Creating frames.')
@@ -100,16 +100,16 @@ class Analysis:
         """
         Create histogram for image based on the list of lists of points.
         density_coef: coefficient for division of dimensions for density of points.
-        
-        Args:
+    
+    Args:
             image (image): image as the base.
             points (list): data.
             id_video (int): ID of video
             density_coef (int, optional): coefficient for density plot.
             suffix (str, optional): suffix for saved file.
             save_file (bool, optional): whether to save file or not.
-        
-        Returns:
+    
+    Returns:
             TYPE: Description
         """
         # check if data is present
@@ -142,15 +142,15 @@ class Analysis:
     def create_heatmap(self, image, points, type_heatmap='contourf', add_corners=True, save_file=False):
         """
         Create heatmap for image based on the list of lists of points.
-        
-        Args:
+    
+    Args:
             image (image): image as the base.
             points (list): data.
             type_heatmap (str, optional): Type=contourf, pcolormesh, kdeplot.
             add_corners (bool, optional): add points to the corners to have the heatmap overlay the whole image.
             save_file (bool, optional): Description
-        
-        Returns:
+    
+    Returns:
             fig, g: figure.
         """
         # todo: remove datapoints in corners in heatmaps
@@ -238,8 +238,8 @@ class Analysis:
         """
         Create animation for image based on the list of lists of points of
         varying duration.
-        
-        Args:
+    
+    Args:
             df (dataframe): dataframe with data.
             mapping (dataframe): mapping dataframe.
             image (image): the frames from the stimulus video
@@ -314,8 +314,8 @@ class Analysis:
     def create_animation_all_stimuli(self, num_stimuli):
         """
         Create long video with all animations.
-        
-        Args:
+    
+    Args:
             num_stimuli (int): number of stimuli.
         """
         logger.info('Creating long video with all animations for {} stimuli.', num_stimuli)
@@ -353,11 +353,11 @@ class Analysis:
     def animate(self, i):
         """
         Helper function to create animation.
-        
-        Args:
+    
+    Args:
             i (int): ID.
-        
-        Returns:
+    
+    Returns:
             figure: figure object.
         """
         self.g[0].clear()
@@ -612,8 +612,8 @@ class Analysis:
     def save_anim(self, image, anim, output_subdir, suffix):
         """
         Helper function to save figure as file.
-        
-        Args:
+    
+    Args:
             image (image): image to save.
             anim (animatino): animation object.
             output_subdir (str): directory to save to.
@@ -2304,12 +2304,12 @@ class Analysis:
 
     def smoothen_filter(self, signal, type_flter='OneEuroFilter'):
         """Smoothen list with a filter.
-        
-        Args:
+    
+    Args:
             signal (list): input signal to smoothen
             type_flter (str, optional): type_flter of filter to use.
-        
-        Returns:
+    
+    Returns:
             list: list with smoothened data.
         """
         if type_flter == 'OneEuroFilter':
