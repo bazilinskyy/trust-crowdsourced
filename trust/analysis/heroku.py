@@ -771,8 +771,7 @@ class Heroku:
         logger.info('Filtering heroku data.')
         # 1. People who made mistakes in injected questions
         # TODO: check for large lengths of videos.
-        logger.info('Filter-h1. People who had too many stimuli of unexpected'
-                    + ' length.')
+        logger.info('Filter-h1. People who had too many stimuli of unexpected length.')
         # df to store data to filter out
         df_1 = pd.DataFrame()
         # array to store in video names
@@ -810,8 +809,7 @@ class Heroku:
                     # df_1
                     df_1 = pd.concat([df_1, pd.DataFrame([row])],
                                      ignore_index=True)
-        logger.info('Filter-h1. People who had more than {} share of stimuli'
-                    + ' of unexpected length: {}.',
+        logger.info('Filter-h1. People who had more than {} share of stimuli of unexpected length: {}.',
                     self.allowed_length,
                     df_1.shape[0])
         old_size = df.shape[0]

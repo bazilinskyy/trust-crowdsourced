@@ -1808,6 +1808,12 @@ class Analysis:
                                  textposition='auto'),
                           row=1,
                           col=2)
+        # output ttest
+        for variable in y:
+            self.ttest(variable, variable-1)
+        # output anova
+        self.anova(y)
+        # output anova
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
         fig.update_yaxes(title_text=yaxis_slider_title, row=1, col=2)
@@ -2321,5 +2327,19 @@ class Analysis:
             logger.error('Specified filter {} not implemented.', type_flter)
             return -1
 
-    def ttest(self, signal_1, signal_2):
+    def ttest(self, signal_1, signal_2, type):
+        # return [0,0,0,0,1,0,0]
+        # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html
+        # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
+        # 0 and 3 = between
+        # 1 and 2 = between
+        # 2 and 3 = within
+        # 1 and 3 = between
+        return
+
+    def anova(self, signal_type, signal_ego, signal_kp):
+        # signal_type = list of int, eg: [1,1,0,0]
+        # signal_ego = list of int, eg: [1,1,0,0]
+        # signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
+        # return [0,0,0,0,1,0,0]
         return
