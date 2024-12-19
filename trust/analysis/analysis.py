@@ -23,6 +23,7 @@ from tqdm import tqdm
 import ast
 from scipy.signal import savgol_filter
 from scipy.stats.kde import gaussian_kde
+from scipy.stats import ttest_ind
 import cv2
 import trust as tr
 
@@ -366,6 +367,7 @@ class Analysis:
         durations = range(0, self.hm_resolution_range)
         # Subplot 1 KP data
         it = int(round(len(self.kp_data)*i/(self.frames)))
+        cat1 = np.array(self.kp_data[:it])
         self.g[0].plot(np.array(self.times[:it]),
                        np.array(self.kp_data[:it]),
                        lw=1,
@@ -487,6 +489,7 @@ class Analysis:
                 number_in_plot2 = savgol_filter(self.number_in2, 10, 2)
                 self.number_in3 = np.append(self.number_in3, int(num3))
                 number_in_plot3 = savgol_filter(self.number_in3, 10, 2)
+            
             # plot AOI gazes
             self.g[1].plot(self.aoit,
                            number_in_plot1,
@@ -553,6 +556,15 @@ class Analysis:
                               yaxis_title="Number of KP")
             file_name = 'lab_only_kp_' + str(self.id_video)
             self.save_plotly(fig, file_name, self.folder)
+        #Ttest 
+        
+        cat2 = self.number_in
+
+        print(cat1, cat2)
+
+        ttestt = ttest_ind(cat1, cat2)
+        print(ttestt)
+
         # Scatter plot data
         # all pp
         # self.g = sns.scatterplot(x=[item[0] for item in self.points[i]],
