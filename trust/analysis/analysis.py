@@ -1704,7 +1704,9 @@ class Analysis:
     def plot_kp_slider_videos(self, df, y: list, x=None, vert_lines=None, vert_lines_width=3, vert_lines_dash='solid',
                               vert_lines_colour='green', vert_lines_annotations=None,
                               vert_lines_annotations_position='top right', vert_lines_annotations_font_size=20,
-                              vert_lines_annotations_colour='blue', xaxis_kp_title='Time (s)',
+                              vert_lines_annotations_colour='blue',
+                              events=None,
+                              xaxis_kp_title='Time (s)',
                               yaxis_kp_title='Percentage of trials with response key pressed',
                               xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
@@ -1764,18 +1766,61 @@ class Analysis:
                                      name=os.path.splitext(index)[0]),
                           row=1,
                           col=1)
-        # draw vertical lines with annotations
-        if vert_lines:
-            for line, annotation in zip(vert_lines, vert_lines_annotations):
-                fig.add_vline(
-                    x=line,
-                    line_width=vert_lines_width,
-                    line_dash=vert_lines_dash,
-                    line_color=vert_lines_colour,
-                    annotation_text=annotation,
-                    annotation_position=vert_lines_annotations_position,
-                    annotation_font_size=vert_lines_annotations_font_size,
-                    annotation_font_color=vert_lines_annotations_colour)
+        # count lines to calculate increase in coordinates of drawing
+        counter_lines = 0
+        # draw lines with annotations for events
+        if events:
+            for event in events:
+                # draw start
+                fig.add_shape(type='line',
+                              x0=event['start'],
+                              y0=0,
+                              x1=event['start'],
+                              y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                              line=dict(color=vert_lines_colour,
+                                        dash='dot',
+                                        width=1),
+                              )
+                # draw finish
+                fig.add_shape(type='line',
+                              x0=event['end'],
+                              y0=0,
+                              x1=event['end'],
+                              y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                              line=dict(color=vert_lines_colour,
+                                        dash='dot',
+                                        width=1),
+                              )
+                # draw horizontal line
+                # fig.add_shape(type='line',
+                #               x0=event['start'],
+                #               y0=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                #               x1=event['end'],
+                #               y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                #               line=dict(color=vert_lines_colour,),
+                #               )
+                fig.add_annotation(ax=event['start'],
+                                   axref='x',
+                                   ay=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                   ayref='y',
+                                   x=event['end'],
+                                   arrowcolor='black',
+                                   xref='x',
+                                   y=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                   yref='y',
+                                   arrowwidth=1,
+                                   arrowside='end+start',
+                                   arrowsize=1,
+                                   arrowhead=2)
+
+                # draw text label
+                fig.add_annotation(text=event['annotation'],
+                                   # xref='paper', yref='paper',
+                                   x=(event['end'] + event['start']) / 2,
+                                   y=yaxis_kp_range[1] - counter_lines * 1.8,  # use ylim value and draw lower
+                                   showarrow=False)
+                # increase counter of lines drawn
+                counter_lines = counter_lines + 1
         # update axis
         fig.update_xaxes(title_text=xaxis_kp_title, range=xaxis_kp_range, row=1, col=1)
         fig.update_yaxes(title_text=yaxis_kp_title, range=yaxis_kp_range, row=1, col=1)
@@ -1808,11 +1853,11 @@ class Analysis:
                                  textposition='auto'),
                           row=1,
                           col=2)
-        # output ttest
-        for variable in y:
-            self.ttest(variable, variable-1)
+        # # output ttest
+        # for variable in y:
+        #     self.ttest(variable, variable-1)
         # output anova
-        self.anova(y)
+        # self.anova(y)
         # output anova
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)

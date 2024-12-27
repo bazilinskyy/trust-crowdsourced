@@ -12,23 +12,8 @@ tr.logs(show_level='info', show_color=True)
 logger = tr.CustomLogger(__name__)  # use custom logger
 
 # const
-SAVE_P = True  # save pickle files with data
-LOAD_P = False  # load pickle files with data
-SAVE_CSV = True  # load csv files with data
-FILTER_DATA = True  # filter Appen and heroku data
-CLEAN_DATA = True  # clean Appen data
-REJECT_CHEATERS = False  # reject cheaters on Appen
-CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = True  # update mapping with keypress data
-SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted-
-SHOW_OUTPUT_ST = True  # should figures with stimulus data to be plotted
-SHOW_OUTPUT_PP = True  # should figures with info about participants
-SHOW_OUTPUT_ET = False  # should figures for eye tracking
-
-# for debugging, skip processing
-# SAVE_P = False  # save pickle files with data
-# LOAD_P = True  # load pickle files with data
+# SAVE_P = True  # save pickle files with data
+# LOAD_P = False  # load pickle files with data
 # SAVE_CSV = True  # load csv files with data
 # FILTER_DATA = True  # filter Appen and heroku data
 # CLEAN_DATA = True  # clean Appen data
@@ -36,10 +21,26 @@ SHOW_OUTPUT_ET = False  # should figures for eye tracking
 # CALC_COORDS = False  # extract points from heroku data
 # UPDATE_MAPPING = True  # update mapping with keypress data
 # SHOW_OUTPUT = True  # should figures be plotted
-# SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-# SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
-# SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
-# SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+# SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted-
+# SHOW_OUTPUT_ST = True  # should figures with stimulus data to be plotted
+# SHOW_OUTPUT_PP = True  # should figures with info about participants
+# SHOW_OUTPUT_ET = False  # should figures for eye tracking
+
+# for debugging, skip processing
+SAVE_P = False  # save pickle files with data
+LOAD_P = True  # load pickle files with data
+SAVE_CSV = True  # load csv files with data
+FILTER_DATA = False  # filter Appen and heroku data
+CLEAN_DATA = False  # clean Appen data
+REJECT_CHEATERS = False  # reject cheaters on Appen
+CALC_COORDS = False  # extract points from heroku data
+UPDATE_MAPPING = True  # update mapping with keypress data
+SHOW_OUTPUT = True  # should figures be plotted
+SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+
 # todo: code for eye gaze analysis does not run on mac
 
 file_mapping = 'mapping.p'  # file to save updated mapping
@@ -159,25 +160,47 @@ if __name__ == '__main__':
             #                            vert_lines_annotations_colour='red',
             #                            conf_interval=0.95)
             # keypresses of groups of stimuli
-            logger.info('Creating bar plots of keypress data for groups of stimuli.')
+            logger.info('Creating plots of keypress data for groups of stimuli.')
             for stim in tqdm(range(int(num_stimuli/4))):  # tqdm adds progress bar
                 # ids of stimuli that belong to the same group
                 ids = [stim, stim + int(num_stimuli/4), stim + int(num_stimuli/4*2), stim + int(num_stimuli/4*3)]
                 df = mapping[mapping['id'].isin(ids)]
                 # extract timestamps of events
+                events = []
                 vert_lines = list(map(int, re.findall(r'\d+', df.loc['video_' + str(stim), 'events'])))
+                vert_lines_ids = list(map(int, re.findall(r'\d+', df.loc['video_' + str(stim), 'events_id'])))
                 # convert to s
                 vert_lines = [x / 1000 for x in vert_lines]  # type: ignore
                 # extract annotations
-                vert_line_annotations = df.loc['video_' + str(stim), 'events_description'].split(',')
+                vert_line_annotations = df.loc['video_' + str(stim), 'events_name'].split(',')
                 # remove [
                 vert_line_annotations[0] = vert_line_annotations[0][1:]
                 # remove ]
                 vert_line_annotations[-1] = vert_line_annotations[-1][:-1]
                 # create list with ids of labels for outputting just numbers
-                vert_line_annotations_num = []
-                for x in range(1, len(vert_line_annotations) + 1):
-                    vert_line_annotations_num.append(x)
+                # vert_line_annotations_num = []
+                # for x in range(1, len(vert_line_annotations) + 1):
+                #     vert_line_annotations_num.append(x)
+                # add info to dictionary of events to be passed for plotting
+                for x in range(0, len(vert_line_annotations)):
+                    # search for start and end values
+                    start_found = False  # toggle for finding the start x coordinate
+                    start = 0  # x coordinate of starting location of event
+                    end = 0  # x coordinate of ending location of event
+                    # search for start and end x coordinates of event
+                    for y in range(0, len(vert_lines_ids)):
+                        # check if start is at the same location
+                        if vert_lines_ids[y] == x + 1 and not start_found:
+                            start = vert_lines[y]
+                            start_found = True
+                        # check if end is at the same location
+                        elif vert_lines_ids[y] == x + 1 and start_found:
+                            end = vert_lines[y]
+                    # add to dictionary of events
+                    events.append({'id': x + 1,
+                                   'start': start,
+                                   'end': end,
+                                   'annotation': vert_line_annotations[x]})
                 # # plot keypresses for each video
                 # analysis.plot_kp_videos(df,
                 #                         vert_lines=vert_lines,
@@ -194,11 +217,12 @@ if __name__ == '__main__':
                                                y=['slider-0', 'slider-1', 'slider-2'],
                                                xaxis_kp_range=[0, 43],  # hardcode based on the longest stimulus
                                                yaxis_kp_range=[0, 60],  # hardcode based on the highest recorded value
+                                               events=events,
                                                vert_lines=vert_lines,
                                                vert_lines_width=1,
-                                               vert_lines_dash='solid',
+                                               vert_lines_dash='dash',
                                                vert_lines_colour='black',
-                                               vert_lines_annotations=vert_line_annotations_num,
+                                               vert_lines_annotations=vert_line_annotations,
                                                vert_lines_annotations_position='top right',
                                                vert_lines_annotations_font_size=12,
                                                vert_lines_annotations_colour='black',
