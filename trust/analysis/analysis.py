@@ -14,15 +14,17 @@ import io
 import pickle
 import plotly.express as px
 from plotly import subplots
+# For OneEuroFilter, see https://github.com/casiez/OneEuroFilter
+from OneEuroFilter import OneEuroFilter
 import warnings
 import unicodedata
 import re
 from tqdm import tqdm
 import ast
+from scipy.signal import savgol_filter
 from scipy.stats.kde import gaussian_kde
 import cv2
 import trust as tr
-from statistics import mean
 
 
 matplotlib.use('TkAgg')
@@ -36,14 +38,16 @@ class Analysis:
     res = tr.common.get_configs('kp_resolution')
     # number of stimuli
     num_stimuli = tr.common.get_configs('num_stimuli')
-    # folder for output
+    # smoothen signal or not
+    smoothen_signal = tr.common.get_configs('smoothen_signal')
+    # todo: cleanup code for eye gaze analysis
     fig = None
     g = None
     image = None
     stim_id = None
     points = None
     save_frames = False
-    folder = '/figures/'
+    folder = 'figures'  # folder to save figures
     polygons = None
 
     def __init__(self):
@@ -54,19 +58,24 @@ class Analysis:
         """
         Outputs individual frames as png from inputted video mp4.
 
-        Args:
+    Args:
             df (dataframe): dataframe of heroku.
+            mapping (TYPE): mapping to extract timestamp.
             id_video (int): stimulus video ID.
             t (list): column in dataframe containing time data.
+
+    Returns:
+            None
         """
-        logger.info('Creating frames')
+        logger.info('Creating frames.')
         # path for temp folder to store images with frames
         path = os.path.join(tr.settings.output_dir, 'frames')
         # create temp folder
         if not os.path.exists(path):
             os.makedirs(path)
         # video file in the folder with stimuli
-        cap = cv2.VideoCapture(os.path.join(tr.common.get_configs('path_stimuli'), 'video_' + str(id_video) + '.mp4'))
+        cap = cv2.VideoCapture(
+            os.path.join(tr.common.get_configs('path_stimuli'), 'video_' + str(id_video) + '.mp4'))
         # timestamp
         t = mapping.loc['video_' + str(id_video)][t]
         self.time = int(t)
@@ -80,17 +89,28 @@ class Analysis:
         for k in tqdm(range(0, self.time, hm_resolution_int)):
             os.makedirs(os.path.dirname(path), exist_ok=True)
             fps = cap.get(cv2.CAP_PROP_FPS)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, round(fps * k/1000))
+            cap.set(cv2.CAP_PROP_POS_FRAMES,
+                    round(fps * k / 1000))
             ret, frame = cap.read()
             if ret:
-                filename = os.path.join(path, 'frame_' + str([round(k/hm_resolution_int)]) + '.jpg')
+                filename = os.path.join(path, 'frame_' + str([round(k / hm_resolution_int)]) + '.jpg')
                 cv2.imwrite(filename, frame, [cv2.IMWRITE_JPEG_QUALITY, 20])
 
     def create_histogram(self, image, points, id_video, density_coef=10, suffix='_histogram.jpg', save_file=False):
         """
         Create histogram for image based on the list of lists of points.
-        density_coef: coeficient for division of dimensions for density of
-                        points.
+        density_coef: coefficient for division of dimensions for density of points.
+
+    Args:
+            image (image): image as the base.
+            points (list): data.
+            id_video (int): ID of video
+            density_coef (int, optional): coefficient for density plot.
+            suffix (str, optional): suffix for saved file.
+            save_file (bool, optional): whether to save file or not.
+
+    Returns:
+            TYPE: Description
         """
         # check if data is present
         if not points:
@@ -106,31 +126,38 @@ class Analysis:
         y = xy[:, 1]
         # create figure object with given dpi and dimensions
         dpi = 150
-        fig = plt.figure(figsize=(width/dpi, height/dpi), dpi=dpi)
+        fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
         # build histogram
         plt.hist2d(x=x,
                    y=-y,  # convert to the reference system in image
-                   bins=[round(width/density_coef), round(height/density_coef)],
+                   bins=[round(width / density_coef), round(height / density_coef)],
                    cmap=plt.cm.jet)
         plt.colorbar()
         # remove white spaces around figure
         plt.gca().set_axis_off()
         # save image
         if save_file:
-            self.save_fig(image, fig,
-                          self.folder, '_video_' + str(id_video)+suffix)
+            self.save_fig(image, fig, self.folder, '_video_' + str(id_video) + suffix)
 
     def create_heatmap(self, image, points, type_heatmap='contourf', add_corners=True, save_file=False):
         """
         Create heatmap for image based on the list of lists of points.
-        add_corners: add points to the corners to have the heatmap ovelay the
-                     whole image
-        type_heatmap: contourf, pcolormesh, kdeplot
+
+    Args:
+            image (image): image as the base.
+            points (list): data.
+            type_heatmap (str, optional): Type=contourf, pcolormesh, kdeplot.
+            add_corners (bool, optional): add points to the corners to have the heatmap overlay the whole image.
+            save_file (bool, optional): Description
+
+    Returns:
+            fig, g: figure.
         """
         # todo: remove datapoints in corners in heatmaps
         # check if data is present
         if not points:
-            logger.error('Not enough data. Heatmap was not created for {}.', image)
+            logger.error('Not enough data. Heatmap was not created for {}.',
+                         image)
             return
         # get dimensions of base image
         width = tr.common.get_configs('stimulus_width')
@@ -156,7 +183,7 @@ class Analysis:
             return
         # create figure object with given dpi and dimensions
         dpi = 150
-        fig = plt.figure(figsize=(width/dpi, height/dpi), dpi=dpi)
+        fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
         # alpha=0.5 makes the plot semitransparent
         suffix_file = ''  # suffix to add to saved image
         if type_heatmap == 'contourf':
@@ -202,7 +229,7 @@ class Analysis:
         plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         # save image
         if save_file:
-            self.save_fig(image, fig, '/figures/', suffix_file)
+            self.save_fig(image, fig, self.folder, suffix_file)
         # return graph objects
         return fig, g
 
@@ -211,27 +238,28 @@ class Analysis:
         """
         Create animation for image based on the list of lists of points of
         varying duration.
-        image =  the frames from the stimulus video
-        id_video = which stimulus video is being used
-        dur = duration of given video stimulus
-        self.framess = the ammount of frames that fit into
-            given stimmulus video based on resolution
-        self.points = list containting eye-tracking points
-        self.t = time
-        self.times = time
-        self.fig = figure
-        self.kp_data = keypress data for given stimulus video
+
+    Args:
+            df (dataframe): dataframe with data.
+            mapping (dataframe): mapping dataframe.
+            image (image): the frames from the stimulus video
+            id_video (int): which stimulus video is being used
+            points (list): list containing eye-tracking points
+            points1 (list): points for stimuli 21 - 41.
+            points2 (list): points for stimuli 42 - 62.
+            points3 (list): points for stimuli 63 - 83.
+            t (int): timestamp.
+            save_anim (bool, optional): whether to save animation of not.
+            save_frames (bool, optional): whether to save individual frames of not.
         """
         self.image = image
         self.hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))
         self.id_video = id_video
         # calc amounts of steps from duration
-        dur = df['video_'+str(id_video)+'-dur-0'].tolist()
-        dur = [x for x in dur if str(x) != 'nan']
-        dur = int(round(mean(dur)/1000)*1000)
-        # Determing the amount of frames for given video
-        self.framess = int(round(self.time/self.hm_resolution))
-        # Determin time
+        # dur = mapping.iloc[id_video]['video_length']
+        # Determine the amount of frames for given video
+        self.frames = int(round(self.time/self.hm_resolution))
+        # Determine time
         self.t = mapping.loc['video_'+str(id_video)][t]
         # Call eye-tracking points
         self.points = points
@@ -240,33 +268,21 @@ class Analysis:
         self.fig, self.g = plt.subplots(nrows=3,
                                         ncols=1,
                                         figsize=(20, 20),
-                                        gridspec_kw=dict(height_ratios=[1, 1, 3],
-                                                         hspace=0.2))
-        self.fig.suptitle(' Keypresses and eye-tracking heatmap video_' + str(self.id_video), fontsize=30)
+                                        gridspec_kw=dict(height_ratios=[1, 1, 3], hspace=0.2))
+        self.fig.suptitle('Keypresses and eye-tracking heatmap video_' + str(self.id_video), fontsize=30)
         # Deterin time and data for kp plot
-        self.times = np.array(range(self.res,
-                              mapping['video_length'].max() + self.res,
-                              self.res)) / 1000
+        self.times = np.array(range(self.res, mapping['video_length'].max() + self.res, self.res)) / 1000
         self.kp_data = mapping.loc['video_' + str(id_video)]['kp']
         self.event = mapping.loc['video_' + str(id_video)]['events']
-
         self.event = re.findall(r'\w+', self.event)
-
         aoi = pd.read_csv(tr.common.get_configs('aoi'))
         aoi.set_index('video_id', inplace=True)
         self.number_in = []
+        # for combined animation
         self.number_in1 = []
         self.number_in2 = []
         self.number_in3 = []
-        self.aoit = []
-        self.aoi_x = aoi.loc['video_' + str(id_video)]['x']
-        self.aoi_x = self.aoi_x.split(", ")
-        self.aoi_y = aoi.loc['video_' + str(id_video)]['y']
-        self.aoi_y = self.aoi_y.split(", ")
-        self.aoi_t = aoi.loc['video_' + str(id_video)]['t']
-        self.aoi_t = self.aoi_t.split(", ")
-        # for comparison between stimulus
-        # stim 21 - 41
+        # for comparison between stimuli stim 21 - 41
         self.kp_data1 = mapping.loc['video_' + str(id_video+21)]['kp']
         self.points1 = points1
         # stim 42 - 62
@@ -275,12 +291,20 @@ class Analysis:
         # stim 63 - 83
         self.kp_data3 = mapping.loc['video_' + str(id_video+63)]['kp']
         self.points3 = points3
-        # Event discription for in the animation plots
+        # extracting AOI coordinate data
+        self.aoit = []
+        self.aoi_x = aoi.loc['video_' + str(id_video)]['x']
+        self.aoi_x = self.aoi_x.split(", ")
+        self.aoi_y = aoi.loc['video_' + str(id_video)]['y']
+        self.aoi_y = self.aoi_y.split(", ")
+        self.aoi_t = aoi.loc['video_' + str(id_video)]['t']
+        self.aoi_t = self.aoi_t.split(", ")
+        # event discription for in the animation plots
         self.event_discription = re.split(',', mapping.loc['video_' + str(id_video)]['events_description'])
-        # Animate frames subplots into one animation using animate function
+        # animate frames subplots into one animation using animate function
         anim = animation.FuncAnimation(self.fig,
                                        self.animate,
-                                       frames=self.framess,
+                                       frames=self.frames,
                                        interval=self.hm_resolution,
                                        repeat=False)
         # save image
@@ -290,6 +314,9 @@ class Analysis:
     def create_animation_all_stimuli(self, num_stimuli):
         """
         Create long video with all animations.
+
+    Args:
+            num_stimuli (int): number of stimuli.
         """
         logger.info('Creating long video with all animations for {} stimuli.', num_stimuli)
         # create path
@@ -326,61 +353,74 @@ class Analysis:
     def animate(self, i):
         """
         Helper function to create animation.
+
+    Args:
+            i (int): ID.
+
+    Returns:
+            figure: figure object.
         """
         self.g[0].clear()
         self.g[1].clear()
         self.g[2].clear()
-
         durations = range(0, self.hm_resolution_range)
         # Subplot 1 KP data
-        it = int(round(len(self.kp_data)*i/(self.framess)))
+        it = int(round(len(self.kp_data)*i/(self.frames)))
         self.g[0].plot(np.array(self.times[:it]),
                        np.array(self.kp_data[:it]),
                        lw=1,
-                       label='Stim 1',
+                       label='Video_' + str(self.id_video),
                        color='r')
-        self.g[0].plot(np.array(self.times[:it]),
-                       np.array(self.kp_data1[:it]),
-                       lw=1,
-                       label='Stim 2',
-                       color='b')
-        self.g[0].plot(np.array(self.times[:it]),
-                       np.array(self.kp_data2[:it]),
-                       lw=1,
-                       label='Stim 3',
-                       color='g')
-        self.g[0].plot(np.array(self.times[:it]),
-                       np.array(self.kp_data3[:it]),
-                       lw=1,
-                       label='Stim 4',
-                       color='m')
+        # If animations are combined scenarios
+        if tr.common.get_configs('combined_animation') == 1:
+            self.g[0].plot(np.array(self.times[:it]),
+                           np.array(self.kp_data1[:it]),
+                           lw=1,
+                           label='Video_' + str(self.id_video+21),
+                           color='b')
+            self.g[0].plot(np.array(self.times[:it]),
+                           np.array(self.kp_data2[:it]),
+                           lw=1,
+                           label='Video_' + str(self.id_video+42),
+                           color='g')
+            self.g[0].plot(np.array(self.times[:it]),
+                           np.array(self.kp_data3[:it]),
+                           lw=1,
+                           label='Video_' + str(self.id_video+63),
+                           color='m')
+        # Adding legend and formating to figure
         self.g[0].legend()
-        self.g[0].set_xlabel("Time (s)", fontsize=10)
-        self.g[0].set_ylabel("Percentage of Keypresses", fontsize=10)
+        self.g[0].set_xlabel("Time (s)", fontsize=15)
+        self.g[0].set_ylabel("Percentage of Keypresses", fontsize=15)
         self.g[0].set_xlim(0, 50)
-        self.g[0].set_ylim(0, 50)
         self.g[0].set_title('Number of keypresses', fontsize=25)
-
+        # Extract time stamps for events from appen data to dislay in plot
         length = int(len(self.event))
+        # Plot event lines in kp and aoi plot
         for ev in range(len(self.event)):
             self.g[0].axvline(x=int(self.event[ev])/1000,
                               label="" + str(self.event_discription[ev]),
                               c=plt.cm.RdYlBu(int(ev)/length),
                               lw=2)
-            self.g[0].tick_params(axis='x', labelrotation=90)
-            self.g[0].legend()
+            self.g[0].tick_params(axis='x')
+            self.g[0].legend(fontsize=15)
             self.g[1].axvline(x=int(self.event[ev])/1000,
                               label="" + str(self.event_discription[ev]),
                               c=plt.cm.RdYlBu(int(ev)/length),
                               lw=2)
-            self.g[1].tick_params(axis='x', labelrotation=90)
-            self.g[1].legend()
+            self.g[1].tick_params(axis='x')
+            self.g[1].legend(fontsize=15)
         # Subplot 2 AOI
         self.g[1].set_title('Number of eye gazes in area of interest', fontsize=25)
-        self.g[1].set_xlabel('Time (s)', fontsize=10)
-        self.g[1].set_ylabel('Number of gazes in Area of Interest', fontsize=10)
+        self.g[1].set_xlabel('Time (s)', fontsize=15)
+        self.g[1].set_ylabel('Number of gazes in Area of Interest', fontsize=15)
+        if tr.common.get_configs('only_lab') == 1:
+            self.g[1].set_ylim(0, 35)
+            self.g[0].set_ylim(0, 80)
+        else:
+            self.g[1].set_ylim(0, 600)
+            self.g[0].set_ylim(0, 50)
         self.g[1].set_xlim(0, 50)
-        self.g[1].set_ylim(0, 400)
         # AOI data
         aoi_x = float(self.aoi_x[i])
         aoi_y = float(self.aoi_y[i])
@@ -391,22 +431,77 @@ class Analysis:
         max_x = int(aoi_x) + 100
         min_y = int(aoi_y) - 100
         max_y = int(aoi_y) + 100
+        # stim 0 - 20 or all stim when not combined
         x = [item[0] for item in self.points[i]]
         y = [item[1] for item in self.points[i]]
-        # stim 21 - 41
-        x1 = [item[0] for item in self.points1[i]]
-        y1 = [item[1] for item in self.points1[i]]
-        # stim 42 - 62
-        x2 = [item[0] for item in self.points2[i]]
-        y2 = [item[1] for item in self.points2[i]]
-        # stim 63 - 83
-        x3 = [item[0] for item in self.points3[i]]
-        y3 = [item[1] for item in self.points3[i]]
+        if tr.common.get_configs('combined_animation') == 1:
+            # stim 21 - 41
+            x1 = [item[0] for item in self.points1[i]]
+            y1 = [item[1] for item in self.points1[i]]
+            # stim 42 - 62
+            x2 = [item[0] for item in self.points2[i]]
+            y2 = [item[1] for item in self.points2[i]]
+            # stim 63 - 83
+            x3 = [item[0] for item in self.points3[i]]
+            y3 = [item[1] for item in self.points3[i]]
+            # Filtering data for inside or outside coordinates
+            num1 = 0
+            num2 = 0
+            num3 = 0
+            for v in range(len(x1)):
+                if max_x > x1[v] > min_x:
+                    if max_y > y1[v] > min_y:
+                        num1 = num1 + 1
+                    else:
+                        continue
+                else:
+                    continue
+            for v in range(len(x2)):
+                if max_x > x2[v] > min_x:
+                    if max_y > y2[v] > min_y:
+                        num2 = num2 + 1
+                    else:
+                        continue
+                else:
+                    continue
+            for v in range(len(x3)):
+                if max_x > x3[v] > min_x:
+                    if max_y > y3[v] > min_y:
+                        num3 = num3 + 1
+                    else:
+                        continue
+                else:
+                    continue
+            if i < 10:
+                self.number_in1.append(int(num1))
+                number_in_plot1 = self.number_in1
+                self.number_in2.append(int(num2))
+                number_in_plot2 = self.number_in2
+                self.number_in3.append(int(num3))
+                number_in_plot3 = self.number_in3
+
+            else:
+                self.number_in1 = np.append(self.number_in1, int(num1))
+                number_in_plot1 = savgol_filter(self.number_in1, 10, 2)
+                self.number_in2 = np.append(self.number_in2, int(num2))
+                number_in_plot2 = savgol_filter(self.number_in2, 10, 2)
+                self.number_in3 = np.append(self.number_in3, int(num3))
+                number_in_plot3 = savgol_filter(self.number_in3, 10, 2)
+            # plot AOI gazes
+            self.g[1].plot(self.aoit,
+                           number_in_plot1,
+                           label='Video_' + str(self.id_video+21),
+                           color='b')
+            self.g[1].plot(self.aoit,
+                           number_in_plot2,
+                           label='Video_' + str(self.id_video+42),
+                           color='g')
+            self.g[1].plot(self.aoit,
+                           number_in_plot3,
+                           label='Video_' + str(self.id_video+63),
+                           color='m')
         # Filtering data for if they are inside or outside coordinates
         num = 0
-        num1 = 0
-        num2 = 0
-        num3 = 0
         for v in range(len(x)):
             if max_x > x[v] > min_x:
                 if max_y > y[v] > min_y:
@@ -415,52 +510,18 @@ class Analysis:
                     continue
             else:
                 continue
-        for v in range(len(x1)):
-            if max_x > x1[v] > min_x:
-                if max_y > y1[v] > min_y:
-                    num1 = num1 + 1
-                else:
-                    continue
-            else:
-                continue
-        for v in range(len(x2)):
-            if max_x > x2[v] > min_x:
-                if max_y > y2[v] > min_y:
-                    num2 = num2 + 1
-                else:
-                    continue
-            else:
-                continue
-        for v in range(len(x3)):
-            if max_x > x3[v] > min_x:
-                if max_y > y3[v] > min_y:
-                    num3 = num3 + 1
-                else:
-                    continue
-            else:
-                continue
-
-        self.number_in.append(int(num))
-        self.number_in1.append(int(num1))
-        self.number_in2.append(int(num2))
-        self.number_in3.append(int(num3))
+        if i < 10:
+            self.number_in.append(int(num))
+            number_in_plot = self.number_in
+        else:
+            self.number_in = np.append(self.number_in, int(num))
+            number_in_plot = savgol_filter(self.number_in, 10, 2)
         self.g[1].plot(self.aoit,
-                       self.number_in,
-                       label='Stim 1',
+                       number_in_plot,
+                       label='Video_' + str(self.id_video),
                        color='r')
-        self.g[1].plot(self.aoit,
-                       self.number_in1,
-                       label='Stim 2',
-                       color='b')
-        self.g[1].plot(self.aoit,
-                       self.number_in2,
-                       label='stim 3',
-                       color='g')
-        self.g[1].plot(self.aoit,
-                       self.number_in3,
-                       label='Stim 4',
-                       color='m')
-        self.g[1].legend()
+        # add legned for figure
+        self.g[1].legend(fontsize=15)
         # Subplot 3 Heatmap
         self.g[2] = sns.kdeplot(x=[item[0] for item in self.points[i]],
                                 y=[item[1] for item in self.points[i]],
@@ -469,7 +530,29 @@ class Analysis:
                                 cmap='RdBu_r')
         self.g[2].invert_yaxis()
         self.g[2].plot([min_x, max_x, max_x, min_x, min_x], [min_y, min_y, max_y, max_y, min_y], color="red")
-
+        if i == self.frames-1:
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
+                                     y=np.array(self.kp_data[:it]),
+                                     mode='lines',
+                                     name='video_' + str(self.id_video)))
+            fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
+                                     y=np.array(self.kp_data1[:it]),
+                                     mode='lines',
+                                     name='video_' + str(self.id_video+21)))
+            fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
+                                     y=np.array(self.kp_data2[:it]),
+                                     mode='lines',
+                                     name='video_' + str(self.id_video+42)))
+            fig.add_trace(go.Scatter(x=np.array(self.times[:it]),
+                                     y=np.array(self.kp_data3[:it]),
+                                     mode='lines',
+                                     name='video_' + str(self.id_video+63)))
+            fig.update_layout(template=self.template,
+                              xaxis_title='time(ms)',
+                              yaxis_title="Number of KP")
+            file_name = 'lab_only_kp_' + str(self.id_video)
+            self.save_plotly(fig, file_name, self.folder)
         # Scatter plot data
         # all pp
         # self.g = sns.scatterplot(x=[item[0] for item in self.points[i]],
@@ -478,20 +561,20 @@ class Analysis:
         #                          hue=[item[0] for item in self.points[i]],
         #                          legend='auto')
         # read original image
-        im = plt.imread(self.image + '\\frame_' + str([i]) + '.jpg')
+        path = self.image
+        im = plt.imread(os.path.join(path, "frame_" + str([i]) + ".jpg"))
         plt.imshow(im)
 
         # remove axis
         plt.gca().set_axis_off()
         # remove white spaces around figure
-        # plt.subplots_adjust(top=1,
-        #                     bottom=0,
-        #                     right=1,
-        #                     left=0,
-        #                     hspace=0,
-        #                     wspace=0)
+        plt.subplots_adjust(top=1,
+                            bottom=0,
+                            right=1,
+                            left=0,
+                            hspace=0,
+                            wspace=0)
         # textbox with duration
-
         # props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         # plt.text(0.75,
         #          0.98,
@@ -529,6 +612,12 @@ class Analysis:
     def save_anim(self, image, anim, output_subdir, suffix):
         """
         Helper function to save figure as file.
+
+    Args:
+            image (image): image to save.
+            anim (animatino): animation object.
+            output_subdir (str): directory to save to.
+            suffix (str): suffix to add to the name of the saved file.
         """
         # extract name of stimulus after last slash
         file_no_path = image.rsplit('/', 1)[-1]
@@ -593,11 +682,9 @@ class Analysis:
         Args:
             df (dataframe): mapping dataframe.
             columns_drop (list): columns dataframes in to ignore.
-            color (str, optional): dataframe column to assign color of points.
-            symbol (str, optional): dataframe column to assign symbol of
-                                    points.
-            diagonal_visible (bool, optional): show/hide diagonal with
-                                               correlation==1.0.
+            color (str, optional): dataframe column to assign colour of points.
+            symbol (str, optional): dataframe column to assign symbol of points.
+            diagonal_visible (bool, optional): show/hide diagonal with correlation==1.0.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             save_file (bool, optional): flag for saving an html file with plot.
@@ -628,16 +715,15 @@ class Analysis:
     def bar(self, df, y: list, x=None, stacked=False, pretty_text=False, orientation='v', xaxis_title=None,
             yaxis_title=None, show_all_xticks=False, show_all_yticks=False, show_text_labels=False, save_file=False):
         """
-        Barplot for questionnaire data. Passing a list with one variable will
-        output a simple barplot; passing a list of variables will output a
-        grouped barplot.
+        Barplot for questionnaire data. Passing a list with one variable will output a simple barplot; passing a list
+        of variables will output a grouped barplot.
 
         Args:
             df (dataframe): dataframe with stimuli data.
             y (list): column names of dataframe to plot.
             x (list): values in index of dataframe to plot for. If no value is given, the index of df is used.
             stacked (bool, optional): show as stacked chart.
-            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitilisng each value.
+            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitalising each value.
             orientation (str, optional): orientation of bars. v=vertical, h=horizontal.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
@@ -646,7 +732,7 @@ class Analysis:
             show_text_labels (bool, optional): output automatically positioned text labels.
             save_file (bool, optional): flag for saving an html file with plot.
         """
-        logger.info('Creating bar chart for x={} and y={}', x, y)
+        logger.info('Creating bar chart for x={} and y={}.', x, y)
         # prettify text
         if pretty_text:
             for variable in y:
@@ -681,8 +767,7 @@ class Analysis:
             buttons = list([dict(label='All',
                                  method='update',
                                  args=[{'visible': [True] * df[y].shape[0]},
-                                       {'title': 'All',
-                                        'showlegend': True}])])
+                                       {'title': 'All', 'showlegend': True}])])
             # counter for traversing through stimuli
             counter_rows = 0
             for variable in y:
@@ -723,21 +808,20 @@ class Analysis:
                 marker_size=None,  pretty_text=False, marginal_x='violin', marginal_y='violin', xaxis_title=None,
                 yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True):
         """
-        Output scatter plot of variables x and y with optional assignment of
-        colour and size.
+        Output scatter plot of variables x and y with optional assignment of colour and size.
 
         Args:
             df (dataframe): dataframe with data from heroku.
             x (str): dataframe column to plot on x axis.
             y (str): dataframe column to plot on y axis.
-            color (str, optional): dataframe column to assign color of points.
+            color (str, optional): dataframe column to assign colour of points.
             symbol (str, optional): dataframe column to assign symbol of points.
-            size (str, optional): dataframe column to assign soze of points.
+            size (str, optional): dataframe column to assign doze of points.
             text (str, optional): dataframe column to assign text labels.
             trendline (str, optional): trendline. Can be 'ols', 'lowess'
             hover_data (list, optional): dataframe columns to show on hover.
             marker_size (int, optional): size of marker. Should not be used together with size argument.
-            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitilisng each value.
+            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitalising each value.
             marginal_x (str, optional): type of marginal on x axis. Can be 'histogram', 'rug', 'box', or 'violin'.
             marginal_y (str, optional): type of marginal on y axis. Can be 'histogram', 'rug', 'box', or 'violin'.
             xaxis_title (str, optional): title for x axis.
@@ -752,8 +836,7 @@ class Analysis:
             logger.error('Arguments marker_size and size cannot be used together.')
             return -1
         # using marker_size with histogram marginal(s) is not supported
-        if (marker_size and
-                (marginal_x == 'histogram' or marginal_y == 'histogram')):
+        if (marker_size and (marginal_x == 'histogram' or marginal_y == 'histogram')):
             logger.error('Argument marker_size cannot be used together with histogram marginal(s).')
             return -1
         # prettify text
@@ -786,7 +869,7 @@ class Analysis:
                     # capitalise
                     df[text] = df[text].str.capitalize()
             except ValueError as e:
-                logger.debug('Tried to prettify {} with exception {}', text, e)
+                logger.debug('Tried to prettify {} with exception {}.', text, e)
         # scatter plot with histograms
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -821,8 +904,7 @@ class Analysis:
                      marker_size=None, pretty_text=False, marginal_x='violin', marginal_y='violin', xaxis_title=None,
                      yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True):
         """
-        Output scatter plot of multiple variables x and y with optional
-        assignment of colour and size.
+        Output scatter plot of multiple variables x and y with optional assignment of colour and size.
 
         Args:
             df (dataframe): dataframe with data from heroku.
@@ -833,7 +915,7 @@ class Analysis:
             trendline (str, optional): trendline. Can be 'ols', 'lowess'
             hover_data (list, optional): dataframe columns to show on hover.
             marker_size (int, optional): size of marker. Should not be used together with size argument.
-            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitilisng each value.
+            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitalising each value.
             marginal_x (str, optional): type of marginal on x axis. Can be 'histogram', 'rug', 'box', or 'violin'.
             marginal_y (str, optional): type of marginal on y axis. Can be 'histogram', 'rug', 'box', or 'violin'.
             xaxis_title (str, optional): title for x axis.
@@ -858,15 +940,14 @@ class Analysis:
                     # capitalise
                     df[x_col] = df[x_col].str.capitalize()
                 else:
-                    logger.error('no string')
-
+                    logger.error('No string.')
             if isinstance(df.iloc[0][y], str):  # check if string
                 # replace underscores with spaces
                 df[y] = df[y].str.replace('_', ' ')
                 # capitalise
                 df[y] = df[y].str.capitalize()
             else:
-                logger.error('no string')
+                logger.error('No string.')
             try:
                 # check if string
                 if text and isinstance(df.iloc[0][text], str):
@@ -876,7 +957,6 @@ class Analysis:
                     df[text] = df[text].str.capitalize()
             except ValueError as e:
                 logger.debug('Tried to prettify {} with exception {}', text, e)
-
         # create new dataframe with the necessary data
         color = []
         val_y = []
@@ -889,9 +969,7 @@ class Analysis:
         data = {'val_y': val_y,
                 'color': color,
                 'val_x': val_x}
-
         df = pd.DataFrame(data)
-
         # scatter plot with histograms
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -917,26 +995,21 @@ class Analysis:
                                       yanchor='bottom',
                                       y=1.02,
                                       xanchor='right',
-                                      x=0.78
-                                      ))
+                                      x=0.78))
         # change marker size
         if marker_size:
             fig.update_traces(marker=dict(size=marker_size))
         # save file
         if save_file:
-            self.save_plotly(fig,
-                             'scatter_' + ','.join(x) + '-' + y,
-                             self.folder)
+            self.save_plotly(fig, 'scatter_' + ','.join(x) + '-' + y, self.folder)
         # open it in localhost instead
         else:
             fig.show()
 
-    def scatter_et(self, df, x, y, t, pp, id_video, pretty_text=False,
-                   marginal_x='violin', marginal_y='violin', xaxis_title=None,
-                   xaxis_range=True, yaxis_title=None, yaxis_range=True,
-                   save_file=True):
+    def scatter_et(self, df, x, y, t, pp, id_video, pretty_text=False, marginal_x='violin', marginal_y='violin',
+                   xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=True):
         """
-        output satter plot of x & y.
+        Output scatter plot of x and y.
 
         Args:
             df (dataframe): dataframe with data from Heroku.
@@ -968,10 +1041,8 @@ class Analysis:
         ymin, ymax = min(y), max(y)
         for i, val in enumerate(y):
             y[i] = ((val-ymin) / (ymax-ymin))*height
-
         t = df.loc[pp][t]
         pp = str(pp)
-
         # Plot animation scatter
         fig = px.scatter(df,
                          x=x,
@@ -982,14 +1053,12 @@ class Analysis:
                          marginal_x='violin',
                          marginal_y='violin',
                          title='scatter_' + ' ' + id_video + ' ' + 'participant' + ' ' + pp)
-
         # update layout
         fig.update_layout(template=self.template,
                           xaxis_title=xaxis_title,
                           yaxis_title=yaxis_title,
                           xaxis_range=[0, width],
                           yaxis_range=[0, height])
-
         # save file
         if save_file:
             self.save_plotly(fig, 'scatter_map_' + id_video+'_participant_' + pp, self.folder)
@@ -1025,7 +1094,6 @@ class Analysis:
         ymin, ymax = min(y), max(y)
         for i, val in enumerate(y):
             y[i] = ((val-ymin) / (ymax-ymin))*height
-
         t = df.loc[pp][t]
         #  prettify ticks
         if pretty_text:
@@ -1096,7 +1164,7 @@ class Analysis:
             # plotly.offline.plot(fig, auto_play = False)
             # TODO: error with show
             # show.fig(fig, auto_play=False)
-            logger.error('show not implemented')
+            logger.error('Show not implemented.')
 
     def hist(self, df, x, nbins=None, color=None, pretty_text=False, marginal='rug', xaxis_title=None,
              yaxis_title=None, save_file=True):
@@ -1107,8 +1175,8 @@ class Analysis:
             df (dataframe): dataframe with data from heroku.
             x (list): column names of dataframe to plot.
             nbins (int, optional): number of bins in histogram.
-            color (str, optional): dataframe column to assign color of circles.
-            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitilisng each value.
+            color (str, optional): dataframe column to assign colour of circles.
+            pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitalising each value.
             marginal (str, optional): type of marginal on x axis. Can be 'histogram', 'rug', 'box', or 'violin'.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
@@ -1197,8 +1265,8 @@ class Analysis:
             fig.show()
 
     def plot_kp(self, df, conf_interval=None, xaxis_title='Time (s)',
-                yaxis_title='Percentage of trials with response key pressed', xaxis_range=None, yaxis_range=None,
-                save_file=True, fig_save_width=1320, fig_save_height=680):
+                yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
+                yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680):
         """Plot keypress data.
 
         Args:
@@ -1222,7 +1290,10 @@ class Analysis:
             data = np.pad(data, (0, len(times) - len(data)), 'constant')
             # add data
             kp_data += np.array(data)
-        kp_data = (kp_data / i)
+        kp_data = kp_data / (i + 1)
+        # smoothen signal
+        if self.smoothen_signal:
+            kp_data = self.smoothen_filter(kp_data)
         # create figure
         fig = go.Figure()
         # plot keypresses
@@ -1232,7 +1303,7 @@ class Analysis:
             # calculate condidence interval
             (y_lower, y_upper) = self.get_conf_interval_bounds(kp_data, conf_interval)
             # plot interval
-            fig.add_trace(go.Scatter(name='Upper Bound',
+            fig.add_trace(go.Scatter(name='Upper bound',
                                      x=times,
                                      y=y_upper,
                                      mode='lines',
@@ -1240,7 +1311,7 @@ class Analysis:
                                      line=dict(color='rgba(255,255,255,0)'),
                                      hoverinfo="skip",
                                      showlegend=False))
-            fig.add_trace(go.Scatter(name='Lower Bound',
+            fig.add_trace(go.Scatter(name='Lower bound',
                                      x=times,
                                      y=y_lower,
                                      fill='tonexty',
@@ -1264,7 +1335,7 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_video(self, df, stimulus, extention='mp4', conf_interval=None, vert_lines=None,
+    def plot_kp_video(self, df, stimulus, extension='mp4', conf_interval=None, vert_lines=None,
                       vert_lines_width=3, vert_lines_dash='solid',
                       vert_lines_colour='green', vert_lines_annotations=None,
                       vert_lines_annotations_position='top right', vert_lines_annotations_font_size=20,
@@ -1276,7 +1347,7 @@ class Analysis:
         Args:
             df (dataframe): dataframe with keypress data.
             stimulus (str): name of stimulus.
-            extention (str, optional): extension of stimulus.
+            extension (str, optional): extension of stimulus.
             conf_interval (float, optional): show confidence interval defined by argument.
             vert_lines (list, optional): list of events to draw formatted as values on x axis.
             vert_lines_width (int, optional): thickness of the vertical lines.
@@ -1300,17 +1371,17 @@ class Analysis:
         times = np.array(range(self.res, video_len + self.res, self.res)) / 1000
         # keypress data
         kp_data = df.loc[stimulus]['kp']
+        # smoothen signal
+        if self.smoothen_signal:
+            kp_data = self.smoothen_filter(kp_data)
         # plot keypresses
-        fig = px.line(y=df.loc[stimulus]['kp'],
-                      x=times,
-                      title='Keypresses for stimulus ' + stimulus)
+        fig = px.line(y=df.loc[stimulus]['kp'], x=times, title='Keypresses for stimulus ' + stimulus)
         # show confidence interval
         if conf_interval:
-            # calculate condidence interval
-            (y_lower, y_upper) = self.get_conf_interval_bounds(kp_data,
-                                                               conf_interval)
+            # calculate confidence interval
+            (y_lower, y_upper) = self.get_conf_interval_bounds(kp_data, conf_interval)
             # plot interval
-            fig.add_trace(go.Scatter(name='Upper Bound',
+            fig.add_trace(go.Scatter(name='Upper bound',
                                      x=times,
                                      y=y_upper,
                                      mode='lines',
@@ -1318,7 +1389,7 @@ class Analysis:
                                      line=dict(color='rgba(255,255,255,0)'),
                                      hoverinfo="skip",
                                      showlegend=False))
-            fig.add_trace(go.Scatter(name='Lower Bound',
+            fig.add_trace(go.Scatter(name='Lower bound',
                                      x=times,
                                      y=y_lower,
                                      fill='tonexty',
@@ -1362,7 +1433,7 @@ class Analysis:
         """Plot keypresses data of one stimulus for 1 participant.
 
         Args:
-            df (dataframe): dataframe with simulus data.
+            df (dataframe): dataframe with stimulus data.
             dt (dataframe): dataframe with keypress data.
             stimulus (str): name of stimulus.
             pp (str): ID of participant.
@@ -1385,15 +1456,16 @@ class Analysis:
         kp_data_time = dt.loc[pp]['video_10-rt-0']
         kp_ar = np.array(kp_data_time)
         kp_data = np.where(kp_ar > 0, 1, 0)
+        # smoothen signal
+        if self.smoothen_signal:
+            kp_data = self.smoothen_filter(kp_data)
         kp_data_time = kp_ar/100
-
         # plot keypresses
         fig = px.line(x=kp_data_time,
                       y=kp_data,
                       # animation_frame=kp_data_time,
                       title='Keypresses for stimulus ' + stimulus + ' for participant ' + pp)
-
-        # # update layout
+        # update layout
         fig.update_layout(template=self.template,
                           xaxis_title=xaxis_title,
                           yaxis_title=yaxis_title,
@@ -1406,7 +1478,7 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_animate(self, df, stimulus, pp='all', extention='mp4', conf_interval=None, xaxis_title='Time (s)',
+    def plot_kp_animate(self, df, stimulus, pp='all', extension='mp4', conf_interval=None, xaxis_title='Time (s)',
                         yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
                         yaxis_range=None, save_file=True):
         # extract video length
@@ -1415,10 +1487,12 @@ class Analysis:
         times = np.array(range(self.res, video_len + self.res, self.res)) / 1000
         # keypress data
         kp_data = df.loc[stimulus]['kp']
+        # smoothen signal
+        if self.smoothen_signal:
+            kp_data = self.smoothen_filter(kp_data)
         # plot keypresses
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=times, y=kp_data))
-
         frames = [go.Frame(data=[go.Scatter(x=times[:k+1],
                                             y=kp_data[:k+1],
                                             visible=True,
@@ -1446,7 +1520,7 @@ class Analysis:
             # calculate confidence interval
             (y_lower, y_upper) = self.get_conf_interval_bounds(kp_data, conf_interval)
             # plot interval
-            fig.add_trace(go.Scatter(name='Upper Bound',
+            fig.add_trace(go.Scatter(name='Upper bound',
                                      x=times,
                                      y=y_upper,
                                      mode='lines',
@@ -1454,7 +1528,7 @@ class Analysis:
                                      line=dict(color='rgba(255,255,255,0)'),
                                      hoverinfo='skip',
                                      showlegend=False))
-            fig.add_trace(go.Scatter(name='Lower Bound',
+            fig.add_trace(go.Scatter(name='Lower bound',
                                      x=times,
                                      y=y_lower,
                                      fill='tonexty',
@@ -1474,7 +1548,7 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_video_data(self, df, stimulus, cols, extention='mp4', conf_interval=None, xaxis_title='Time (s)',
+    def plot_video_data(self, df, stimulus, cols, extension='mp4', conf_interval=None, xaxis_title='Time (s)',
                         yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
                         yaxis_range=None, save_file=True):
         """Plot keypresses with multiple variables as a filter.
@@ -1483,7 +1557,7 @@ class Analysis:
             df (dataframe): dataframe with keypress data.
             stimulus (str): name of stimulus.
             cols: columns of which to plot
-            extention (str, optional): extension of stimulus.
+            extension (str, optional): extension of stimulus.
             conf_interval (float, optional): show confidence interval defined by argument.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
@@ -1492,9 +1566,7 @@ class Analysis:
             save_file (bool, optional): flag for saving an html file with plot.
         """
         # plotly figure to make plots in
-        fig = subplots.make_subplots(rows=1,
-                                     cols=1,
-                                     shared_xaxes=True)
+        fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
         # plot for all videos
         # buttons = list([dict(label='All',
         #                      method='update',
@@ -1510,6 +1582,9 @@ class Analysis:
             kp_data = df.loc[stimulus][col]
             if type(kp_data) is not list:
                 kp_data = ast.literal_eval(kp_data)
+            # smoothen signal
+            if self.smoothen_signal:
+                kp_data = self.smoothen_filter(kp_data)
             # plot keypresses
             fig.add_trace(go.Scatter(y=kp_data,
                                      mode='lines',
@@ -1566,7 +1641,10 @@ class Analysis:
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
         # plot for all videos
         for index, row in df.iterrows():
-            values = row['kp']
+            values = row['kp']  # keypress data
+            # smoothen signal
+            if self.smoothen_signal:
+                values = self.smoothen_filter(values)
             fig.add_trace(go.Scatter(y=values,
                                      mode='lines',
                                      x=times,
@@ -1673,9 +1751,13 @@ class Analysis:
                                      specs=[[{}, {}]],
                                      horizontal_spacing=0.00,
                                      shared_xaxes=False)
-        # Plot keypress data
+        # plot keypress data
         for index, row in df.iterrows():
-            values = row['kp']
+            values = row['kp']  # keypress data
+            # smoothen signal
+            if self.smoothen_signal:
+                values = self.smoothen_filter(values)
+            # plot signal
             fig.add_trace(go.Scatter(y=values,
                                      mode='lines',
                                      x=times,
@@ -1724,7 +1806,14 @@ class Analysis:
                                  orientation=orientation,
                                  text=text,
                                  textposition='auto'),
-                          row=1, col=2)
+                          row=1,
+                          col=2)
+        # output ttest
+        for variable in y:
+            self.ttest(variable, variable-1)
+        # output anova
+        self.anova(y)
+        # output anova
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
         fig.update_yaxes(title_text=yaxis_slider_title, row=1, col=2)
@@ -1794,6 +1883,9 @@ class Analysis:
             # divide sums of values over number of rows that qualify
             if df_f.shape[0]:
                 kp_data = kp_data / df_f.shape[0]
+            # smoothen signal
+            if self.smoothen_signal:
+                kp_data = self.smoothen_filter(kp_data)
             extracted_data.append({'value': value, 'data': kp_data})
         # plotly figure
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
@@ -1808,9 +1900,7 @@ class Analysis:
         # create tabs
         buttons = list([dict(label='All',
                              method='update',
-                             args=[{'visible': [True] * len(values)},
-                                   {'title': 'All',
-                                    'showlegend': True}])])
+                             args=[{'visible': [True] * len(values)}, {'title': 'All', 'showlegend': True}])])
         # show menu with selection of variable to plot
         if show_menu:
             # counter for traversing through stimuli
@@ -1820,8 +1910,7 @@ class Analysis:
                 visibility = [item for sublist in visibility for item in sublist]
                 button = dict(label=str(value),
                               method='update',
-                              args=[{'visible': visibility},
-                                    {'title': str(value)}])
+                              args=[{'visible': visibility}, {'title': str(value)}])
                 buttons.append(button)
                 counter_rows = counter_rows + 1
             # add menu
@@ -1889,6 +1978,9 @@ class Analysis:
             # divide sums of values over number of rows that qualify
             if df_f.shape[0]:
                 kp_data = kp_data / df_f.shape[0]
+            # smoothen signal
+            if self.smoothen_signal:
+                kp_data = self.smoothen_filter(kp_data)
             extracted_data.append({'value': str(var['variable']) + '-' + str(var['value']), 'data': kp_data})
         # plotly figure
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
@@ -1995,6 +2087,9 @@ class Analysis:
             # divide sums of values over number of rows that qualify
             if df_f.shape[0]:
                 kp_data = kp_data / df_f.shape[0]
+            # smoothen signal
+            if self.smoothen_signal:
+                kp_data = self.smoothen_filter(kp_data)
             # plot each variable in data
             fig.add_trace(go.Scatter(y=kp_data,
                                      mode='lines',
@@ -2004,10 +2099,10 @@ class Analysis:
                           col=1)
             # show confidence interval
             if conf_interval:
-                # calculate condidence interval
+                # calculate confidence interval
                 (y_lower, y_upper) = self.get_conf_interval_bounds(kp_data, conf_interval)
                 # plot interval
-                fig.add_trace(go.Scatter(name='Upper Bound',
+                fig.add_trace(go.Scatter(name='Upper bound',
                                          x=times,
                                          y=y_upper,
                                          mode='lines',
@@ -2015,7 +2110,7 @@ class Analysis:
                                          line=dict(color='rgba(255,255,255,0)'),
                                          hoverinfo="skip",
                                          showlegend=False))
-                fig.add_trace(go.Scatter(name='Lower Bound',
+                fig.add_trace(go.Scatter(name='Lower bound',
                                          x=times,
                                          y=y_lower,
                                          fill='tonexty',
@@ -2042,14 +2137,13 @@ class Analysis:
             fig.show()
 
     def map(self, df, color, save_file=True):
-        """Map of countries of participation with color based on column in dataframe.
+        """Map of countries of participation with colour based on column in dataframe.
 
         Args:
             df (dataframe): dataframe with keypress data.
             save_file (bool, optional): flag for saving an html file with plot.
         """
-        logger.info('Creating visualisation of heatmap of participants by'
-                    + ' country with colour defined by {}.', color)
+        logger.info('Creating visualisation of heatmap of participants by  country with colour defined by {}.', color)
         # create map
         fig = px.choropleth(df,
                             locations='country',
@@ -2078,21 +2172,21 @@ class Analysis:
             height (int, optional): height of figures to be saved.
         """
         # build path
-        path = tr.settings.output_dir + output_subdir
+        path = os.path.join(tr.settings.output_dir, output_subdir)
         if not os.path.exists(path):
             os.makedirs(path)
         # limit name to 255 char
         if len(path) + len(name) > 250:
             name = name[:255 - len(path) - 5]
         # save as html
-        py.offline.plot(fig, filename=os.path.join(path + name + '.html'))
+        py.offline.plot(fig, filename=os.path.join(path, name + '.html'))
         # remove white margins
         if remove_margins:
             fig.update_layout(margin=dict(l=2, r=2, t=20, b=12))
         # save as eps
-        fig.write_image(os.path.join(path + name + '.eps'), width=width, height=height)
+        fig.write_image(os.path.join(path, name + '.eps'), width=width, height=height)
         # save as png
-        fig.write_image(os.path.join(path + name + '.png'), width=width, height=height)
+        fig.write_image(os.path.join(path, name + '.png'), width=width, height=height)
 
     def save_fig(self, image, fig, output_subdir, suffix, pad_inches=0):
         """
@@ -2116,9 +2210,7 @@ class Analysis:
         if not os.path.exists(path):
             os.makedirs(path)
         # save file
-        plt.savefig(path + file_no_path + suffix,
-                    bbox_inches='tight',
-                    pad_inches=pad_inches)
+        plt.savefig(path + file_no_path + suffix, bbox_inches='tight', pad_inches=pad_inches)
         # clear figure from memory
         plt.close(fig)
 
@@ -2157,7 +2249,7 @@ class Analysis:
                 width = rect.get_width()
                 x = rect.get_x()
                 y = rect.get_y()
-                # The height of the bar is the data value and can be used as the label show demical points
+                # the height of the bar is the data value and can be used as the label show decimal points
                 if decimal:
                     label_text = f'{height:.2f}'
                 else:
@@ -2192,12 +2284,11 @@ class Analysis:
             conf_interval (float, optional): confidence interval value.
 
         Returns:
-            list of lsits: lower and uppoer bounds.
+            list of lists: lower and upper bounds.
         """
-        # calculate condidence interval
+        # calculate confidence interval
         conf_interval = st.t.interval(conf_interval, len(data) - 1, loc=np.mean(data), scale=st.sem(data))
-        # calcuate bounds
-        # todo: cross-check if correct
+        # calculate bounds
         y_lower = data - conf_interval[0]
         y_upper = data + conf_interval[1]
         return y_lower, y_upper
@@ -2205,10 +2296,9 @@ class Analysis:
     def slugify(self, value, allow_unicode=False):
         """
         Taken from https://github.com/django/django/blob/master/django/utils/text.py
-        Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
-        dashes to single dashes. Remove characters that aren't alphanumerics,
-        underscores, or hyphens. Convert to lowercase. Also strip leading and
-        trailing whitespace, dashes, and underscores.
+        Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated dashes to single dashes. Remove
+        characters that aren't alphanumerics, underscores, or hyphens. Convert to lowercase. Also strip leading and
+        trailing white space, dashes, and underscores.
         """
         value = str(value)
         if allow_unicode:
@@ -2217,3 +2307,39 @@ class Analysis:
             value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
+
+    def smoothen_filter(self, signal, type_flter='OneEuroFilter'):
+        """Smoothen list with a filter.
+
+    Args:
+            signal (list): input signal to smoothen
+            type_flter (str, optional): type_flter of filter to use.
+
+    Returns:
+            list: list with smoothened data.
+        """
+        if type_flter == 'OneEuroFilter':
+            filter_kp = OneEuroFilter(freq=tr.common.get_configs('freq'),            # frequency
+                                      mincutoff=tr.common.get_configs('mincutoff'),  # minimum cutoff frequency
+                                      beta=tr.common.get_configs('beta'))            # beta value
+            return [filter_kp(value) for value in signal]
+        else:
+            logger.error('Specified filter {} not implemented.', type_flter)
+            return -1
+
+    def ttest(self, signal_1, signal_2, type):
+        # return [0,0,0,0,1,0,0]
+        # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html
+        # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
+        # 0 and 3 = between
+        # 1 and 2 = between
+        # 2 and 3 = within
+        # 1 and 3 = between
+        return
+
+    def anova(self, signal_type, signal_ego, signal_kp):
+        # signal_type = list of int, eg: [1,1,0,0]
+        # signal_ego = list of int, eg: [1,1,0,0]
+        # signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
+        # return [0,0,0,0,1,0,0]
+        return

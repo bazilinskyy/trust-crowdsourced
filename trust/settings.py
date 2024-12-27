@@ -1,3 +1,4 @@
+# by Pavlo Bazilinskyy <pavlo.bazilinskyy@gmail.com>
 import os
 
 main_module_dir = os.path.dirname(__file__)

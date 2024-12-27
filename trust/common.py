@@ -10,7 +10,7 @@ import trust as tr
 logger = tr.CustomLogger(__name__)  # use custom logger
 
 
-def get_secrets(entry_name: str, secret_file_name: str = 'secret') -> Dict[str, str]:  # noqa: E501
+def get_secrets(entry_name: str, secret_file_name: str = 'secret') -> Dict[str, str]:
     """
     Open the secrets file and return the requested entry.
     """
@@ -31,7 +31,7 @@ def get_configs(entry_name: str, config_file_name: str = 'config',
         with open(os.path.join(tr.settings.root_dir, config_file_name)) as f:
             content = json.load(f)
     except FileNotFoundError:
-        with open(os.path.join(tr.settings.root_dir, config_default_file_name)) as f:  # noqa: E501
+        with open(os.path.join(tr.settings.root_dir, config_default_file_name)) as f:
             content = json.load(f)
     return content[entry_name]
 

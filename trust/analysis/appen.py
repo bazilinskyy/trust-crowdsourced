@@ -4,7 +4,7 @@ import numpy as np
 import os
 import datetime as dt
 from collections import Counter
-from pycountry_convert import country_alpha2_to_country_name, country_name_to_country_alpha3  # noqa: E501
+from pycountry_convert import country_alpha2_to_country_name, country_name_to_country_alpha3
 
 
 import trust as tr
@@ -168,16 +168,13 @@ class Appen:
         logger.info('Filtering appen data.')
         # people that did not read instructions
         df_1 = df.loc[df['instructions'] == 'no']
-        logger.info('Filter-a1. People who did not read instructions: {}',
-                    df_1.shape[0])
+        logger.info('Filter-a1. People who did not read instructions: {}', df_1.shape[0])
         # people that did not give consent
         df_2 = df.loc[df['consent'] == 'no']
-        logger.info('Filter-a2. People who did not give consent: {}',
-                    df_2.shape[0])
+        logger.info('Filter-a2. People who did not give consent: {}', df_2.shape[0])
         # people that are underages
         df_3 = df.loc[df['age'] < 18]
-        logger.info('Filter-a3. People that are under 18 years of age: {}',
-                    df_3.shape[0])
+        logger.info('Filter-a3. People that are under 18 years of age: {}', df_3.shape[0])
         # People that took less than tr.common.get_configs('allowed_min_time')
         # minutes to complete the study
         df_4 = df.loc[df['time'] < tr.common.get_configs('allowed_min_time')]
@@ -187,24 +184,18 @@ class Appen:
                     df_4.shape[0])
         # people that completed the study from the same IP address
         df_5 = df[df['ip'].duplicated(keep='first')]
-        logger.info('Filter-a5. People who completed the study from the ' +
-                    'same IP: {}',
-                    df_5.shape[0])
+        logger.info('Filter-a5. People who completed the study from the same IP: {}', df_5.shape[0])
         # people that entered the same worker_code more than once
         df_6 = df[df['worker_code'].duplicated(keep='first')]
-        logger.info('Filter-a6. People who used the same worker_code: {}',
-                    df_6.shape[0])
+        logger.info('Filter-a6. People who used the same worker_code: {}', df_6.shape[0])
         # save to csv
         if self.save_csv:
             df_6 = df_6.reset_index()
-            df_6.to_csv(os.path.join(tr.settings.output_dir,
-                                     self.file_cheaters_csv))
-            logger.info('Filter-a6. Saved list of cheaters to csv file {}',
-                        self.file_cheaters_csv)
+            df_6.to_csv(os.path.join(tr.settings.output_dir, self.file_cheaters_csv))
+            logger.info('Filter-a6. Saved list of cheaters to csv file {}', self.file_cheaters_csv)
         # people with nan for worker_id
         df_7 = df[df['worker_id'].isnull()]
-        logger.info('Filter-a7. People who have not valid worker_id: {}',
-                    df_7.shape[0])
+        logger.info('Filter-a7. People who had not valid worker_id: {}', df_7.shape[0])
         # concatenate dfs with filtered data
         old_size = df.shape[0]
         df_filtered = pd.concat([df_1, df_2, df_3, df_4, df_5, df_6, df_7])
