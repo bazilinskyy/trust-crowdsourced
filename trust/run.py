@@ -204,6 +204,8 @@ if __name__ == '__main__':
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['slider-0', 'slider-1', 'slider-2'],
+                                               # custom labels for slider questions in the legend
+                                               y_legend=['q_comfort', 'q_unsafe', 'q_expectation'],
                                                xaxis_kp_range=[0, 43],  # hardcode based on the longest stimulus
                                                yaxis_kp_range=[0, 60],  # hardcode based on the highest recorded value
                                                events=events,

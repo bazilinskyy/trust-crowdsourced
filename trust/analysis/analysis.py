@@ -1739,7 +1739,7 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_slider_videos(self, df, y: list, x=None, events=None, events_width=1, events_dash='dot',
+    def plot_kp_slider_videos(self, df, y: list, y_legend=None, x=None, events=None, events_width=1, events_dash='dot',
                               events_colour='black', events_annotations_font_size=20,
                               events_annotations_colour='black', xaxis_kp_title='Time (s)',
                               yaxis_kp_title='Percentage of trials with response key pressed',
@@ -1752,6 +1752,7 @@ class Analysis:
         Args:
             df (dataframe): dataframe with stimuli data.
             y (list): column names of dataframe to plot.
+            y_legend (list, optional): names for variables to be shown in the legend.
             x (list): values in index of dataframe to plot for. If no value is given, the index of df is used.
             events (list, optional): list of events to draw formatted as values on x axis.
             events_width (int, optional): thickness of the vertical lines.
@@ -1811,39 +1812,41 @@ class Analysis:
                               x1=event['start'],
                               y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
                               line=dict(color=events_colour,
-                                        dash='dot',
-                                        width=events_width))
-                # draw finish
-                fig.add_shape(type='line',
-                              x0=event['end'],
-                              y0=0,
-                              x1=event['end'],
-                              y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
-                              line=dict(color=events_colour,
                                         dash=events_dash,
                                         width=events_width))
-                # draw horizontal line
-                fig.add_annotation(ax=event['start'],
-                                   axref='x',
-                                   ay=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
-                                   ayref='y',
-                                   x=event['end'],
-                                   arrowcolor='black',
-                                   xref='x',
-                                   y=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
-                                   yref='y',
-                                   arrowwidth=events_width,
-                                   arrowside='end+start',
-                                   arrowsize=1,
-                                   arrowhead=2)
-                # draw text label
-                fig.add_annotation(text=event['annotation'],
-                                   # xref='paper', yref='paper',
-                                   x=(event['end'] + event['start']) / 2,
-                                   y=yaxis_kp_range[1] - counter_lines * 1.8,  # use ylim value and draw lower
-                                   showarrow=False,
-                                   font=dict(size=events_annotations_font_size,
-                                             color=events_annotations_colour))
+                # draw other elements only is start and finish are not the same
+                if event['start'] is not event['end']:
+                    # draw finish
+                    fig.add_shape(type='line',
+                                  x0=event['end'],
+                                  y0=0,
+                                  x1=event['end'],
+                                  y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                  line=dict(color=events_colour,
+                                            dash=events_dash,
+                                            width=events_width))
+                    # draw horizontal line
+                    fig.add_annotation(ax=event['start'],
+                                       axref='x',
+                                       ay=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                       ayref='y',
+                                       x=event['end'],
+                                       arrowcolor='black',
+                                       xref='x',
+                                       y=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                       yref='y',
+                                       arrowwidth=events_width,
+                                       arrowside='end+start',
+                                       arrowsize=1,
+                                       arrowhead=2)
+                    # draw text label
+                    fig.add_annotation(text=event['annotation'],
+                                       # xref='paper', yref='paper',
+                                       x=(event['end'] + event['start']) / 2,
+                                       y=yaxis_kp_range[1] - counter_lines * 1.8,  # use ylim value and draw lower
+                                       showarrow=False,
+                                       font=dict(size=events_annotations_font_size,
+                                                 color=events_annotations_colour))
                 # increase counter of lines drawn
                 counter_lines = counter_lines + 1
         # update axis
@@ -1859,20 +1862,25 @@ class Analysis:
                     # capitalise
                     df[variable] = df[variable].str.capitalize()
         # Plot slider data
-        # use index of df if no is given
+        # use index of df if none is given
         if not x:
             x = df.index
         # go over variables to plot
-        for variable in y:
+        for variable in range(len(y)):
             # showing text labels
             if show_text_labels:
-                text = df[variable]
+                text = df[y[variable]]
             else:
                 text = None
+            # custom labels for legend
+            if y_legend:
+                name = y_legend[variable]
+            else:
+                name = y[variable]
             # plot variable
             fig.add_trace(go.Bar(x=x,
-                                 y=df[variable],
-                                 name=variable,
+                                 y=df[y[variable]],
+                                 name=name,
                                  orientation=orientation,
                                  text=text,
                                  textposition='auto'),
