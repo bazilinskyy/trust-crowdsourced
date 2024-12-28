@@ -1810,7 +1810,7 @@ class Analysis:
                               x0=event['start'],
                               y0=0,
                               x1=event['start'],
-                              y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                              y1=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
                               line=dict(color=events_colour,
                                         dash=events_dash,
                                         width=events_width))
@@ -1821,19 +1821,19 @@ class Analysis:
                                   x0=event['end'],
                                   y0=0,
                                   x1=event['end'],
-                                  y1=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                  y1=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
                                   line=dict(color=events_colour,
                                             dash=events_dash,
                                             width=events_width))
                     # draw horizontal line
                     fig.add_annotation(ax=event['start'],
                                        axref='x',
-                                       ay=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                       ay=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
                                        ayref='y',
                                        x=event['end'],
                                        arrowcolor='black',
                                        xref='x',
-                                       y=yaxis_kp_range[1] - counter_lines * 1.8 - 1,
+                                       y=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
                                        yref='y',
                                        arrowwidth=events_width,
                                        arrowside='end+start',
@@ -1843,7 +1843,7 @@ class Analysis:
                     fig.add_annotation(text=event['annotation'],
                                        # xref='paper', yref='paper',
                                        x=(event['end'] + event['start']) / 2,
-                                       y=yaxis_kp_range[1] - counter_lines * 1.8,  # use ylim value and draw lower
+                                       y=yaxis_kp_range[1] - counter_lines * 1.8 - 1,  # use ylim value and draw lower
                                        showarrow=False,
                                        font=dict(size=events_annotations_font_size,
                                                  color=events_annotations_colour))
