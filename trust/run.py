@@ -177,10 +177,6 @@ if __name__ == '__main__':
                 vert_line_annotations[0] = vert_line_annotations[0][1:]
                 # remove ]
                 vert_line_annotations[-1] = vert_line_annotations[-1][:-1]
-                # create list with ids of labels for outputting just numbers
-                # vert_line_annotations_num = []
-                # for x in range(1, len(vert_line_annotations) + 1):
-                #     vert_line_annotations_num.append(x)
                 # add info to dictionary of events to be passed for plotting
                 for x in range(0, len(vert_line_annotations)):
                     # search for start and end values
@@ -211,9 +207,9 @@ if __name__ == '__main__':
                                                events=events,
                                                events_width=1,
                                                events_dash='dot',
-                                               events_colour='black',
+                                               events_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
                                                events_annotations_font_size=12,
-                                               events_annotations_colour='black',
+                                               events_annotations_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
                                                yaxis_slider_title=None,
                                                show_text_labels=True,
                                                stacked=True,

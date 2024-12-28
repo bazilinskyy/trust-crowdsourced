@@ -1815,7 +1815,7 @@ class Analysis:
                                         dash=events_dash,
                                         width=events_width))
                 # draw other elements only is start and finish are not the same
-                if event['start'] is not event['end']:
+                if event['start'] != event['end']:
                     # draw finish
                     fig.add_shape(type='line',
                                   x0=event['end'],
