@@ -1613,7 +1613,7 @@ class Analysis:
                        xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680,
                        show_menu=False, name_file=None):
         """Plot keypresses with multiple variables as a filter.
-        
+
         Args:
             df (dataframe): dataframe with keypress data.
             events (list, optional): list of events to draw formatted as values on x axis.
@@ -1631,7 +1631,7 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
             name_file (str, optional): name of file to save.
-        
+
         Deleted Parameters:
             vert_lines (list, optional): list of events to draw formatted as values on x axis.
             events_annotations (list, optional): text of annotations for the vertical lines.
@@ -1748,7 +1748,7 @@ class Analysis:
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
                               fig_save_width=1320, fig_save_height=680):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
-        
+
         Args:
             df (dataframe): dataframe with stimuli data.
             y (list): column names of dataframe to plot.
