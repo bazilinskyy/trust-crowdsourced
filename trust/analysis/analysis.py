@@ -1754,7 +1754,7 @@ class Analysis:
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
                               font_family='Open Sans", verdana, arial, sans-serif', font_size=12, fig_save_width=1320,
-                              fig_save_height=680):
+                              legend_x=0.7, legend_y=0.95, fig_save_height=680):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -1784,6 +1784,8 @@ class Analysis:
             font_family (str, optional): font family to be used across the figure.
             font_size (int, optional): font size to be used across the figure.
             fig_save_width (int, optional): width of figures to be saved.
+            legend_x (float, optional): location of legend, percentage of x axis.
+            legend_y (float, optional): location of legend, percentage of y axis.
             fig_save_height (int, optional): height of figures to be saved.
         """
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
@@ -1915,7 +1917,7 @@ class Analysis:
         if stacked:
             fig.update_layout(barmode='stack')
         # legend
-        fig.update_layout(legend=dict(x=0.7, y=0.95))
+        fig.update_layout(legend=dict(x=legend_x, y=legend_y))
         # update font
         fig.update_layout(font=dict(family=font_family, size=font_size))
         # save file
@@ -1933,8 +1935,8 @@ class Analysis:
     def plot_kp_variable(self, df, variable, y_legend=None, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
                          yaxis_range=None, show_menu=False, show_title=True, save_file=True,
-                         font_family='Open Sans", verdana, arial, sans-serif', font_size=12, fig_save_width=1320,
-                         fig_save_height=680):
+                         font_family='Open Sans", verdana, arial, sans-serif', font_size=12, legend_x=0,
+                         legend_y=0, fig_save_width=1320, fig_save_height=680):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -1951,6 +1953,8 @@ class Analysis:
             save_file (bool, optional): flag for saving an html file with plot.
             font_family (str, optional): font family to be used across the figure.
             font_size (int, optional): font size to be used across the figure.
+            legend_x (float, optional): location of legend, percentage of x axis. 0 = use default value.
+            legend_y (float, optional): location of legend, percentage of y axis. 0 = use default value.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
         """
@@ -2028,6 +2032,9 @@ class Analysis:
                           yaxis_range=yaxis_range)
         # update font
         fig.update_layout(font=dict(family=font_family, size=font_size))
+        # legend
+        if legend_x and legend_y:
+            fig.update_layout(legend=dict(x=legend_x, y=legend_y))
         # save file
         if save_file:
             self.save_plotly(fig,
