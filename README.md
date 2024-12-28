@@ -42,7 +42,7 @@ For the analysis plots of the AOI data were made for two groups.
 ### All participants
 
 [![plot_all_all_videos](figures/kp_videos.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_videos.html)
-Percentage of participants pressing the response key as a function of elapsed video time for stimuli for all participants.
+Percentage of participants pressing the response key as a function of elapsed video time for all stimuli for all participants.
 
 [![plot_all_group](figures/kp_group-0-1-2-3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_group-0-1-2-3.html)
 Percentage of participants pressing the response key as a function of elapsed video time for groups of scenarios for all participants.

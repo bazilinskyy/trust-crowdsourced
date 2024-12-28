@@ -244,7 +244,8 @@ if __name__ == '__main__':
                                       'group',
                                       # custom labels for slider questions in the legend
                                       y_legend=['Group 1', 'Group 2', 'Group 3', 'Group 4'],
-                                      show_menu=False, show_title=False)
+                                      show_menu=False,
+                                      show_title=False)
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
