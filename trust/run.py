@@ -203,14 +203,12 @@ if __name__ == '__main__':
                                    'annotation': vert_line_annotations[x]})
                 # # plot keypresses for each video
                 # analysis.plot_kp_videos(df,
-                #                         vert_lines=vert_lines,
-                #                         vert_lines_width=1,
-                #                         vert_lines_dash='solid',
-                #                         vert_lines_colour='red',
-                #                         vert_lines_annotations=vert_line_annotations,
-                #                         vert_lines_annotations_position='top right',
-                #                         vert_lines_annotations_font_size=12,
-                #                         vert_lines_annotations_colour='red',
+                #                         events=events,
+                #                         events_width=1,
+                #                         events_dash='solid',
+                #                         events_colour='red',
+                #                         events_annotations_font_size=12,
+                #                         events_annotations_colour='red',
                 #                         name_file='kp_videos_'+','.join([str(i) for i in ids]))
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
@@ -218,14 +216,11 @@ if __name__ == '__main__':
                                                xaxis_kp_range=[0, 43],  # hardcode based on the longest stimulus
                                                yaxis_kp_range=[0, 60],  # hardcode based on the highest recorded value
                                                events=events,
-                                               vert_lines=vert_lines,
-                                               vert_lines_width=1,
-                                               vert_lines_dash='dash',
-                                               vert_lines_colour='black',
-                                               vert_lines_annotations=vert_line_annotations,
-                                               vert_lines_annotations_position='top right',
-                                               vert_lines_annotations_font_size=12,
-                                               vert_lines_annotations_colour='black',
+                                               events_width=1,
+                                               events_dash='dash',
+                                               events_colour='black',
+                                               events_annotations_font_size=12,
+                                               events_annotations_colour='black',
                                                yaxis_slider_title=None,
                                                show_text_labels=True,
                                                stacked=True,
