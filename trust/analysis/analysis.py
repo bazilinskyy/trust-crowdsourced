@@ -1606,23 +1606,20 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_videos(self, df, vert_lines=None, events_width=3, events_dash='solid',
-                       events_colour='green', events_annotations=None,
-                       events_annotations_position='top right', events_annotations_font_size=20,
-                       events_annotations_colour='blue', xaxis_title='Time (s)',
+    def plot_kp_videos(self, df, events=None, events_width=1, events_dash='dot',
+                       events_colour='black', events_annotations_font_size=20,
+                       events_annotations_colour='black', xaxis_title='Time (s)',
                        yaxis_title='Percentage of trials with response key pressed',
                        xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680,
                        show_menu=False, name_file=None):
         """Plot keypresses with multiple variables as a filter.
-
+        
         Args:
             df (dataframe): dataframe with keypress data.
-            vert_lines (list, optional): list of events to draw formatted as values on x axis.
+            events (list, optional): list of events to draw formatted as values on x axis.
             events_width (int, optional): thickness of the vertical lines.
             events_dash (str, optional): type of the vertical lines.
             events_colour (str, optional): colour of the vertical lines.
-            events_annotations (list, optional): text of annotations for the vertical lines.
-            events_annotations_position (str, optional): position of annotations for the vertical lines.
             events_annotations_font_size (int, optional): font size of annotations for the vertical lines.
             events_annotations_colour (str, optional): colour of annotations for the vertical lines.
             xaxis_title (str, optional): title for x axis.
@@ -1634,6 +1631,11 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
             name_file (str, optional): name of file to save.
+        
+        Deleted Parameters:
+            vert_lines (list, optional): list of events to draw formatted as values on x axis.
+            events_annotations (list, optional): text of annotations for the vertical lines.
+            events_annotations_position (str, optional): position of annotations for the vertical lines.
         """
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
@@ -1651,18 +1653,57 @@ class Analysis:
                                      name=os.path.splitext(index)[0]),
                           row=1,
                           col=1)
-        # draw vertical lines with annotations
-        if vert_lines:
-            for line, annotation in zip(vert_lines, events_annotations):
-                fig.add_vline(
-                    x=line,
-                    line_width=events_width,
-                    line_dash=events_dash,
-                    line_color=events_colour,
-                    annotation_text=annotation,
-                    annotation_position=events_annotations_position,
-                    annotation_font_size=events_annotations_font_size,
-                    annotation_font_color=events_annotations_colour)
+        # count lines to calculate increase in coordinates of drawing
+        counter_lines = 0
+        # draw lines with annotations for events
+        if events:
+            for event in events:
+                # draw start
+                fig.add_shape(type='line',
+                              x0=event['start'],
+                              y0=0,
+                              x1=event['start'],
+                              y1=yaxis_range[1] - counter_lines * 1.8 - 1,
+                              line=dict(color=events_colour,
+                                        dash='dot',
+                                        width=events_width),
+                              )
+                # draw finish
+                fig.add_shape(type='line',
+                              x0=event['end'],
+                              y0=0,
+                              x1=event['end'],
+                              y1=yaxis_range[1] - counter_lines * 1.8 - 1,
+                              line=dict(color=events_colour,
+                                        dash=events_dash,
+                                        width=events_width),
+                              )
+                # draw horizontal line
+                fig.add_annotation(ax=event['start'],
+                                   axref='x',
+                                   ay=yaxis_range[1] - counter_lines * 1.8 - 1,
+                                   ayref='y',
+                                   x=event['end'],
+                                   arrowcolor='black',
+                                   xref='x',
+                                   y=yaxis_range[1] - counter_lines * 1.8 - 1,
+                                   yref='y',
+                                   arrowwidth=events_width,
+                                   arrowside='end+start',
+                                   arrowsize=1,
+                                   arrowhead=2)
+                # draw text label
+                fig.add_annotation(text=event['annotation'],
+                                   # xref='paper', yref='paper',
+                                   x=(event['end'] + event['start']) / 2,
+                                   y=yaxis_range[1] - counter_lines * 1.8,  # use ylim value and draw lower
+                                   showarrow=False,
+                                   font=dict(size=events_annotations_font_size,
+                                             color=events_annotations_colour)
+                                   )
+                # increase counter of lines drawn
+                counter_lines = counter_lines + 1
+        # buttons with the names of stimuli
         buttons = list([dict(label='All',
                              method='update',
                              args=[{'visible': [True] * df.shape[0]},
@@ -1701,11 +1742,9 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_slider_videos(self, df, y: list, x=None,  events=None, events_width=3, events_dash='dot',
-                              events_colour='black',
-                              events_annotations_font_size=20,
-                              events_annotations_colour='black',
-                              xaxis_kp_title='Time (s)',
+    def plot_kp_slider_videos(self, df, y: list, x=None, events=None, events_width=1, events_dash='dot',
+                              events_colour='black', events_annotations_font_size=20,
+                              events_annotations_colour='black', xaxis_kp_title='Time (s)',
                               yaxis_kp_title='Percentage of trials with response key pressed',
                               xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,

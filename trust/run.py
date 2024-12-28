@@ -201,15 +201,6 @@ if __name__ == '__main__':
                                    'start': start,
                                    'end': end,
                                    'annotation': vert_line_annotations[x]})
-                # # plot keypresses for each video
-                # analysis.plot_kp_videos(df,
-                #                         events=events,
-                #                         events_width=1,
-                #                         events_dash='solid',
-                #                         events_colour='red',
-                #                         events_annotations_font_size=12,
-                #                         events_annotations_colour='red',
-                #                         name_file='kp_videos_'+','.join([str(i) for i in ids]))
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['slider-0', 'slider-1', 'slider-2'],
@@ -217,7 +208,7 @@ if __name__ == '__main__':
                                                yaxis_kp_range=[0, 60],  # hardcode based on the highest recorded value
                                                events=events,
                                                events_width=1,
-                                               events_dash='dash',
+                                               events_dash='dot',
                                                events_colour='black',
                                                events_annotations_font_size=12,
                                                events_annotations_colour='black',
@@ -225,7 +216,7 @@ if __name__ == '__main__':
                                                show_text_labels=True,
                                                stacked=True,
                                                yaxis_slider_show=False,
-                                               fig_save_width=1600,  # preserve ratio 225x152
+                                               fig_save_width=1600,   # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]))
             # keypresses of an individual stimulus for an individual pp
@@ -266,7 +257,6 @@ if __name__ == '__main__':
             # columns to drop in correlation matrix and scatter matrix
             columns_drop = ['description', 'video_length', 'min_dur', 'max_dur', 'kp', 'events', 'events_name',
                             'events_description', 'events_id', 'description', 'video_name']
-            print(df.columns)
             # set nan to -1
             df = mapping.fillna(-1)
             # create correlation matrix
