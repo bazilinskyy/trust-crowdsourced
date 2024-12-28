@@ -214,6 +214,8 @@ if __name__ == '__main__':
                                                show_text_labels=True,
                                                stacked=True,
                                                yaxis_slider_show=False,
+                                               font_family='Times New Roman',
+                                               font_size=16,
                                                fig_save_width=1600,   # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]))
@@ -230,13 +232,17 @@ if __name__ == '__main__':
             analysis.plot_kp_variable(mapping,
                                       'ego_car',
                                       y_legend=['AV', 'MDV'],
-                                      show_menu=False, 
+                                      font_family='Times New Roman',
+                                      font_size=16,
+                                      show_menu=False,
                                       show_title=False)
             # keypress based on the type of ego car
             # todo: double check that order of AV/MDV is correct
             analysis.plot_kp_variable(mapping,
                                       'target_car',
                                       y_legend=['AV', 'MDV'],
+                                      font_family='Times New Roman',
+                                      font_size=16,
                                       show_menu=False,
                                       show_title=False)
             # keypress based on the pp group
@@ -244,6 +250,8 @@ if __name__ == '__main__':
                                       'group',
                                       # custom labels for slider questions in the legend
                                       y_legend=['Group 1', 'Group 2', 'Group 3', 'Group 4'],
+                                      font_family='Times New Roman',
+                                      font_size=16,
                                       show_menu=False,
                                       show_title=False)
         # Visualisation of stimulus data
