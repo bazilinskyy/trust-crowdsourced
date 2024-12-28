@@ -224,13 +224,13 @@ if __name__ == '__main__':
             #                           stimulus='video_2',
             #                           conf_interval=0.95)
             # keypresses of all videos individually
-            analysis.plot_kp_videos(mapping, show_menu=False)
+            analysis.plot_kp_videos(mapping, show_menu=False, show_title=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'ego_car', show_menu=False)
+            analysis.plot_kp_variable(mapping, 'ego_car', show_menu=False, show_title=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'target_car', show_menu=False)
+            analysis.plot_kp_variable(mapping, 'target_car', show_menu=False, show_title=False)
             # keypress based on the pp group
-            analysis.plot_kp_variable(mapping, 'group', show_menu=False)
+            analysis.plot_kp_variable(mapping, 'group', show_menu=False, show_title=False)
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli

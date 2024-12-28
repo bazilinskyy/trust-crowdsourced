@@ -1611,7 +1611,7 @@ class Analysis:
                        events_annotations_colour='black', xaxis_title='Time (s)',
                        yaxis_title='Percentage of trials with response key pressed',
                        xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680,
-                       show_menu=False, name_file=None):
+                       show_menu=False, show_title=True, name_file=None):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1630,6 +1630,7 @@ class Analysis:
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
+            show_title (bool, optional): show title on top of figure.
             name_file (str, optional): name of file to save.
 
         Deleted Parameters:
@@ -1722,7 +1723,8 @@ class Analysis:
             updatemenus = [dict(x=-0.15, buttons=buttons, showactive=True)]
             fig['layout']['updatemenus'] = updatemenus
         # update layout
-        fig['layout']['title'] = 'Keypresses for individual stimuli'
+        if show_title:
+            fig['layout']['title'] = 'Keypresses for individual stimuli'
         # update layout
         fig.update_layout(template=self.template,
                           xaxis_title=xaxis_title,
@@ -1920,7 +1922,8 @@ class Analysis:
 
     def plot_kp_variable(self, df, variable, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                         yaxis_range=None, show_menu=False, save_file=True, fig_save_width=1320, fig_save_height=680):
+                         yaxis_range=None, show_menu=False, show_title=True, save_file=True, fig_save_width=1320,
+                         fig_save_height=680):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -1932,6 +1935,7 @@ class Analysis:
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
+            show_title (bool, optional): show title on top of figure.
             save_file (bool, optional): flag for saving an html file with plot.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
@@ -1995,7 +1999,8 @@ class Analysis:
             updatemenus = [dict(x=-0.15, buttons=buttons, showactive=True)]
             fig['layout']['updatemenus'] = updatemenus
         # update layout
-        fig['layout']['title'] = 'Keypresses for ' + variable
+        if show_title:
+            fig['layout']['title'] = 'Keypresses for ' + variable
         # update layout
         fig.update_layout(template=self.template,
                           xaxis_title=xaxis_title,
