@@ -147,6 +147,9 @@ class Appen:
             tr.common.save_to_p(self.file_p, df, 'appen data')
         # save to csv
         if self.save_csv:
+            # replace line breaks to avoid problem with lines spanning over multiple rows
+            df.replace(to_replace=[r"\\t|\\n|\\r", "\t|\n|\r"], value=["", ""], regex=True, inplace=True)
+            # save to file
             df.to_csv(os.path.join(tr.settings.output_dir, self.file_csv))
             logger.info('Saved appen data to csv file {}', self.file_csv)
         # assign to attribute
@@ -160,8 +163,7 @@ class Appen:
             2. People who did not give consent.
             3. People that are under 18 years of age.
             4. People who completed the study in under 5 min.
-            5. People who completed the study from the same IP more than once
-               (the 1st data entry is retained).
+            5. People who completed the study from the same IP more than once (the 1st data entry is retained).
             6. People who used the same `worker_code` multiple times.
             7. People with invalid `worker_id`.
         """
