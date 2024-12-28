@@ -1920,7 +1920,7 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_variable(self, df, variable, values=None, xaxis_title='Time (s)',
+    def plot_kp_variable(self, df, variable, y_legend=None, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
                          yaxis_range=None, show_menu=False, show_title=True, save_file=True, fig_save_width=1320,
                          fig_save_height=680):
@@ -1929,6 +1929,7 @@ class Analysis:
         Args:
             df (dataframe): dataframe with keypress data.
             variable (str): variable to plot.
+            y_legend (list, optional): names for variables to be shown in the legend.
             values (list, optional): values of variable to plot. If None, all values are plotted.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
@@ -1972,11 +1973,16 @@ class Analysis:
         # plotly figure
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
         # plot each variable in data
-        for data in extracted_data:
-            fig.add_trace(go.Scatter(y=data['data'],
+        for data in range(len(extracted_data)):
+            # custom labels for legend
+            if y_legend:
+                name = y_legend[data]
+            else:
+                name = str(extracted_data[data]['value'])
+            fig.add_trace(go.Scatter(y=extracted_data[data]['data'],
                                      mode='lines',
                                      x=times,
-                                     name=str(data['value'])),
+                                     name=name),
                           row=1,
                           col=1)
         # create tabs

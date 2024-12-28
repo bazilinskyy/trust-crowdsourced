@@ -226,11 +226,25 @@ if __name__ == '__main__':
             # keypresses of all videos individually
             analysis.plot_kp_videos(mapping, show_menu=False, show_title=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'ego_car', show_menu=False, show_title=False)
+            # todo: double check that order of AV/MDV is correct
+            analysis.plot_kp_variable(mapping,
+                                      'ego_car',
+                                      y_legend=['AV', 'MDV'],
+                                      show_menu=False, 
+                                      show_title=False)
             # keypress based on the type of ego car
-            analysis.plot_kp_variable(mapping, 'target_car', show_menu=False, show_title=False)
+            # todo: double check that order of AV/MDV is correct
+            analysis.plot_kp_variable(mapping,
+                                      'target_car',
+                                      y_legend=['AV', 'MDV'],
+                                      show_menu=False,
+                                      show_title=False)
             # keypress based on the pp group
-            analysis.plot_kp_variable(mapping, 'group', show_menu=False, show_title=False)
+            analysis.plot_kp_variable(mapping,
+                                      'group',
+                                      # custom labels for slider questions in the legend
+                                      y_legend=['Group 1', 'Group 2', 'Group 3', 'Group 4'],
+                                      show_menu=False, show_title=False)
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli

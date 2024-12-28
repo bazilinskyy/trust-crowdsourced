@@ -41,14 +41,17 @@ For the analysis plots of the AOI data were made for two groups.
 ## Keypress analysis
 ### All participants
 
+[![plot_all_all_videos](figures/kp_videos.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_videos.html)
+Percentage of participants pressing the response key as a function of elapsed video time for stimuli for all participants.
+
 [![plot_all_group](figures/kp_group-0-1-2-3.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_group-0-1-2-3.html)
-Percentage of participants pressing the response key as a function of elapsed video time for for groups of scenarios for all participants.
+Percentage of participants pressing the response key as a function of elapsed video time for groups of scenarios for all participants.
 
 [![plot_all_ego](figures/kp_ego_car-0-1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_ego_car-0-1.html)
-Percentage of participants pressing the response key as a function of elapsed video time for for two types of ego car for all participants.
+Percentage of participants pressing the response key as a function of elapsed video time for two types of ego car for all participants.
 
 [![plot_all_target](figures/kp_target_car-0-1.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_target_car-0-1.html)
-Percentage of participants pressing the response key as a function of elapsed video time for for two types of target car for all participants.
+Percentage of participants pressing the response key as a function of elapsed video time for two types of target car for all participants.
 
 [![plot_all_0](figures/kp_videos_sliders_0,21,42,63.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_videos_sliders_0,21,42,63.html)
 Percentage of participants pressing the response key as a function of elapsed video time and responses to post-stimulus questions for scenario 0 (baseline) for all participants.
