@@ -30,15 +30,10 @@ Configuration of the project needs to be defined in `trust-crowdsourced/config`.
 ## Preparation of stimuli
 The source files of the video stimuli are outputted from Unity to `config.path_source`. To prepare them for the crowdsourced setup `python trust-crowdsourced/preparation/process_videos.py`. Videos will be outputted to `config.path_stimuli`.
 
-## Troubleshooting
-### Troubleshooting setup
-#### ERROR: trust-crowdsourced is not a valid editable requirement
-Check that you are indeed in the parent folder for running command `pip install -e trust-crowdsourced`. This command will not work from inside of the folder containing the repo.
+## Analysis
+Analysis can be started by running python `trust-crowdsourcing/crossing/run.py`. A number of CSV files used for data processing are saved in `trust-crowdsourcing/_output`. Visualisations of all data are saved in `trust-crowdsourcing/_output/figures/`.
 
-## Figures
-For the analysis plots of the AOI data were made for two groups. 
-
-## Keypress analysis
+## Keypress data
 ### All participants
 
 [![plot_all_all_videos](figures/kp_videos.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/kp_videos.html)
@@ -276,3 +271,8 @@ Map of distribution of gender.
 #### Technical characteristics of participants
 [![dimensions of browser](figures/scatter_window_width-window_height.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/scatter_window_width-window_height.html)  
 Dimensions of browser.
+
+## Troubleshooting
+### Troubleshooting setup
+#### ERROR: trust-crowdsourced is not a valid editable requirement
+Check that you are indeed in the parent folder for running command `pip install -e trust-crowdsourced`. This command will not work from inside of the folder containing the repo.
