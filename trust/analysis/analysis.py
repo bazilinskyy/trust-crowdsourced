@@ -51,7 +51,7 @@ class Analysis:
     polygons = None
 
     def __init__(self):
-        # set font to Times
+        # set font globally
         plt.rcParams['font.family'] = tr.common.get_configs('font_family')
 
     def save_all_frames(self, df, mapping, id_video, t):
@@ -675,7 +675,7 @@ class Analysis:
         self.reset_font()
 
     def scatter_matrix(self, df, columns_drop, color=None, symbol=None, diagonal_visible=False, xaxis_title=None,
-                       yaxis_title=None, save_file=False):
+                       yaxis_title=None, save_file=False, font_family=None, font_size=None):
         """
         Output scatter matrix.
 
@@ -688,6 +688,8 @@ class Analysis:
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating scatter matrix.')
         # drop columns
@@ -705,6 +707,20 @@ class Analysis:
         # hide diagonal
         if not diagonal_visible:
             fig.update_traces(diagonal_visible=False)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'scatter_matrix', self.folder)
@@ -714,7 +730,7 @@ class Analysis:
 
     def bar(self, df, y: list, y_legend=None, x=None, stacked=False, pretty_text=False, orientation='v',
             xaxis_title=None, yaxis_title=None, show_all_xticks=False, show_all_yticks=False, show_text_labels=False,
-            save_file=False):
+            save_file=False, font_family=None, font_size=None):
         """
         Barplot for questionnaire data. Passing a list with one variable will output a simple barplot; passing a list
         of variables will output a grouped barplot.
@@ -733,6 +749,8 @@ class Analysis:
             show_all_yticks (bool, optional): show all ticks on y axis.
             show_text_labels (bool, optional): output automatically positioned text labels.
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating bar chart for x={} and y={}.', x, y)
         # prettify text
@@ -803,6 +821,20 @@ class Analysis:
         # stacked bar chart
         if stacked:
             fig.update_layout(barmode='stack')
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             file_name = 'bar_' + '-'.join(str(val) for val in y) + '_' + '-'.join(str(val) for val in x)
@@ -813,7 +845,8 @@ class Analysis:
 
     def scatter(self, df, x, y, color=None, symbol=None, size=None, text=None, trendline=None, hover_data=None,
                 marker_size=None,  pretty_text=False, marginal_x='violin', marginal_y='violin', xaxis_title=None,
-                yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True):
+                yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True, font_family=None,
+                font_size=None):
         """
         Output scatter plot of variables x and y with optional assignment of colour and size.
 
@@ -836,6 +869,8 @@ class Analysis:
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating scatter plot for x={} and y={}.', x, y)
         # using size and marker_size is not supported
@@ -900,6 +935,20 @@ class Analysis:
         # change marker size
         if marker_size:
             fig.update_traces(marker=dict(size=marker_size))
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'scatter_' + x + '-' + y, self.folder)
@@ -909,7 +958,8 @@ class Analysis:
 
     def scatter_mult(self, df, x, y, color=None, symbol=None, text=None, trendline=None, hover_data=None,
                      marker_size=None, pretty_text=False, marginal_x='violin', marginal_y='violin', xaxis_title=None,
-                     yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True):
+                     yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True, font_family=None,
+                     font_size=None):
         """
         Output scatter plot of multiple variables x and y with optional assignment of colour and size.
 
@@ -930,6 +980,8 @@ class Analysis:
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         # todo: extend with multiple columns for y
         logger.info('Creating scatter plot for x={} and y={}.', x, y)
@@ -1006,6 +1058,20 @@ class Analysis:
         # change marker size
         if marker_size:
             fig.update_traces(marker=dict(size=marker_size))
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'scatter_' + ','.join(x) + '-' + y, self.folder)
@@ -1014,7 +1080,8 @@ class Analysis:
             fig.show()
 
     def scatter_et(self, df, x, y, t, pp, id_video, pretty_text=False, marginal_x='violin', marginal_y='violin',
-                   xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=True):
+                   xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=True,
+                   font_family=None, font_size=None):
         """
         Output scatter plot of x and y.
 
@@ -1033,6 +1100,8 @@ class Analysis:
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating scatter_map for x={} and y={}.', x, y)
         # extracting x and y values for given ID participant
@@ -1066,6 +1135,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=[0, width],
                           yaxis_range=[0, height])
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'scatter_map_' + id_video+'_participant_' + pp, self.folder)
@@ -1074,7 +1157,8 @@ class Analysis:
             fig.show()
 
     def heatmap(self, df, x, y, t, id_video, pp, pretty_text=False, marginal_x='violin', marginal_y='violin',
-                xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=True):
+                xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=True,
+                font_family=None, font_size=None):
         """
         Output heatmap plot of variables x and y.
 
@@ -1088,6 +1172,8 @@ class Analysis:
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating heatmap for x={} and t={}.', x, y)
         width = tr.common.get_configs('stimulus_width')
@@ -1163,6 +1249,20 @@ class Analysis:
                                                                      transition={'duration': 10},
                                                                      frame=dict(redraw=True,
                                                                                 duration=100))])])])
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'heatmap_animation' + id_video+'_participant_' + pp, self.folder)
@@ -1174,7 +1274,7 @@ class Analysis:
             logger.error('Show not implemented.')
 
     def hist(self, df, x, nbins=None, color=None, pretty_text=False, marginal='rug', xaxis_title=None,
-             yaxis_title=None, save_file=True):
+             yaxis_title=None, save_file=True, font_family=None, font_size=None):
         """
         Output histogram of time of participation.
 
@@ -1188,6 +1288,8 @@ class Analysis:
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating histogram for x={}.', x)
         # using colour with multiple values to plot not supported
@@ -1217,6 +1319,20 @@ class Analysis:
         fig.update_layout(xaxis=dict(tickformat='digits'))
         # update layout
         fig.update_layout(template=self.template, xaxis_title=xaxis_title, yaxis_title=yaxis_title)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'hist_' + '-'.join(str(val) for val in x), self.folder)
@@ -1224,7 +1340,7 @@ class Analysis:
         else:
             fig.show()
 
-    def hist_stim_duration_time(self, df, time_ranges, nbins=0, save_file=True):
+    def hist_stim_duration_time(self, df, time_ranges, nbins=0, save_file=True, font_family=None, font_size=None):
         """
         Output distribution of stimulus durations for time ranges.
 
@@ -1233,6 +1349,8 @@ class Analysis:
             time_ranges (dictionaries): time ranges for analysis.
             nbins (int, optional): number of bins in histogram.
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating histogram of stimulus durations for time ranges.')
         # columns with durations
@@ -1259,6 +1377,20 @@ class Analysis:
         fig.update_layout(xaxis=dict(tickformat='digits'))
         # update layout
         fig.update_layout(template=self.template)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig,
@@ -1273,7 +1405,8 @@ class Analysis:
 
     def plot_kp(self, df, conf_interval=None, xaxis_title='Time (s)',
                 yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680):
+                yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680, font_family=None, 
+                font_size=None):
         """Plot keypress data.
 
         Args:
@@ -1286,6 +1419,8 @@ class Analysis:
             save_file (bool, optional): flag for saving an html file with plot.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating visualisations of keypresses for all data.')
         # calculate times
@@ -1307,7 +1442,7 @@ class Analysis:
         fig = px.line(y=kp_data, x=times, title='Keypresses for all stimuli')
         # show confidence interval
         if conf_interval:
-            # calculate condidence interval
+            # calculate confidence interval
             (y_lower, y_upper) = self.get_conf_interval_bounds(kp_data, conf_interval)
             # plot interval
             fig.add_trace(go.Scatter(name='Upper bound',
@@ -1335,6 +1470,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'kp', self.folder, width=fig_save_width, height=fig_save_height)
@@ -1348,7 +1497,7 @@ class Analysis:
                       events_annotations_position='top right', events_annotations_font_size=20,
                       events_annotations_colour='blue', xaxis_title='Time (s)',
                       yaxis_title='Percentage of trials with response key pressed', xaxis_range=None, yaxis_range=None,
-                      save_file=True, fig_save_width=1320, fig_save_height=680):
+                      save_file=True, fig_save_width=1320, fig_save_height=680, font_family=None, font_size=None):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1371,6 +1520,8 @@ class Analysis:
             save_file (bool, optional): flag for saving an html file with plot.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         # extract video length
         video_len = df.loc[stimulus]['video_length']
@@ -1425,6 +1576,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'kp_' + stimulus, self.folder, width=fig_save_width, height=fig_save_height)
@@ -1432,11 +1597,9 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_video_pp(self, df, dt, stimulus, pp,
-                         conf_interval=None, trendline=None,
-                         xaxis_title='Time (s)',
-                         yaxis_title='response key pressed',
-                         xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680):
+    def plot_kp_video_pp(self, df, dt, stimulus, pp, conf_interval=None, trendline=None, xaxis_title='Time (s)',
+                         yaxis_title='response key pressed', xaxis_range=None, yaxis_range=None, save_file=True,
+                         fig_save_width=1320, fig_save_height=680, font_family=None, font_size=None):
         """Plot keypresses data of one stimulus for 1 participant.
 
         Args:
@@ -1453,6 +1616,8 @@ class Analysis:
             save_file (bool, optional): flag for saving an html file with plot.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         # todo: implement for 1 pp
         # extract video length
@@ -1478,6 +1643,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=[0, len(times)],
                           yaxis_range=yaxis_range)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'kp_' + stimulus, self.folder, width=fig_save_width, height=fig_save_height)
@@ -1487,7 +1666,23 @@ class Analysis:
 
     def plot_kp_animate(self, df, stimulus, pp='all', extension='mp4', conf_interval=None, xaxis_title='Time (s)',
                         yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                        yaxis_range=None, save_file=True):
+                        yaxis_range=None, save_file=True, font_family=None, font_size=None):
+        """Animation of keypress data.
+
+        Args:
+           df (dataframe): dataframe with stimulus data.
+            stimulus (str): name of stimulus.
+            pp (str): ID of participant.
+            extension (str, optional): file extension.
+            conf_interval (None, optional): show confidence interval.
+            xaxis_title (str, optional): title for x axis.
+            yaxis_title (str, optional): title for y axis.
+            xaxis_range (list, optional): range of x axis in format [min, max].
+            yaxis_range (list, optional): range of y axis in format [min, max].
+            save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
+        """
         # extract video length
         video_len = df.loc[stimulus]['video_length']
         # calculate times
@@ -1548,6 +1743,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'kp_animation' + stimulus, self.folder)
@@ -1557,7 +1766,7 @@ class Analysis:
 
     def plot_video_data(self, df, stimulus, cols, extension='mp4', conf_interval=None, xaxis_title='Time (s)',
                         yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                        yaxis_range=None, save_file=True):
+                        yaxis_range=None, save_file=True, font_family=None, font_size=None):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1571,6 +1780,8 @@ class Analysis:
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         # plotly figure to make plots in
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
@@ -1606,6 +1817,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'video_data_' + stimulus, self.folder)
@@ -1613,12 +1838,11 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_videos(self, df, events=None, events_width=1, events_dash='dot',
-                       events_colour='black', events_annotations_font_size=20,
-                       events_annotations_colour='black', xaxis_title='Time (s)',
-                       yaxis_title='Percentage of trials with response key pressed',
-                       xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680,
-                       show_menu=False, show_title=True, name_file=None, font_size=12,):
+    def plot_kp_videos(self, df, events=None, events_width=1, events_dash='dot', events_colour='black',
+                       events_annotations_font_size=20, events_annotations_colour='black', xaxis_title='Time (s)',
+                       yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
+                       yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680, show_menu=False,
+                       show_title=True, name_file=None, font_family=None, font_size=None):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1639,12 +1863,8 @@ class Analysis:
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
             show_title (bool, optional): show title on top of figure.
             name_file (str, optional): name of file to save.
-            font_size (int, optional): font size to be used across the figure.
-
-        Deleted Parameters:
-            vert_lines (list, optional): list of events to draw formatted as values on x axis.
-            events_annotations (list, optional): text of annotations for the vertical lines.
-            events_annotations_position (str, optional): position of annotations for the vertical lines.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
@@ -1739,8 +1959,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
-        # update font
-        fig.update_layout(font=dict(size=font_size))
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             if not name_file:
@@ -1758,7 +1990,8 @@ class Analysis:
                               xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
-                              font_size=12, fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680):
+                              fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
+                              font_size=None):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -1790,6 +2023,8 @@ class Analysis:
             legend_x (float, optional): location of legend, percentage of x axis.
             legend_y (float, optional): location of legend, percentage of y axis.
             fig_save_height (int, optional): height of figures to be saved.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
@@ -1921,8 +2156,20 @@ class Analysis:
             fig.update_layout(barmode='stack')
         # legend
         fig.update_layout(legend=dict(x=legend_x, y=legend_y))
-        # update font
-        fig.update_layout(font=dict(size=font_size))
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             if not name_file:
@@ -1937,8 +2184,9 @@ class Analysis:
 
     def plot_kp_variable(self, df, variable, y_legend=None, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                         yaxis_range=None, show_menu=False, show_title=True, save_file=True, font_size=12,
-                         legend_x=0, legend_y=0, fig_save_width=1320, fig_save_height=680):
+                         yaxis_range=None, show_menu=False, show_title=True, save_file=True,
+                         legend_x=0, legend_y=0, fig_save_width=1320, fig_save_height=680, font_family=None, 
+                         font_size=None):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -1958,6 +2206,8 @@ class Analysis:
             legend_y (float, optional): location of legend, percentage of y axis. 0 = use default value.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating visualisation of keypresses based on values {} of variable {}.', values, variable)
         # calculate times
@@ -2031,8 +2281,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
-        # update font
-        fig.update_layout(font=dict(size=font_size))
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # legend
         if legend_x and legend_y:
             fig.update_layout(legend=dict(x=legend_x, y=legend_y))
@@ -2050,9 +2312,9 @@ class Analysis:
             fig.show()
 
     def plot_kp_variables_or(self, df, variables, xaxis_title='Time (s)',
-                             yaxis_title='Percentage of trials with response key pressed',
-                             xaxis_range=None, yaxis_range=None, show_menu=False,
-                             save_file=True, fig_save_width=1320, fig_save_height=680):
+                             yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
+                             yaxis_range=None, show_menu=False, save_file=True, fig_save_width=1320,
+                             fig_save_height=680, font_family=None, font_size=None):
         """Separate plots of keypresses with multiple variables as a filter.
 
         Args:
@@ -2066,6 +2328,8 @@ class Analysis:
             save_file (bool, optional): flag for saving an html file with plot.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating visualisation of keypresses based on variables {} with OR filter.', variables)
         # build string with variables
@@ -2134,6 +2398,20 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'kp_or' + variables_str, self.folder, remove_margins=True, width=fig_save_width,
@@ -2145,7 +2423,7 @@ class Analysis:
     def plot_kp_variables_and(self, df, plot_names, variables_list, conf_interval=None, xaxis_title='Time (s)',
                               yaxis_title='Percentage of trials with response key pressed',
                               xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320,
-                              fig_save_height=680):
+                              fig_save_height=680, font_family=None, font_size=None):
         """Separate plots of keypresses with multiple variables as a filter.
 
         Args:
@@ -2160,9 +2438,8 @@ class Analysis:
             save_file (bool, optional): flag for saving an html file with plot.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
-
-        Deleted Parameters:
-            variables (list): variables to plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
 
         Returns:
             TYPE: Description
@@ -2240,6 +2517,20 @@ class Analysis:
                               xaxis_range=xaxis_range,
                               yaxis_range=yaxis_range)
             counter = counter + 1
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'kp_and' + variables_str, self.folder, remove_margins=True, width=fig_save_width,
@@ -2248,12 +2539,14 @@ class Analysis:
         else:
             fig.show()
 
-    def map(self, df, color, save_file=True):
+    def map(self, df, color, save_file=True, font_family=None, font_size=None):
         """Map of countries of participation with colour based on column in dataframe.
 
         Args:
             df (dataframe): dataframe with keypress data.
             save_file (bool, optional): flag for saving an html file with plot.
+            font_family (str, optional): font family to be used across the figure. None = use config value.
+            font_size (int, optional): font size to be used across the figure. None = use config value.
         """
         logger.info('Creating visualisation of heatmap of participants by  country with colour defined by {}.', color)
         # create map
@@ -2264,6 +2557,20 @@ class Analysis:
                             color_continuous_scale=px.colors.sequential.Plasma)
         # update layout
         fig.update_layout(template=self.template)
+        # update font family
+        if font_family:
+            # use given value
+            fig.update_layout(font=dict(family=font_family))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(family=tr.common.get_configs('font_family')))
+        # update font size
+        if font_size:
+            # use given value
+            fig.update_layout(font=dict(size=font_size))
+        else:
+            # use value from config file
+            fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
             self.save_plotly(fig, 'map_' + color, self.folder)
