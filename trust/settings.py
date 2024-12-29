@@ -7,6 +7,7 @@ cache_dir = os.path.join(root_dir, '_cache')
 log_dir = os.path.join(root_dir, '_logs')
 output_dir = os.path.join(root_dir, '_output')
 
+# create local folder structure
 for path in [output_dir, log_dir]:
     if not os.path.exists(path):
         os.makedirs(path)

@@ -4,7 +4,6 @@ import os
 import json
 import pickle
 import sys
-
 import trust as tr
 
 logger = tr.CustomLogger(__name__)  # use custom logger
@@ -18,8 +17,7 @@ def get_secrets(entry_name: str, secret_file_name: str = 'secret') -> Dict[str, 
         return json.load(f)[entry_name]
 
 
-def get_configs(entry_name: str, config_file_name: str = 'config',
-                config_default_file_name: str = 'default.config'):
+def get_configs(entry_name: str, config_file_name: str = 'config', config_default_file_name: str = 'default.config'):
     """
     Open the config file and return the requested entry.
     If no config file is found, open default.config.
@@ -36,8 +34,7 @@ def get_configs(entry_name: str, config_file_name: str = 'config',
     return content[entry_name]
 
 
-def check_config(config_file_name: str = 'config',
-                 config_default_file_name: str = 'default.config'):
+def check_config(config_file_name: str = 'config', config_default_file_name: str = 'default.config'):
     """
     Check if config file has at least as many rows as default.config.
     """
@@ -49,8 +46,7 @@ def check_config(config_file_name: str = 'config',
         logger.error('Config file {} not found.', config_file_name)
         return False
     except json.decoder.JSONDecodeError:
-        logger.error('Config file badly formatted. Please update based on' +
-                     ' default.config.', config_file_name)
+        logger.error('Config file badly formatted. Please update based on default.config.', config_file_name)
         return False
     # load default.config file
     try:
@@ -112,6 +108,5 @@ def load_from_p(file, desription_data='data'):
     path = os.path.join(os.path.join(tr.settings.root_dir, 'trust'), file)
     with open(path, 'rb') as f:
         data = pickle.load(f)
-    logger.info('Loaded ' + desription_data + ' from pickle file {}.',
-                file)
+    logger.info('Loaded ' + desription_data + ' from pickle file {}.', file)
     return data
