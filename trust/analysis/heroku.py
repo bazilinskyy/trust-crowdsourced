@@ -374,6 +374,10 @@ class Heroku:
             tr.common.save_to_p(self.file_p, df, 'heroku data')
         # save to csv
         if self.save_csv:
+            # build path
+            if not os.path.exists(tr.settings.output_dir):
+                os.makedirs(tr.settings.output_dir)
+            # save to file
             df.to_csv(os.path.join(tr.settings.output_dir, self.file_data_csv), index=False)
             logger.info('Saved heroku data to csv file {}', self.file_data_csv + '.csv')
         # update attribute

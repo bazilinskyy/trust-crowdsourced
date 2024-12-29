@@ -149,6 +149,9 @@ class Appen:
         if self.save_csv:
             # replace line breaks to avoid problem with lines spanning over multiple rows
             df.replace(to_replace=[r"\\t|\\n|\\r", "\t|\n|\r"], value=["", ""], regex=True, inplace=True)
+            # create folder if not present
+            if not os.path.exists(tr.settings.output_dir):
+                os.makedirs(tr.settings.output_dir)
             # save to file
             df.to_csv(os.path.join(tr.settings.output_dir, self.file_csv))
             logger.info('Saved appen data to csv file {}', self.file_csv)

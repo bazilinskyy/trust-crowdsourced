@@ -37,8 +37,8 @@ CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = True  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 # todo: code for eye gaze analysis does not run on mac
@@ -446,8 +446,8 @@ if __name__ == '__main__':
                                           t='video_length',
                                           save_anim=True,
                                           save_frames=True)
-        # stitch animations into 1 long videos
-        analysis.create_animation_all_stimuli(num_stimuli)
+                # stitch animations into 1 long videos
+                analysis.create_animation_all_stimuli(num_stimuli)
         # collect figure objects
         figures = [manager.canvas.figure
                    for manager in

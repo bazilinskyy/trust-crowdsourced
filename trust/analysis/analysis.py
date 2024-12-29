@@ -320,7 +320,7 @@ class Analysis:
         """
         logger.info('Creating long video with all animations for {} stimuli.', num_stimuli)
         # create path
-        path = tr.settings.output_dir + self.folder
+        path = os.path.join(tr.settings.output_dir, self.folder)
         if not os.path.exists(path):
             os.makedirs(path)
         # file with list of animations
@@ -632,13 +632,14 @@ class Analysis:
         # clear animation from memory
         plt.close(self.fig)
 
-    def corr_matrix(self, df, columns_drop, save_file=False):
+    def corr_matrix(self, df, columns_drop, filename='corr_matrix.jpg', save_file=False):
         """
         Output correlation matrix.
 
         Args:
             df (dataframe): mapping dataframe.
             columns_drop (list): columns dataframes in to ignore.
+            filename (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
         """
         logger.info('Creating correlation matrix.')
@@ -670,7 +671,7 @@ class Analysis:
             item.set_rotation(55)
         # save image
         if save_file:
-            self.save_fig('all', fig, self.folder, '_corr_matrix.jpg', pad_inches=0.05)
+            self.save_fig(fig, filename, self.folder, pad_inches=0.05)
         # revert font
         self.reset_font()
 
@@ -2299,29 +2300,30 @@ class Analysis:
         # save as png
         fig.write_image(os.path.join(path, name + '.png'), width=width, height=height)
 
-    def save_fig(self, image, fig, output_subdir, suffix, pad_inches=0):
+    def save_fig(self, fig, name, output_subdir, remove_margins=False, pad_inches=0):
         """
         Helper function to save figure as file.
 
         Args:
-            image (str): name of figure to save.
             fig (matplotlib figure): figure object.
+            name (str): name of figure to save.
             output_subdir (str): folder for saving file.
-            suffix (str): suffix to add in the end of the filename.
+            remove_margins (bool, optional): remove white margins around EPS figure.
             pad_inches (int, optional): padding.
         """
-        # extract name of stimulus after last slash
-        file_no_path = image.rsplit('/', 1)[-1]
-        # remove extension
-        file_no_path = os.path.splitext(file_no_path)[0]
-        # turn name into valid file name
-        file_no_path = self.slugify(file_no_path)
-        # create path
-        path = tr.settings.output_dir + output_subdir
+        # build path
+        path = os.path.join(tr.settings.output_dir, output_subdir)
         if not os.path.exists(path):
             os.makedirs(path)
+        # limit name to 255 char
+        if len(path) + len(name) > 250:
+            name = name[:255 - len(path) - 5]
+        # remove white margins
+        if remove_margins:
+            fig.update_layout(margin=dict(l=2, r=2, t=20, b=12))
         # save file
-        plt.savefig(path + file_no_path + suffix, bbox_inches='tight', pad_inches=pad_inches)
+        print(os.path.join(path, name))
+        plt.savefig(os.path.join(path, name), bbox_inches='tight', pad_inches=pad_inches)
         # clear figure from memory
         plt.close(fig)
 
