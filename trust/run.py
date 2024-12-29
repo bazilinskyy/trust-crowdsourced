@@ -34,10 +34,10 @@ FILTER_DATA = False  # filter Appen and heroku data
 CLEAN_DATA = False  # clean Appen data
 REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = True  # update mapping with keypress data
+UPDATE_MAPPING = False  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
@@ -352,16 +352,86 @@ if __name__ == '__main__':
                           color='country',
                           pretty_text=True,
                           save_file=True)
-            # driving with AVs
+            # histogram of driving frequency
+            analysis.hist(appen_data,
+                          x=['driving_freq'],
+                          pretty_text=True,
+                          save_file=True)
+            # grouped barchart of DBQ data
+            analysis.hist(appen_data,
+                          x=['dbq1_anger',
+                             'dbq2_speed_motorway',
+                             'dbq3_speed_residential',
+                             'dbq4_headway',
+                             'dbq5_traffic_lights',
+                             'dbq6_horn',
+                             'dbq7_mobile'],
+                          marginal='violin',
+                          pretty_text=True,
+                          save_file=True)
+            # histogram of the year of license
+            analysis.hist(appen_data,
+                          x=['year_license'],
+                          pretty_text=True,
+                          save_file=True)
+            # histogram of the highest level of education
+            analysis.hist(appen_data,
+                          x=['education'],
+                          pretty_text=True,
+                          save_file=True)
+            # histogram of communication with other
+            analysis.hist(appen_data,
+                          x=['communcation_others'],
+                          marginal='violin',
+                          pretty_text=True,
+                          save_file=True)
+            # grouped barchart of technology questions
+            analysis.hist(appen_data,
+                          x=['technology_worried',
+                             'technology_enjoyment',
+                             'technology_lives_easier',
+                             'technology_lives_change',
+                             'technology_not_interested'],
+                          marginal='violin',
+                          pretty_text=True,
+                          save_file=True)
+            # scatter plot of machines questions
+            analysis.scatter(appen_data,
+                             x='machines_roles',
+                             y='machines_profit',
+                             color='year_license',
+                             pretty_text=True,
+                             save_file=True)
+            # histogram of attitude towards AD
+            analysis.hist(appen_data,
+                          x=['attitude_ad'],
+                          pretty_text=True,
+                          save_file=True)
+            # scatter plot of driving with AVs
             analysis.scatter(appen_data,
                              x='driving_in_ad',
                              y='driving_alongside_ad',
                              color='year_license',
                              pretty_text=True,
                              save_file=True)
-            # histogram for driving frequency
+            # histogram of the capability of AD
             analysis.hist(appen_data,
-                          x=['driving_freq'],
+                          x=['capability_ad'],
+                          pretty_text=True,
+                          save_file=True)
+            # histogram of the experience of AD
+            analysis.hist(appen_data,
+                          x=['experience_ad'],
+                          pretty_text=True,
+                          save_file=True)
+            # histogram of the input device
+            analysis.hist(appen_data,
+                          x=['device'],
+                          pretty_text=True,
+                          save_file=True)
+            # histogram of milage
+            analysis.hist(appen_data,
+                          x=['milage'],
                           pretty_text=True,
                           save_file=True)
             # map of participants
