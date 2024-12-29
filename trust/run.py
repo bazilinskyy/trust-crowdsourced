@@ -282,7 +282,7 @@ if __name__ == '__main__':
                              pretty_text=True,
                              save_file=True)
             # columns to drop in correlation matrix and scatter matrix
-            columns_drop = ['description', 'video_length', 'min_dur', 'max_dur', 'kp', 'events', 'events_name',
+            columns_drop = ['id', 'description', 'video_length', 'min_dur', 'max_dur', 'kp', 'events', 'events_name',
                             'events_description', 'events_id', 'description', 'video_name']
             # set nan to -1
             df = mapping.fillna(-1)
