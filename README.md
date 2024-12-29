@@ -125,6 +125,13 @@ Percentage of participants pressing the response key as a function of elapsed vi
 ### For only lab participants
 todo
 
+#### Correlation and scatter matrices
+![correlation matrix](https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/corr_matrix.jpg?raw=true)  
+Correlation matrix.
+
+[![scatter matrix](figures/scatter_matrix.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/scatter_matrix.html)  
+Scatter matrix.
+
 ## Area of Interest (AOI)
 ### For all participants
 [![plot_all_0](figures/AOI_0.png?raw=true)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/AOI_0.html)
@@ -258,11 +265,45 @@ Plot of AOI analysis for video 20 for lab participants.
 [![driving frequency](figures/hist_driving_freq.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_driving_freq.html)  
 Driving frequency.
 
+[![mileage](figures/hist_milage.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_milage.html)  
+Mileage.
+
+[![input device](figures/hist_device.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_device.html)  
+Input device.
+
 [![driving behaviour questionnaire](figures/hist_dbq.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_dbq.html)  
 Driving behaviour questionnaire (DBQ).
 
 [![time of participation](figures/hist_time.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_time.html)  
 Time of participation.
+
+[![year of license](figures/hist_year_license.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_year_license.html)  
+Year of obtaining driver's license.
+
+[![education](figures/hist_education.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_education.html)  
+Highest obtained level of education.
+
+[![communication_others](figures/hist_communication_others.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_communication_others.html)  
+Responses to statement "I would like to communicate with other road users while driving (for instance, using eye contact, gestures, verbal communication, etc.)".
+
+[![technology](figures/hist_technology_worried-technology_enjoyment-technology_lives_easier-technology_lives_change-technology_not_interested.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_technology_worried-technology_enjoyment-technology_lives_easier-technology_lives_change-technology_not_interested.html)  
+Technology acceptance scale.
+
+[![machines](figures/scatter_machines_roles-machines_profit.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/scatter_machines_roles-machines_profit.html)  
+Responses to x:"I enjoy making use of the latest technological products and services when I have the opportunity" and y:"New technologies are all about making profits rather than making people's lives better".
+
+[![attitude AD](figures/hist_attitude_ad.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_attitude_ad.html)  
+Responses to statement "Please indicate your general attitude towards automated cars".
+
+[![driving with AD](figures/scatter_driving_in_ad-driving_alongside_ad.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/scatter_driving_in_ad-driving_alongside_ad.html)  
+Responses to x:"When the autonomous vehicle is on the road, I would feel comfortable about driving on roads alongside autonomous cars" and y:"When the autonomous vehicle is on the road, I would feel comfortable about
+using an autonomous car instead of driving a traditional car.".
+
+[![capability of AD](figures/hist_capability_ad.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_capability_ad.html)  
+Responses to question "Who do you think is more capable of conducting driving-related tasks?"
+
+[![experience of AD](figures/hist_experience_ad.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/hist_experience_ad.html)  
+Responses to question "Which options best describes your experience with automated cars?"
 
 [![map of counts of participants](figures/map_counts.png)](https://htmlpreview.github.io/?https://github.com/bazilinskyy/trust-crowdsourced/blob/main/figures/map_counts.html)  
 Map of counts of participants.

@@ -36,8 +36,8 @@ REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = False  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
+SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
@@ -347,6 +347,7 @@ if __name__ == '__main__':
             df = appen_data
             df['country'] = df['country'].fillna('NaN')
             df['time'] = df['time'] / 60.0  # convert to min
+            # histogram of duration of participation
             analysis.hist(df,
                           x=['time'],
                           color='country',
@@ -381,11 +382,11 @@ if __name__ == '__main__':
                           save_file=True)
             # histogram of communication with other
             analysis.hist(appen_data,
-                          x=['communcation_others'],
+                          x=['communication_others'],
                           marginal='violin',
                           pretty_text=True,
                           save_file=True)
-            # grouped barchart of technology questions
+            # grouped barchart of technology scale
             analysis.hist(appen_data,
                           x=['technology_worried',
                              'technology_enjoyment',

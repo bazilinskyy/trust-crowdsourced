@@ -54,7 +54,7 @@ class Appen:
                        'what_is_the_highest_level_of_education_you_have_completed': 'education',  # noqa: E501
                        'which_input_device_are_you_using_now': 'device',
                        'if_you_answered_other_in_the_previous_question_please_describe_your_input_device_below': 'device_other',  # noqa: E501
-                       'i_would_like_to_communicate_with_other_road_users_while_driving_for_instance_using_eye_contact_gestures_verbal_communication_etc': 'communcation_others',  # noqa: E501
+                       'i_would_like_to_communicate_with_other_road_users_while_driving_for_instance_using_eye_contact_gestures_verbal_communication_etc': 'communication_others',  # noqa: E501
                        'i_am_worried_about_where_all_this_technology_is_leading': 'technology_worried',  # noqa: E501
                        'i_enjoy_making_use_of_the_latest_technological_products_and_services_when_i_have_the_opportunity': 'technology_enjoyment',  # noqa: E501
                        'science_and_technology_are_making_our_lives_healthier_easier_and_more_comfortable': 'technology_lives_easier',  # noqa: E501
