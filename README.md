@@ -31,7 +31,7 @@ Configuration of the project needs to be defined in `trust-crowdsourced/config`.
 The source files of the video stimuli are outputted from Unity to `config.path_source`. To prepare them for the crowdsourced setup `python trust-crowdsourced/preparation/process_videos.py`. Videos will be outputted to `config.path_stimuli`.
 
 ## Analysis
-Analysis can be started by running python `trust-crowdsourcing/crossing/run.py`. A number of CSV files used for data processing are saved in `trust-crowdsourcing/_output`. Visualisations of all data are saved in `trust-crowdsourcing/_output/figures/`.
+Analysis can be started by running python `trust-crowdsourcing/trust/run.py`. A number of CSV files used for data processing are saved in `trust-crowdsourcing/_output`. Visualisations of all data are saved in `trust-crowdsourcing/_output/figures/`.
 
 ## Keypress data
 ### All participants
