@@ -121,6 +121,10 @@ if __name__ == '__main__':
                      {'question': 'slider-2', 'type': 'num'}]
         # process post-trial questions and update mapping
         mapping = heroku.process_stimulus_questions(questions)
+        # rename columns with responses to post-stimulus questions to meaningful names
+        mapping = mapping.rename(columns={'slider-0': 'comfort',
+                                          'slider-1': 'safety',
+                                          'slider-2': 'expectation'})
         # export to pickle
         tr.common.save_to_p(file_mapping,  mapping, 'mapping of stimuli')
     else:
@@ -199,9 +203,7 @@ if __name__ == '__main__':
                                    'annotation': vert_line_annotations[x]})
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
-                                               y=['slider-0', 'slider-1', 'slider-2'],
-                                               # custom labels for slider questions in the legend
-                                               y_legend=['comfort', 'safety', 'expectation'],
+                                               y=['comfort', 'safety', 'expectation'],
                                                xaxis_kp_range=[0, 43],  # hardcode based on the longest stimulus
                                                yaxis_kp_range=[0, 60],  # hardcode based on the highest recorded value
                                                events=events,
@@ -214,9 +216,8 @@ if __name__ == '__main__':
                                                show_text_labels=True,
                                                stacked=True,
                                                yaxis_slider_show=False,
-                                               font_family='Times New Roman',
                                                font_size=16,
-                                               legend_x=0.7,
+                                               legend_x=0.68,
                                                legend_y=1.0,
                                                fig_save_width=1600,   # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
@@ -234,7 +235,6 @@ if __name__ == '__main__':
             analysis.plot_kp_variable(mapping,
                                       'ego_car',
                                       y_legend=['AV', 'MDV'],
-                                      font_family='Times New Roman',
                                       font_size=16,
                                       legend_x=0.9,
                                       legend_y=1.0,
@@ -245,7 +245,6 @@ if __name__ == '__main__':
             analysis.plot_kp_variable(mapping,
                                       'target_car',
                                       y_legend=['AV', 'MDV'],
-                                      font_family='Times New Roman',
                                       font_size=16,
                                       legend_x=0.9,
                                       legend_y=1.0,
@@ -256,7 +255,6 @@ if __name__ == '__main__':
                                       'group',
                                       # custom labels for slider questions in the legend
                                       y_legend=['Group 1', 'Group 2', 'Group 3', 'Group 4'],
-                                      font_family='Times New Roman',
                                       font_size=16,
                                       legend_x=0.9,
                                       legend_y=1.0,
@@ -266,7 +264,7 @@ if __name__ == '__main__':
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
             analysis.bar(mapping,
-                         y=['slider-0', 'slider-1', 'slider-2'],
+                         y=['comfort', 'safety', 'expectation'],
                          stacked=True,
                          show_text_labels=True,
                          pretty_text=True,
@@ -278,7 +276,7 @@ if __name__ == '__main__':
                 ids = [stim, stim + int(num_stimuli/4), stim + int(num_stimuli/4*2), stim + int(num_stimuli/4*3)]
                 df = mapping[mapping['id'].isin(ids)]
                 analysis.bar(df,
-                             y=['slider-0', 'slider-1', 'slider-2'],
+                             y=['comfort', 'safety', 'expectation'],
                              stacked=True,
                              show_text_labels=True,
                              pretty_text=True,

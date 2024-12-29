@@ -26,6 +26,16 @@ Configuration of the project needs to be defined in `trust-crowdsourced/config`.
 * `path_stimuli`: path consisting of all videos included in the survey.
 * `mapping_stimuli`: CSV file that contains all data found in the videos.
 * `plotly_template`: template used to make graphs in the analysis.
+* `stimulus_width`: width of stimuli.
+* `stimulus_height`: height of stimuli.
+* `aoi`: csv file with AOI data.
+* `only_lab`: toggle to process data from the lab experiment only.
+* `smoothen_signal`: toggle to apply filter to smoothen data.,
+* `freq`: frequency used by One Euro Filter.
+* `mincutoff`: minimal cutoff used by One Euro Filter.
+* `beta`: beta value used by One Euro Filter.
+* `dcutoff`: d-cutoff value used by One Euro Filter.
+* `font_family`: font family to be used on the figures.
 
 ## Preparation of stimuli
 The source files of the video stimuli are outputted from Unity to `config.path_source`. To prepare them for the crowdsourced setup `python trust-crowdsourced/preparation/process_videos.py`. Videos will be outputted to `config.path_stimuli`.

@@ -756,8 +756,7 @@ class Heroku:
         # save to csv
         if self.save_csv:
             # save to csv
-            self.mapping.to_csv(os.path.join(tr.settings.output_dir,
-                                             self.file_mapping_csv))
+            self.mapping.to_csv(os.path.join(tr.settings.output_dir, self.file_mapping_csv))
         # return new mapping
         return self.mapping
 

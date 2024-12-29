@@ -52,7 +52,7 @@ class Analysis:
 
     def __init__(self):
         # set font to Times
-        plt.rc('font', family='serif')
+        plt.rcParams['font.family'] = tr.common.get_configs('font_family')
 
     def save_all_frames(self, df, mapping, id_video, t):
         """
@@ -156,8 +156,7 @@ class Analysis:
         # todo: remove datapoints in corners in heatmaps
         # check if data is present
         if not points:
-            logger.error('Not enough data. Heatmap was not created for {}.',
-                         image)
+            logger.error('Not enough data. Heatmap was not created for {}.', image)
             return
         # get dimensions of base image
         width = tr.common.get_configs('stimulus_width')
@@ -651,18 +650,18 @@ class Analysis:
         mask = np.zeros_like(corr)
         mask[np.triu_indices_from(mask)] = True
         # set larger font
-        vs_font = 10  # very small
-        s_font = 12   # small
-        m_font = 16   # medium
-        l_font = 18   # large
-        plt.rc('font', size=s_font)         # controls default text sizes
-        plt.rc('axes', titlesize=s_font)    # fontsize of the axes title
-        plt.rc('axes', labelsize=s_font)    # fontsize of the axes labels
-        plt.rc('xtick', labelsize=vs_font)  # fontsize of the tick labels
-        plt.rc('ytick', labelsize=vs_font)  # fontsize of the tick labels
-        plt.rc('legend', fontsize=s_font)   # fontsize of the legend
-        plt.rc('figure', titlesize=l_font)  # fontsize of the figure title
-        plt.rc('axes', titlesize=m_font)    # fontsize of the subplot title
+        # vs_font = 12  # very small
+        # s_font = 14   # small
+        # m_font = 18   # medium
+        l_font = 24   # large
+        plt.rc('font', size=l_font)         # controls default text sizes
+        # plt.rc('axes', titlesize=l_font)    # fontsize of the axes title
+        # plt.rc('axes', labelsize=l_font)    # fontsize of the axes labels
+        # plt.rc('xtick', labelsize=l_font)  # fontsize of the tick labels
+        # plt.rc('ytick', labelsize=l_font)  # fontsize of the tick labels
+        # plt.rc('legend', fontsize=l_font)   # fontsize of the legend
+        # plt.rc('figure', titlesize=l_font)  # fontsize of the figure title
+        # plt.rc('axes', titlesize=l_font)    # fontsize of the subplot title
         # create figure
         fig = plt.figure(figsize=(34, 20))
         g = sns.heatmap(corr, annot=True, mask=mask, cmap='coolwarm', fmt=".2f")
@@ -713,8 +712,9 @@ class Analysis:
         else:
             fig.show()
 
-    def bar(self, df, y: list, x=None, stacked=False, pretty_text=False, orientation='v', xaxis_title=None,
-            yaxis_title=None, show_all_xticks=False, show_all_yticks=False, show_text_labels=False, save_file=False):
+    def bar(self, df, y: list, y_legend=None, x=None, stacked=False, pretty_text=False, orientation='v',
+            xaxis_title=None, yaxis_title=None, show_all_xticks=False, show_all_yticks=False, show_text_labels=False,
+            save_file=False):
         """
         Barplot for questionnaire data. Passing a list with one variable will output a simple barplot; passing a list
         of variables will output a grouped barplot.
@@ -722,6 +722,7 @@ class Analysis:
         Args:
             df (dataframe): dataframe with stimuli data.
             y (list): column names of dataframe to plot.
+            y_legend (list, optional): names for variables to be shown in the legend.
             x (list): values in index of dataframe to plot for. If no value is given, the index of df is used.
             stacked (bool, optional): show as stacked chart.
             pretty_text (bool, optional): prettify ticks by replacing _ with spaces and capitalising each value.
@@ -749,16 +750,21 @@ class Analysis:
         # create figure
         fig = go.Figure()
         # go over variables to plot
-        for variable in y:
+        for variable in range(len(y)):
             # showing text labels
             if show_text_labels:
-                text = df[variable]
+                text = df[y[variable]]
             else:
                 text = None
+            # custom labels for legend
+            if y_legend:
+                name = y_legend[variable]
+            else:
+                name = y[variable]
             # plot variable
             fig.add_trace(go.Bar(x=x,
-                                 y=df[variable],
-                                 name=variable,
+                                 y=df[y[variable]],
+                                 name=name,
                                  orientation=orientation,
                                  text=text,
                                  textposition='auto'))
@@ -1612,8 +1618,7 @@ class Analysis:
                        events_annotations_colour='black', xaxis_title='Time (s)',
                        yaxis_title='Percentage of trials with response key pressed',
                        xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680,
-                       show_menu=False, show_title=True, name_file=None,
-                       font_family='Open Sans", verdana, arial, sans-serif', font_size=12,):
+                       show_menu=False, show_title=True, name_file=None, font_size=12,):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1634,7 +1639,6 @@ class Analysis:
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
             show_title (bool, optional): show title on top of figure.
             name_file (str, optional): name of file to save.
-            font_family (str, optional): font family to be used across the figure.
             font_size (int, optional): font size to be used across the figure.
 
         Deleted Parameters:
@@ -1736,7 +1740,7 @@ class Analysis:
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
         # update font
-        fig.update_layout(font=dict(family=font_family, size=font_size))
+        fig.update_layout(font=dict(size=font_size))
         # save file
         if save_file:
             if not name_file:
@@ -1754,8 +1758,7 @@ class Analysis:
                               xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
-                              font_family='Open Sans", verdana, arial, sans-serif', font_size=12, fig_save_width=1320,
-                              legend_x=0.7, legend_y=0.95, fig_save_height=680):
+                              font_size=12, fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -1782,7 +1785,6 @@ class Analysis:
             show_text_labels (bool, optional): output automatically positioned text labels.
             name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
-            font_family (str, optional): font family to be used across the figure.
             font_size (int, optional): font size to be used across the figure.
             fig_save_width (int, optional): width of figures to be saved.
             legend_x (float, optional): location of legend, percentage of x axis.
@@ -1920,7 +1922,7 @@ class Analysis:
         # legend
         fig.update_layout(legend=dict(x=legend_x, y=legend_y))
         # update font
-        fig.update_layout(font=dict(family=font_family, size=font_size))
+        fig.update_layout(font=dict(size=font_size))
         # save file
         if save_file:
             if not name_file:
@@ -1935,9 +1937,8 @@ class Analysis:
 
     def plot_kp_variable(self, df, variable, y_legend=None, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                         yaxis_range=None, show_menu=False, show_title=True, save_file=True,
-                         font_family='Open Sans", verdana, arial, sans-serif', font_size=12, legend_x=0,
-                         legend_y=0, fig_save_width=1320, fig_save_height=680):
+                         yaxis_range=None, show_menu=False, show_title=True, save_file=True, font_size=12,
+                         legend_x=0, legend_y=0, fig_save_width=1320, fig_save_height=680):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -1952,7 +1953,6 @@ class Analysis:
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
             show_title (bool, optional): show title on top of figure.
             save_file (bool, optional): flag for saving an html file with plot.
-            font_family (str, optional): font family to be used across the figure.
             font_size (int, optional): font size to be used across the figure.
             legend_x (float, optional): location of legend, percentage of x axis. 0 = use default value.
             legend_y (float, optional): location of legend, percentage of y axis. 0 = use default value.
@@ -2032,7 +2032,7 @@ class Analysis:
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
         # update font
-        fig.update_layout(font=dict(family=font_family, size=font_size))
+        fig.update_layout(font=dict(size=font_size))
         # legend
         if legend_x and legend_y:
             fig.update_layout(legend=dict(x=legend_x, y=legend_y))
