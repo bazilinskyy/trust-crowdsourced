@@ -1405,7 +1405,7 @@ class Analysis:
 
     def plot_kp(self, df, conf_interval=None, xaxis_title='Time (s)',
                 yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680, font_family=None, 
+                yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680, font_family=None,
                 font_size=None):
         """Plot keypress data.
 
@@ -2185,7 +2185,7 @@ class Analysis:
     def plot_kp_variable(self, df, variable, y_legend=None, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
                          yaxis_range=None, show_menu=False, show_title=True, save_file=True,
-                         legend_x=0, legend_y=0, fig_save_width=1320, fig_save_height=680, font_family=None, 
+                         legend_x=0, legend_y=0, fig_save_width=1320, fig_save_height=680, font_family=None,
                          font_size=None):
         """Plot figures of values of a certain variable.
 
