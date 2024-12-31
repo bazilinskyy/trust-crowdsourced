@@ -201,6 +201,25 @@ if __name__ == '__main__':
                                    'start': start,
                                    'end': end,
                                    'annotation': vert_line_annotations[x]})
+                # prepare signals to compare with ttest
+                ttest_signals = []  # list of dictionaries
+                # todo: @Shadab, create list of things to compare using ttest here
+                # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html
+                # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
+                # 0 and 3 = between
+                # 1 and 2 = between
+                # 2 and 3 = within
+                # 1 and 3 = between
+                print(df)
+                print(ids)
+                for stim in ids[1:]:
+                    values = row['kp']  # keypress data
+                    print(stim, df[ids[0]], df[stim])
+                    # assume that df[ids[0]] is always the baseline to compare against
+                    ttest_signals.append({'signal_1': df[ids[0]]['kp'],
+                                          'signal_2': df[stim]['kp'],
+                                          'paired': True})
+                print(ttest_signals)
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],
@@ -221,7 +240,8 @@ if __name__ == '__main__':
                                                legend_y=1.0,
                                                fig_save_width=1600,   # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
-                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]))
+                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
+                                               ttest_signals=ttest_signals)
             # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,

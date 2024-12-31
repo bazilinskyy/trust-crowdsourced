@@ -1992,7 +1992,7 @@ class Analysis:
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
                               fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
-                              font_size=None):
+                              font_size=None, ttest_signals=None):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -2026,8 +2026,8 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
+            ttest_signals (list, optional): signals to compare with ttest. None = compare all with all.
         """
-        print("dataframe",df)
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
@@ -2138,9 +2138,20 @@ class Analysis:
                                  textposition='auto'),
                           row=1,
                           col=2)
-        # # output ttest
-        # for variable in y:
-        #     self.ttest(variable, variable-1)
+        # output ttest
+        for signals in ttest_signals:
+            # smoothen signal
+            if self.smoothen_signal:
+                signal_1 = self.smoothen_filter(ttest_signals['signal_1'])
+                signal_2 = self.smoothen_filter(ttest_signals['signal_2'])
+            # receive significance values
+            significance = self.ttest(signal_1=signal_1,
+                                      signal_2=signal_2,
+                                      paired=ttest_signals['paired'])
+            # add to the plot
+            # todo: @Shadab, plot those stars here based on significance
+            # todo: @Shadab, adjust the ylim with yaxis_kp_range
+
         # output anova
         # self.anova(y)
         # output anova
@@ -2733,11 +2744,11 @@ class Analysis:
     def smoothen_filter(self, signal, type_flter='OneEuroFilter'):
         """Smoothen list with a filter.
 
-    Args:
+        Args:
             signal (list): input signal to smoothen
             type_flter (str, optional): type_flter of filter to use.
 
-    Returns:
+        Returns:
             list: list with smoothened data.
         """
         if type_flter == 'OneEuroFilter':
@@ -2756,14 +2767,14 @@ class Analysis:
 
         Parameters:
             signal_1 (numpy.ndarray): First signal. Shape:
-                                    - Paired: (participants, time_points)
-                                    - Independent: (participants_group1, time_points)
+                                      - Paired: (participants, time_points)
+                                      - Independent: (participants_group1, time_points)
             signal_2 (numpy.ndarray): Second signal. Shape:
-                                    - Paired: (participants, time_points)
-                                    - Independent: (participants_group2, time_points)
+                                      - Paired: (participants, time_points)
+                                      - Independent: (participants_group2, time_points)
             type (str): Type of t-test ('two-sided', 'less', or 'greater').
-            paired (bool): If True, perform a paired t-test (scipy.stats.ttest_rel).
-                            If False, perform an independent t-test (scipy.stats.ttest_ind).
+            paired (bool): if True, perform a paired t-test (scipy.stats.ttest_rel).
+                           if False, perform an independent t-test (scipy.stats.ttest_ind).
 
         Returns:
             numpy.ndarray: Array containing 1 if statically different, otherwise 0,
@@ -2786,12 +2797,6 @@ class Analysis:
         # Create a binary array where 1 indicates statistical significance
         significance = (p_values < tr.common.get_configs('p_value')).astype(int)
         # return [0,0,0,0,1,0,0]
-        # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html
-        # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
-        # 0 and 3 = between
-        # 1 and 2 = between
-        # 2 and 3 = within
-        # 1 and 3 = between
         return significance
 
     def anova(self, signal_type, signal_ego, signal_kp):
