@@ -23,6 +23,7 @@ from tqdm import tqdm
 import ast
 from scipy.signal import savgol_filter
 from scipy.stats.kde import gaussian_kde
+from scipy.stats import ttest_rel, ttest_ind
 import cv2
 import trust as tr
 
@@ -2026,6 +2027,7 @@ class Analysis:
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
+        print("dataframe",df)
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
@@ -2747,7 +2749,42 @@ class Analysis:
             logger.error('Specified filter {} not implemented.', type_flter)
             return -1
 
-    def ttest(self, signal_1, signal_2, type):
+    def ttest(self, signal_1, signal_2, type="two-sided", paired=True):
+        """
+        Perform a t-test over the entire time interval and return an array
+        indicating whether the signals are statistically significantly different.
+
+        Parameters:
+            signal_1 (numpy.ndarray): First signal. Shape:
+                                    - Paired: (participants, time_points)
+                                    - Independent: (participants_group1, time_points)
+            signal_2 (numpy.ndarray): Second signal. Shape:
+                                    - Paired: (participants, time_points)
+                                    - Independent: (participants_group2, time_points)
+            type (str): Type of t-test ('two-sided', 'less', or 'greater').
+            paired (bool): If True, perform a paired t-test (scipy.stats.ttest_rel).
+                            If False, perform an independent t-test (scipy.stats.ttest_ind).
+
+        Returns:
+            numpy.ndarray: Array containing 1 if statically different, otherwise 0,
+                            for each time point.
+        """
+        if paired:
+            if signal_1.shape != signal_2.shape:
+                logger.error("Signals must have the same shape for a paired t-test.")
+
+            # Perform the paired t-test along the participant axis (axis 0)
+            t_stat, p_values = ttest_rel(signal_1, signal_2, axis=0, alternative=type)
+
+        else:
+            if signal_1.shape[1] != signal_2.shape[1]:
+                raise ValueError("Signals must have the same number of time points for an independent t-test.")
+
+            # Perform the independent t-test along the time axis (axis 1)
+            t_stat, p_values = ttest_ind(signal_1, signal_2, axis=0, alternative=type, equal_var=False)
+
+        # Create a binary array where 1 indicates statistical significance
+        significance = (p_values < tr.common.get_configs('p_value')).astype(int)
         # return [0,0,0,0,1,0,0]
         # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html
         # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
@@ -2755,7 +2792,7 @@ class Analysis:
         # 1 and 2 = between
         # 2 and 3 = within
         # 1 and 3 = between
-        return
+        return significance
 
     def anova(self, signal_type, signal_ego, signal_kp):
         # signal_type = list of int, eg: [1,1,0,0]
