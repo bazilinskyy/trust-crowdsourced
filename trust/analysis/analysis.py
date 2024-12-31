@@ -2142,12 +2142,12 @@ class Analysis:
         for signals in ttest_signals:
             # smoothen signal
             if self.smoothen_signal:
-                signal_1 = self.smoothen_filter(ttest_signals['signal_1'])
-                signal_2 = self.smoothen_filter(ttest_signals['signal_2'])
+                signal_1 = self.smoothen_filter(signals['signal_1'])
+                signal_2 = self.smoothen_filter(signals['signal_2'])
             # receive significance values
             significance = self.ttest(signal_1=signal_1,
                                       signal_2=signal_2,
-                                      paired=ttest_signals['paired'])
+                                      paired=signals['paired'])
             # add to the plot
             # todo: @Shadab, plot those stars here based on significance
             # todo: @Shadab, adjust the ylim with yaxis_kp_range

@@ -201,25 +201,40 @@ if __name__ == '__main__':
                                    'start': start,
                                    'end': end,
                                    'annotation': vert_line_annotations[x]})
-                # prepare signals to compare with ttest
+                # prepare pairs of signals to compare with ttest
                 ttest_signals = []  # list of dictionaries
                 # todo: @Shadab, create list of things to compare using ttest here
-                # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html
+                # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html  # noqa: E501
                 # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
                 # 0 and 3 = between
                 # 1 and 2 = between
                 # 2 and 3 = within
                 # 1 and 3 = between
-                print(df)
-                print(ids)
-                for stim in ids[1:]:
-                    values = row['kp']  # keypress data
-                    print(stim, df[ids[0]], df[stim])
-                    # assume that df[ids[0]] is always the baseline to compare against
-                    ttest_signals.append({'signal_1': df[ids[0]]['kp'],
-                                          'signal_2': df[stim]['kp'],
-                                          'paired': True})
-                print(ttest_signals)
+                # todo: @Shadab, we should find some clever way to understand which once should be between and which
+                #       one within. Code below could then be used
+                # for stim in ids[1:]:
+                #     # assume that df[ids[0]] is always the baseline to compare against
+                #     ttest_signals.append({'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                #                           'signal_2': df.loc['video_' + str(stim)]['kp'],
+                #                           'paired': True})
+                ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 1 = within
+                                  'signal_2': df.loc['video_' + str(ids[1])]['kp'],
+                                  'paired': True},
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
+                                  'paired': False},
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'paired': False},
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
+                                  'paired': False},
+                                 {'signal_1': df.loc['video_' + str(ids[2])]['kp'],  # 2 and 3 = within
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'paired': True},
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'paired': False}]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],
