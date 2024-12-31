@@ -2146,8 +2146,7 @@ class Analysis:
             # considering 0.02s is the response input
             significance = self.ttest(signal_1=signal_1,
                                       signal_2=signal_2,
-                                      paired=signals['paired'],
-                                      bins=int(len(signal_1)*0.02/tr.common.get_configs('time_ttest')))
+                                      paired=signals['paired'])
             # add to the plot
             # todo: @Shadab, plot those stars here based on significance
             # todo: @Shadab, adjust the ylim with yaxis_kp_range
@@ -2184,16 +2183,16 @@ class Analysis:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
-        # if save_file:
-        #     if not name_file:
-        #         self.save_plotly(fig, 'kp_videos_sliders', self.folder, remove_margins=True, width=fig_save_width,
-        #                          height=fig_save_height)
-        #     else:
-        #         self.save_plotly(fig, name_file, self.folder, remove_margins=True, width=fig_save_width,
-        #                          height=fig_save_height)
-        # open it in localhost instead
-        # else:
-            # fig.show()
+        if save_file:
+            if not name_file:
+                self.save_plotly(fig, 'kp_videos_sliders', self.folder, remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
+            else:
+                self.save_plotly(fig, name_file, self.folder, remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
+        # # open it in localhost instead
+        else:
+            fig.show()
 
     def plot_kp_variable(self, df, variable, y_legend=None, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
@@ -2760,37 +2759,23 @@ class Analysis:
             logger.error('Specified filter {} not implemented.', type_flter)
             return -1
 
-    def ttest(self, signal_1, signal_2, type="two-sided", paired=True, bins=1):
+    def ttest(self, signal_1, signal_2, type="two-sided", paired=True):
         # Convert to numpy arrays if signal_1 and signal_2 are lists
         signal_1 = np.asarray(signal_1)
         signal_2 = np.asarray(signal_2)
 
-        if signal_1.shape != signal_2.shape:
-            raise ValueError("Signals must have the same shape for the selected test type.")
-
-        n_time_points = signal_1.shape[-1]
-        bin_size = n_time_points // bins
-        significance_per_bin = []
-
-        for bin_idx in range(bins):
-            start = bin_idx * bin_size
-            end = (bin_idx + 1) * bin_size if bin_idx < bins - 1 else n_time_points
-
-            # Slice signals for the current bin
-            signal_1_bin = signal_1[..., start:end]
-            signal_2_bin = signal_2[..., start:end]
-
+        # Perform t-test for each value (treated as an independent bin)
+        significance = []
+        for i in range(len(signal_1)):
             if paired:
-                if signal_1_bin.shape != signal_2_bin.shape:
-                    raise ValueError("Signals must have the same shape for a paired t-test.")
-                t_stat, p_values = ttest_rel(signal_1_bin, signal_2_bin, axis=-1, alternative=type)
+                t_stat, p_value = ttest_rel([signal_1[i]], [signal_2[i]], axis=-1, alternative=type)
             else:
-                t_stat, p_values = ttest_ind(signal_1_bin, signal_2_bin, axis=-1, alternative=type, equal_var=False)
+                t_stat, p_value = ttest_ind([signal_1[i]], [signal_2[i]], axis=-1, alternative=type, equal_var=False)
 
-            significance = (p_values < tr.common.get_configs('p_value')).astype(int)
-            significance_per_bin.append(significance)
+            # Determine significance for this value
+            significance.append(int(p_value < tr.common.get_configs('p_value')))
 
-        return significance_per_bin
+        return significance
 
     def anova(self, signal_type, signal_ego, signal_kp):
         # signal_type = list of int, eg: [1,1,0,0]

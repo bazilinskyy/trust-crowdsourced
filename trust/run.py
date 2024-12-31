@@ -217,24 +217,24 @@ if __name__ == '__main__':
                 #     ttest_signals.append({'signal_1': df.loc['video_' + str(ids[0])]['kp'],
                 #                           'signal_2': df.loc['video_' + str(stim)]['kp'],
                 #                           'paired': True})
-                for i in range(len(ids)):
-                    for j in range(i + 1, len(ids)):
-                        # Add with 'paired' as True
-                        ttest_signals.append({
-                            'signal_1_original': 'video_' + str(ids[i]),  # Add metadata for signal_1
-                            'signal_2_original': 'video_' + str(ids[j]),  # Add metadata for signal_2
-                            'signal_1': df.loc['video_' + str(ids[i])]['kp'],
-                            'signal_2': df.loc['video_' + str(ids[j])]['kp'],
-                            'paired': True
-                        })
-                        # Add with 'paired' as False
-                        ttest_signals.append({
-                            'video_1_original': 'video_' + str(ids[i]),  # Add metadata for signal_1
-                            'video_2_original': 'video_' + str(ids[j]),  # Add metadata for signal_2
-                            'signal_1': df.loc['video_' + str(ids[i])]['kp'],
-                            'signal_2': df.loc['video_' + str(ids[j])]['kp'],
-                            'paired': False
-                        })
+                ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 1 = within
+                                  'signal_2': df.loc['video_' + str(ids[1])]['kp'],
+                                  'paired': True},
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
+                                  'paired': False},
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'paired': False},
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
+                                  'paired': False},
+                                 {'signal_1': df.loc['video_' + str(ids[2])]['kp'],  # 2 and 3 = within
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'paired': True},
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'paired': False}]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],
@@ -258,11 +258,11 @@ if __name__ == '__main__':
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
                                                ttest_signals=ttest_signals)
             # keypresses of an individual stimulus for an individual pp
-            # analysis.plot_kp_video_pp(mapping,
-            #                           heroku_data,
-            #                           pp='R51701197342646JF16777X',
-            #                           stimulus='video_2',
-            #                           conf_interval=0.95)
+            analysis.plot_kp_video_pp(mapping,
+                                      heroku_data,
+                                      pp='R51701197342646JF16777X',
+                                      stimulus='video_2',
+                                      conf_interval=0.95)
             # keypresses of all videos individually
             analysis.plot_kp_videos(mapping, show_menu=False, show_title=False)
             # keypress based on the type of ego car
