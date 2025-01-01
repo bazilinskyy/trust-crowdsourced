@@ -583,16 +583,13 @@ class Heroku:
                         # loop through rows in column
                         for row_index, row in enumerate(col_data):
                             # consider only videos of allowed length
-                            if (video_dur in self.heroku_data.keys()
-                                    and filter_length):
+                            if video_dur in self.heroku_data.keys() and filter_length:
                                 # extract recorded duration
                                 dur = self.heroku_data.iloc[row_index][video_dur]
                                 # check if duration is within limits
-                                if (dur < self.mapping['min_dur'][video_id]
-                                        or dur > self.mapping['max_dur'][video_id]):
+                                if dur < self.mapping['min_dur'][video_id] or dur > self.mapping['max_dur'][video_id]:
                                     # increase counter of filtered videos
-                                    logger.debug('Filtered keypress data from '
-                                                 + 'video {} of detected '
+                                    logger.debug('Filtered keypress data from video {} of detected '
                                                  + 'duration of {} for '
                                                  + 'worker {}.',
                                                  video_id, dur,

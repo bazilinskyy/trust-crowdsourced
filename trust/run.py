@@ -202,7 +202,7 @@ if __name__ == '__main__':
                                    'end': end,
                                    'annotation': vert_line_annotations[x]})
                 # prepare pairs of signals to compare with ttest
-                ttest_signals = []  # list of dictionaries
+                # ttest_signals = []  # list of dictionaries
                 # todo: @Shadab, create list of things to compare using ttest here
                 # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html  # noqa: E501
                 # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
@@ -235,6 +235,13 @@ if __name__ == '__main__':
                                  {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 3 = between
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp'],
                                   'paired': False}]
+                # signal_1 = signal_type = list of int, eg: [1,1,0,0]
+                # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
+                # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
+                # prepare signals to compare with ANOVA
+                anova_signals = {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                                 'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                                 'signal_3': df.loc['video_' + str(ids[0])]['kp']}
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],
@@ -256,7 +263,8 @@ if __name__ == '__main__':
                                                fig_save_width=1600,   # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
-                                               ttest_signals=ttest_signals)
+                                               ttest_signals=ttest_signals,
+                                               anova_signals=anova_signals)
             # keypresses of an individual stimulus for an individual pp
             analysis.plot_kp_video_pp(mapping,
                                       heroku_data,

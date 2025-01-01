@@ -1992,7 +1992,7 @@ class Analysis:
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
                               fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
-                              font_size=None, ttest_signals=None):
+                              font_size=None, ttest_signals=None, anova_signals=None):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -2026,7 +2026,8 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
-            ttest_signals (list, optional): signals to compare with ttest. None = compare all with all.
+            ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
+            anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
         """
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
@@ -2137,23 +2138,32 @@ class Analysis:
                                  text=text,
                                  textposition='auto'), row=1, col=2)
         # output ttest
-        for signals in ttest_signals:
-            # smoothen signal
-            if self.smoothen_signal:
-                signal_1 = self.smoothen_filter(signals['signal_1'])
-                signal_2 = self.smoothen_filter(signals['signal_2'])
-            # receive significance values
-            # considering 0.02s is the response input
-            significance = self.ttest(signal_1=signal_1,
-                                      signal_2=signal_2,
-                                      paired=signals['paired'])
+        if ttest_signals:
+            for signals in ttest_signals:
+                # # smoothen signal
+                # if self.smoothen_signal:
+                #     signal_1 = self.smoothen_filter(signals['signal_1'])
+                #     signal_2 = self.smoothen_filter(signals['signal_2'])
+                # receive significance values
+                [p_values, significance] = self.ttest(signal_1=signals['signal_1'],
+                                                      signal_2=signals['signal_2'],
+                                                      paired=signals['paired'])
             # add to the plot
             # todo: @Shadab, plot those stars here based on significance
             # todo: @Shadab, adjust the ylim with yaxis_kp_range
-
-        # output anova
-        # self.anova(y)
-        # output anova
+        # output ANOVA
+        if anova_signals:
+            # # smoothen signal
+            # if self.smoothen_signal:
+            #     signal_1 = self.smoothen_filter(signals['signal_1'])
+            #     signal_2 = self.smoothen_filter(signals['signal_2'])
+            # receive significance values
+            [p_values, significance] = self.anova(signal_1=anova_signals['signal_1'],
+                                                  signal_2=anova_signals['signal_2'],
+                                                  signal_3=anova_signals['signal_3'])
+            # add to the plot
+            # todo: @Shadab, plot those pluses here based on significance
+            # todo: @Shadab, adjust the ylim with yaxis_kp_range
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
         fig.update_yaxes(title_text=yaxis_slider_title, row=1, col=2)
@@ -2760,26 +2770,52 @@ class Analysis:
             return -1
 
     def ttest(self, signal_1, signal_2, type="two-sided", paired=True):
-        # Convert to numpy arrays if signal_1 and signal_2 are lists
+        """Summary
+
+        Args:
+            signal_1 (TYPE): Description
+            signal_2 (TYPE): Description
+            type (str, optional): Description
+            paired (bool, optional): Description
+        
+        Returns:
+            TYPE: Description
+        """
+        # todo: @Shadab, finish the doctring above.
+        # convert to numpy arrays if signal_1 and signal_2 are lists
         signal_1 = np.asarray(signal_1)
         signal_2 = np.asarray(signal_2)
-
-        # Perform t-test for each value (treated as an independent bin)
-        significance = []
+        p_values = []  # record raw p value for each bin
+        significance = []  # record binary flag (0 or 1) if p value < tr.common.get_configs('p_value'))
+        # perform t-test for each value (treated as an independent bin)
         for i in range(len(signal_1)):
             if paired:
                 t_stat, p_value = ttest_rel([signal_1[i]], [signal_2[i]], axis=-1, alternative=type)
             else:
                 t_stat, p_value = ttest_ind([signal_1[i]], [signal_2[i]], axis=-1, alternative=type, equal_var=False)
-
-            # Determine significance for this value
+            # record raw p value
+            p_values.append(p_value)
+            # determine significance for this value
+            # todo: double check based on matlab < or <=
             significance.append(int(p_value < tr.common.get_configs('p_value')))
+        # return raw p values and binary flags for significance for output
+        return [p_values, significance]
 
-        return significance
-
-    def anova(self, signal_type, signal_ego, signal_kp):
-        # signal_type = list of int, eg: [1,1,0,0]
-        # signal_ego = list of int, eg: [1,1,0,0]
-        # signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
-        # return [0,0,0,0,1,0,0]
-        return
+    def anova(self, signal_1, signal_2, signal_3):
+        """Summary
+        
+        Args:
+            signal_1 (TYPE): Description
+            signal_2 (TYPE): Description
+            signal_3 (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
+        # convert to numpy arrays if signal_1 and signal_2 are lists
+        signal_1 = np.asarray(signal_1)
+        signal_2 = np.asarray(signal_2)
+        signal_3 = np.asarray(signal_3)
+        p_values = []  # record raw p value for each bin
+        significance = []  # record binary flag (0 or 1) if p value < tr.common.get_configs('p_value'))
+        return [p_values, significance]
