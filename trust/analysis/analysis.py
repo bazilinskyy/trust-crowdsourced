@@ -2200,7 +2200,7 @@ class Analysis:
             else:
                 self.save_plotly(fig, name_file, self.folder, remove_margins=True, width=fig_save_width,
                                  height=fig_save_height)
-        # # open it in localhost instead
+        # open it in localhost instead
         else:
             fig.show()
 
@@ -2770,18 +2770,29 @@ class Analysis:
             return -1
 
     def ttest(self, signal_1, signal_2, type="two-sided", paired=True):
-        """Summary
+        """
+        Perform a t-test on two signals, computing p-values and significance.
 
         Args:
-            signal_1 (TYPE): Description
-            signal_2 (TYPE): Description
-            type (str, optional): Description
-            paired (bool, optional): Description
-        
+            signal_1 (list): First signal, a list of numeric values.
+            signal_2 (list): Second signal, a list of numeric values.
+            type (str, optional): Type of t-test to perform. Options are "two-sided",
+                                  "greater", or "less". Defaults to "two-sided".
+            paired (bool, optional): Indicates whether to perform a paired t-test
+                                     (`ttest_rel`) or an independent t-test (`ttest_ind`).
+                                     Defaults to True (paired).
+
         Returns:
-            TYPE: Description
+            list: A list containing two elements:
+                  - p_values (list): Raw p-values for each bin.
+                  - significance (list): Binary flags (0 or 1) indicating whether
+                    the p-value for each bin is below the threshold configured in
+                    `tr.common.get_configs('p_value')`.
         """
-        # todo: @Shadab, finish the doctring above.
+        # Check if the lengths of the two signals are the same
+        if len(signal_1) != len(signal_2):
+            logger.error("The lengths of signal_1 and signal_2 must be the same.")
+
         # convert to numpy arrays if signal_1 and signal_2 are lists
         signal_1 = np.asarray(signal_1)
         signal_2 = np.asarray(signal_2)
@@ -2796,19 +2807,18 @@ class Analysis:
             # record raw p value
             p_values.append(p_value)
             # determine significance for this value
-            # todo: double check based on matlab < or <=
             significance.append(int(p_value < tr.common.get_configs('p_value')))
         # return raw p values and binary flags for significance for output
         return [p_values, significance]
 
     def anova(self, signal_1, signal_2, signal_3):
         """Summary
-        
+
         Args:
             signal_1 (TYPE): Description
             signal_2 (TYPE): Description
             signal_3 (TYPE): Description
-        
+
         Returns:
             TYPE: Description
         """
