@@ -21,9 +21,9 @@ REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = True  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted-
-SHOW_OUTPUT_ST = True  # should figures with stimulus data to be plotted
-SHOW_OUTPUT_PP = True  # should figures with info about participants
+SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted-
+SHOW_OUTPUT_ST = False  # should figures with stimulus data to be plotted
+SHOW_OUTPUT_PP = False  # should figures with info about participants
 SHOW_OUTPUT_ET = False  # should figures for eye tracking
 
 # for debugging, skip processing
@@ -239,6 +239,7 @@ if __name__ == '__main__':
                 # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
                 # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
                 # prepare signals to compare with ANOVA
+                # todo: signals for ANOVA
                 anova_signals = {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
                                  'signal_2': df.loc['video_' + str(ids[0])]['kp'],
                                  'signal_3': df.loc['video_' + str(ids[0])]['kp']}

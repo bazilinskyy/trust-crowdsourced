@@ -472,19 +472,19 @@ class Heroku:
                                 point = Point(given_x[val]*norm_x,
                                               given_y[val]*norm_y)
 
-                                # check if point is within a polygon in the middle 
+                                # check if point is within a polygon in the middle
                                 if polygon.contains(point):
                                     # point in the middle detected
                                     detected += 1
                                 # Check if for the worker there were more than
                                 # allowed limit of points in the middle
-                                if detected / length_points > allowed_percentage:   
+                                if detected / length_points > allowed_percentage:
                                     break
-                            if detected / length_points < allowed_percentage:   
-                                for value in range(length_points):              
+                            if detected / length_points < allowed_percentage:
+                                for value in range(length_points):
                                     t_step = round(given_t[value]/hm_resolution)
                                     if duration == t_step:
-                                        if id_video not in points_duration[duration]:                    
+                                        if id_video not in points_duration[duration]:
                                             points_duration[duration][id_video] = [[given_x[value]*norm_x,
                                                                                     given_y[value]*norm_y]]
                                         else:
@@ -492,8 +492,8 @@ class Heroku:
                                                                                         given_y[value]*norm_y])
                                     if duration < t_step:
                                         break
-                                    # start adding points to the points_duration list  
-                                # iterate over all values given by the participand 
+                                    # start adding points to the points_duration list
+                                # iterate over all values given by the participand
                                 # for val in range(len(given_y)-1):
                                 #     # add coordinates
                                 #     if id_video not in points:
@@ -502,7 +502,7 @@ class Heroku:
                                 #     else:
                                 #         points[id_video].append([(coords[0]),
                                 #                                 (coords[1])])
-                                    # if stim_from_df.index[pp] not in points_worker:           
+                                    # if stim_from_df.index[pp] not in points_worker:
                                     #     points_worker[stim_from_df.index[pp]] = [[(coords[0]),
                                     #                                              (coords[1])]]
                                     # else:
@@ -624,23 +624,25 @@ class Heroku:
                                 if rt - self.res < data <= rt:
                                     # if data is found, up bin counter
                                     bin_counter = bin_counter + 1
-                                    kp_raw.append(rt)
+                                    kp_raw.append(data)
                             if counter_data:
                                 percentage = bin_counter / counter_data
                                 kp.append(round(percentage * 100))
                             else:
                                 kp.append(0)
+                                kp_raw.append(0)
                         # store keypresses from repetition
                         video_kp.append(kp)
                         # store raw data from repetition
                         video_kp_raw.append(kp_raw)
+                        print(video_kp_raw)
                         break
             # calculate mean keypresses from all repetitions
             kp_mean = [*map(mean, zip(*video_kp))]
-            kp_mean_raw = [*map(mean, zip(*video_kp_raw))]
+            # kp_mean_raw = [*map(mean, zip(*video_kp_raw))]
             # append data from one video to the mapping array
             mapping_rt.append(kp_mean)
-            mapping_rt_raw.append(kp_mean_raw)
+            mapping_rt_raw.append(video_kp_raw)
         if filter_length:
             logger.info('Filtered out keypress data from {} videos with unexpected length.', counter_filtered)
         # update own mapping to include keypress data
