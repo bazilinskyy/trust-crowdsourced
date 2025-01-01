@@ -560,13 +560,16 @@ class Heroku:
             filter_length (bool, optional): filter out stimuli with unexpected length.
         """
         logger.info('Processing keypress data with res={} ms.', self.res)
-        # array to store all binned rt data in
+        # array to store all binned rt data
         mapping_rt = []
+        # array to store all raw binned rt data
+        mapping_rt_raw = []
         # counter of videos filtered because of length
         counter_filtered = 0
         # loop through all stimuli
         for num in tqdm(range(self.num_stimuli)):
             video_kp = []
+            video_kp_raw = []
             # video ID
             video_id = 'video_' + str(num)
             for rep in range(self.num_repeat):
@@ -612,6 +615,7 @@ class Heroku:
                                             rt_data.append(row[j])
                         # if all data for one video was found, divide them in bins
                         kp = []
+                        kp_raw = []
                         # loop over all bins, dependent on resolution
                         for rt in range(self.res, video_len + self.res, self.res):
                             bin_counter = 0
@@ -620,6 +624,7 @@ class Heroku:
                                 if rt - self.res < data <= rt:
                                     # if data is found, up bin counter
                                     bin_counter = bin_counter + 1
+                                    kp_raw.append(rt)
                             if counter_data:
                                 percentage = bin_counter / counter_data
                                 kp.append(round(percentage * 100))
@@ -627,15 +632,20 @@ class Heroku:
                                 kp.append(0)
                         # store keypresses from repetition
                         video_kp.append(kp)
+                        # store raw data from repetition
+                        video_kp_raw.append(kp_raw)
                         break
             # calculate mean keypresses from all repetitions
             kp_mean = [*map(mean, zip(*video_kp))]
+            kp_mean_raw = [*map(mean, zip(*video_kp_raw))]
             # append data from one video to the mapping array
             mapping_rt.append(kp_mean)
+            mapping_rt_raw.append(kp_mean_raw)
         if filter_length:
             logger.info('Filtered out keypress data from {} videos with unexpected length.', counter_filtered)
         # update own mapping to include keypress data
         self.mapping['kp'] = mapping_rt
+        self.mapping['kp_raw'] = mapping_rt_raw
         # save to csv
         if self.save_csv:
             # save to csv
@@ -669,12 +679,10 @@ class Heroku:
                 elif q['type'] == 'str':
                     length = length + len(q['options'])
                 else:
-                    logger.error('Wrong type of data {} in question {}' +
-                                 'provided.', q['type'], q['question'])
+                    logger.error('Wrong type of data {} in question {} provided.', q['type'], q['question'])
                     return -1
             # array in which data of a single stimulus is stored
-            answers = [[[] for i in range(self.heroku_data.shape[0])]
-                       for i in range(len(questions))]
+            answers = [[[] for i in range(self.heroku_data.shape[0])] for i in range(len(questions))]
             # for number of repetitions in survey, add extra number
             for rep in range(self.num_repeat):
                 # add suffix with repetition ID
@@ -708,10 +716,8 @@ class Heroku:
                                   for sublist in answers[i]]
                     # calculate mean of mean of responses of each participant
                     with warnings.catch_warnings():
-                        warnings.simplefilter('ignore',
-                                              category=RuntimeWarning)
-                        answers[i] = np.nanmean([np.nanmean(j)
-                                                 for j in answers[i]])
+                        warnings.simplefilter('ignore', category=RuntimeWarning)
+                        answers[i] = np.nanmean([np.nanmean(j) for j in answers[i]])
             # save question data in array
             mapping_as.append(answers)
         # add column with data to current mapping file
