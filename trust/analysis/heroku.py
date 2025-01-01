@@ -599,33 +599,26 @@ class Heroku:
                                     continue
                             # check if data is string to filter out nan data
                             if type(row) is list:
-                                # saving amount of times the video has been
-                                # watched
+                                # saving amount of times the video has been watched
                                 counter_data = counter_data + 1
-                                # if list contains only one value, append to
-                                # rt_data
+                                # if list contains only one value, append to rt_data
                                 if len(row) == 1:
                                     rt_data.append(row[0])
-                                # if list contains more then one value, go
-                                # through list to remove keyholds
+                                # if list contains more then one value, go  through list to remove keyholds
                                 elif len(row) > 1:
                                     for j in range(1, len(row)):
-                                        # if time between 2 stimuli is more
-                                        # than 35 ms, add to array (no hold)
+                                        # if time between 2 stimuli is more than 35 ms, add to array (no hold)
                                         if row[j] - row[j - 1] > 35:
-                                            # append buttonpress data to rt
-                                            # array
+                                            # append buttonpress data to rt array
                                             rt_data.append(row[j])
-                        # if all data for one video was found, divide them in
-                        # bins
+                        # if all data for one video was found, divide them in bins
                         kp = []
                         # loop over all bins, dependent on resolution
                         for rt in range(self.res, video_len + self.res,
                                         self.res):
                             bin_counter = 0
                             for data in rt_data:
-                                # go through all video data to find all data
-                                # within specific bin
+                                # go through all video data to find all data within specific bin
                                 if rt - self.res < data <= rt:
                                     # if data is found, up bin counter
                                     bin_counter = bin_counter + 1
@@ -642,15 +635,13 @@ class Heroku:
             # append data from one video to the mapping array
             mapping_rt.append(kp_mean)
         if filter_length:
-            logger.info('Filtered out keypress data from {} videos with '
-                        + 'unexpected length.', counter_filtered)
+            logger.info('Filtered out keypress data from {} videos with unexpected length.', counter_filtered)
         # update own mapping to include keypress data
         self.mapping['kp'] = mapping_rt
         # save to csv
         if self.save_csv:
             # save to csv
-            self.mapping.to_csv(os.path.join(tr.settings.output_dir,
-                                             self.file_mapping_csv))
+            self.mapping.to_csv(os.path.join(tr.settings.output_dir, self.file_mapping_csv))
         # return new mapping
         return self.mapping
 
