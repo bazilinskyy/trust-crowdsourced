@@ -26,6 +26,7 @@ from scipy.stats.kde import gaussian_kde
 from scipy.stats import ttest_rel, ttest_ind
 import cv2
 import trust as tr
+import random
 
 
 matplotlib.use('TkAgg')
@@ -2137,6 +2138,7 @@ class Analysis:
                                  orientation=orientation,
                                  text=text,
                                  textposition='auto'), row=1, col=2)
+        random_lists = []  # To store the random lists
         # output ttest
         if ttest_signals:
             for signals in ttest_signals:
@@ -2151,6 +2153,44 @@ class Analysis:
             # add to the plot
             # todo: @Shadab, plot those stars here based on significance
             # todo: @Shadab, adjust the ylim with yaxis_kp_range
+
+                signal_length = len(signals['signal_1'])  # Get the length of 'signal_1'
+                random_list = [random.randint(0, 1) for _ in range(signal_length)]  # Generate random list
+                random_lists.append(random_list)  # Append the random list to the main list
+
+                # Plot stars based on random lists
+                for signal_index, random_list_ in enumerate(random_lists):
+                    star_x = []  # x-coordinates for stars
+                    star_y = []  # y-coordinates for stars
+
+                    # Assuming `times` and `signals['signal_1']` correspond to x and y data points
+                    for i, value in enumerate(random_list_):
+                        if value == 1:  # If the random value indicates a star
+                            star_x.append(times[i])  # Use the corresponding x-coordinate
+                            # Dynamically set y-coordinate, slightly offset for each signal_index
+                            star_y.append(1 + signal_index * 1)
+                    # Filter out NaN values in star_x and star_y
+                    filtered_star_x = []
+                    filtered_star_y = []
+
+                    for x, y in zip(star_x, star_y):
+                        if not np.isnan(x) and not np.isnan(y):  # Ensure x and y are valid
+                            filtered_star_x.append(x)
+                            filtered_star_y.append(y)
+
+                    # Add scatter plot trace with cleaned data
+                    fig.add_trace(go.Scatter(
+                        x=filtered_star_x,
+                        y=filtered_star_y,
+                        mode='markers',
+                        marker=dict(
+                                symbol='diamond',  # Choose a close approximation to #
+                                size=5,  # Adjust size
+                                color='red'  # Adjust color
+                                ),
+                        showlegend=False
+                    ), row=1, col=1)
+
         # output ANOVA
         if anova_signals:
             # # smoothen signal
