@@ -589,8 +589,7 @@ class Heroku:
                                 # check if duration is within limits
                                 if dur < self.mapping['min_dur'][video_id] or dur > self.mapping['max_dur'][video_id]:
                                     # increase counter of filtered videos
-                                    logger.debug('Filtered keypress data from video {} of detected '
-                                                 + 'duration of {} for '
+                                    logger.debug('Filtered keypress data from video {} of detected duration of {} for '
                                                  + 'worker {}.',
                                                  video_id, dur,
                                                  self.heroku_data.index[row_index])
@@ -614,8 +613,7 @@ class Heroku:
                         # if all data for one video was found, divide them in bins
                         kp = []
                         # loop over all bins, dependent on resolution
-                        for rt in range(self.res, video_len + self.res,
-                                        self.res):
+                        for rt in range(self.res, video_len + self.res, self.res):
                             bin_counter = 0
                             for data in rt_data:
                                 # go through all video data to find all data within specific bin
