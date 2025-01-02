@@ -21,10 +21,10 @@ logger = tr.CustomLogger(__name__)  # use custom logger
 # CALC_COORDS = False  # extract points from heroku data
 # UPDATE_MAPPING = True  # update mapping with keypress data
 # SHOW_OUTPUT = True  # should figures be plotted
-# SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted-
-# SHOW_OUTPUT_ST = False  # should figures with stimulus data to be plotted
-# SHOW_OUTPUT_PP = False  # should figures with info about participants
-# SHOW_OUTPUT_ET = False  # should figures for eye tracking
+# SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
+# SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
+# SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+# SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 # for debugging, skip processing
 SAVE_P = False  # save pickle files with data
@@ -217,28 +217,28 @@ if __name__ == '__main__':
                 #     ttest_signals.append({'signal_1': df.loc['video_' + str(ids[0])]['kp'],
                 #                           'signal_2': df.loc['video_' + str(stim)]['kp'],
                 #                           'paired': True})
-                ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'],  # 0 and 1 = within
-                                  'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'],
+                ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
+                                  'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
                                   'label': 'ttest(0, 1)',
                                   'paired': True},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'],  # 0 and 2 = between
-                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'],
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
                                   'label': 'ttest(0, 2)',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'],  # 0 and 3 = between
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'],
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
                                   'label': 'ttest(0, 3)',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'],  # 1 and 2 = between
-                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'],
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
                                   'label': 'ttest(1, 2)',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'],  # 2 and 3 = within
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'],
+                                 {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
                                   'label': 'ttest(2, 3)',
                                   'paired': True},
-                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'],  # 1 and 3 = between
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'],
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
                                   'label': 'ttest(1, 3)',
                                   'paired': False}]
                 # signal_1 = signal_type = list of int, eg: [1,1,0,0]

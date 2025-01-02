@@ -625,7 +625,7 @@ class Heroku:
                                             rt_data.append(row[j])
                                             # record raw value for pp
                                             for rt_bin in range(self.res, video_len + self.res, self.res):
-                                                if rt_bin - self.res < row[0] <= rt_bin:
+                                                if rt_bin - self.res < row[j] <= rt_bin:
                                                     pp_kp.loc[rt_bin, [self.heroku_data.index[row_index]]] = 1
                         # if all data for one video was found, divide them in bins
                         kp = []
@@ -650,7 +650,7 @@ class Heroku:
                         video_kp.append(kp)
                         # store raw data from repetition
                         # todo: fix extra [] added to results
-                        video_kp_raw.append(pp_kp.values.tolist()[0])
+                        video_kp_raw.append(pp_kp.values.tolist())
                         break
             # calculate mean keypresses from all repetitions
             kp_mean = [*map(mean, zip(*video_kp))]
