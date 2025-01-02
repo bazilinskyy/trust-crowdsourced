@@ -12,34 +12,34 @@ tr.logs(show_level='info', show_color=True)
 logger = tr.CustomLogger(__name__)  # use custom logger
 
 # const
-SAVE_P = True  # save pickle files with data
-LOAD_P = False  # load pickle files with data
-SAVE_CSV = True  # load csv files with data
-FILTER_DATA = True  # filter Appen and heroku data
-CLEAN_DATA = True  # clean Appen data
-REJECT_CHEATERS = False  # reject cheaters on Appen
-CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = True  # update mapping with keypress data
-SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted-
-SHOW_OUTPUT_ST = False  # should figures with stimulus data to be plotted
-SHOW_OUTPUT_PP = False  # should figures with info about participants
-SHOW_OUTPUT_ET = False  # should figures for eye tracking
-
-# for debugging, skip processing
-# SAVE_P = False  # save pickle files with data
-# LOAD_P = True  # load pickle files with data
+# SAVE_P = True  # save pickle files with data
+# LOAD_P = False  # load pickle files with data
 # SAVE_CSV = True  # load csv files with data
-# FILTER_DATA = False  # filter Appen and heroku data
-# CLEAN_DATA = False  # clean Appen data
+# FILTER_DATA = True  # filter Appen and heroku data
+# CLEAN_DATA = True  # clean Appen data
 # REJECT_CHEATERS = False  # reject cheaters on Appen
 # CALC_COORDS = False  # extract points from heroku data
-# UPDATE_MAPPING = False  # update mapping with keypress data
+# UPDATE_MAPPING = True  # update mapping with keypress data
 # SHOW_OUTPUT = True  # should figures be plotted
-# SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-# SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
-# SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
-# SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+# SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted-
+# SHOW_OUTPUT_ST = False  # should figures with stimulus data to be plotted
+# SHOW_OUTPUT_PP = False  # should figures with info about participants
+# SHOW_OUTPUT_ET = False  # should figures for eye tracking
+
+# for debugging, skip processing
+SAVE_P = False  # save pickle files with data
+LOAD_P = True  # load pickle files with data
+SAVE_CSV = True  # load csv files with data
+FILTER_DATA = False  # filter Appen and heroku data
+CLEAN_DATA = False  # clean Appen data
+REJECT_CHEATERS = False  # reject cheaters on Appen
+CALC_COORDS = False  # extract points from heroku data
+UPDATE_MAPPING = False  # update mapping with keypress data
+SHOW_OUTPUT = True  # should figures be plotted
+SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 # todo: code for eye gaze analysis does not run on mac
 

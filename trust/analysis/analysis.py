@@ -2138,9 +2138,10 @@ class Analysis:
                                  orientation=orientation,
                                  text=text,
                                  textposition='auto'), row=1, col=2)
-        random_lists = []  # To store the random lists
         # output ttest
         if ttest_signals:
+            # count lines to calculate increase in coordinates of drawing
+            counter_lines = 0
             for signals in ttest_signals:
                 # # smoothen signal
                 # if self.smoothen_signal:
@@ -2150,46 +2151,41 @@ class Analysis:
                 [p_values, significance] = self.ttest(signal_1=signals['signal_1'],
                                                       signal_2=signals['signal_2'],
                                                       paired=signals['paired'])
-            # add to the plot
-            # todo: @Shadab, plot those stars here based on significance
-            # todo: @Shadab, adjust the ylim with yaxis_kp_range
-
-                signal_length = len(signals['signal_1'])  # Get the length of 'signal_1'
-                random_list = [random.randint(0, 1) for _ in range(signal_length)]  # Generate random list
-                random_lists.append(random_list)  # Append the random list to the main list
-
-                # Plot stars based on random lists
-                for signal_index, random_list_ in enumerate(random_lists):
-                    star_x = []  # x-coordinates for stars
-                    star_y = []  # y-coordinates for stars
-
-                    # Assuming `times` and `signals['signal_1']` correspond to x and y data points
-                    for i, value in enumerate(random_list_):
-                        if value == 1:  # If the random value indicates a star
-                            star_x.append(times[i])  # Use the corresponding x-coordinate
-                            # Dynamically set y-coordinate, slightly offset for each signal_index
-                            star_y.append(1 + signal_index * 1)
-                    # Filter out NaN values in star_x and star_y
-                    filtered_star_x = []
-                    filtered_star_y = []
-
-                    for x, y in zip(star_x, star_y):
-                        if not np.isnan(x) and not np.isnan(y):  # Ensure x and y are valid
-                            filtered_star_x.append(x)
-                            filtered_star_y.append(y)
-
-                    # Add scatter plot trace with cleaned data
-                    fig.add_trace(go.Scatter(
-                        x=filtered_star_x,
-                        y=filtered_star_y,
-                        mode='markers',
-                        marker=dict(
-                                symbol='diamond',  # Choose a close approximation to #
-                                size=5,  # Adjust size
-                                color='red'  # Adjust color
-                                ),
-                        showlegend=False
-                    ), row=1, col=1)
+                # add to the plot
+                # todo: adjust the ylim with yaxis_kp_range
+                signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
+                significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
+                # plot stars based on random lists
+                star_x = []  # x-coordinates for stars
+                star_y = []  # y-coordinates for stars
+                # assuming `times` and `signals['signal_1']` correspond to x and y data points
+                for i in range(len(significance)):
+                    if significance[i] == 1:  # if value indicates a star
+                        star_x.append(times[i])  # use the corresponding x-coordinate
+                        # dynamically set y-coordinate, slightly offset for each signal_index
+                        star_y.append(1 + counter_lines * 1)
+                # Filter out NaN values in star_x and star_y
+                filtered_star_x = []
+                filtered_star_y = []
+                # filter out nans in s
+                for x, y in zip(star_x, star_y):
+                    if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
+                        filtered_star_x.append(x)
+                        filtered_star_y.append(y)
+                # add scatter plot trace with cleaned data
+                fig.add_trace(go.Scatter(
+                    x=filtered_star_x,
+                    y=filtered_star_y,
+                    mode='markers',
+                    marker=dict(
+                            symbol='diamond',  # Choose a close approximation to #
+                            size=5,  # Adjust size
+                            color='red'  # Adjust color
+                            ),
+                    showlegend=False
+                ), row=1, col=1)
+                # increase counter of lines drawn
+                counter_lines = counter_lines + 1
 
         # output ANOVA
         if anova_signals:
@@ -2809,7 +2805,7 @@ class Analysis:
             logger.error('Specified filter {} not implemented.', type_flter)
             return -1
 
-    def ttest(self, signal_1, signal_2, type="two-sided", paired=True):
+    def ttest(self, signal_1, signal_2, type='two-sided', paired=True):
         """
         Perform a t-test on two signals, computing p-values and significance.
 
@@ -2831,7 +2827,7 @@ class Analysis:
         """
         # Check if the lengths of the two signals are the same
         if len(signal_1) != len(signal_2):
-            logger.error("The lengths of signal_1 and signal_2 must be the same.")
+            logger.error('The lengths of signal_1 and signal_2 must be the same.')
 
         # convert to numpy arrays if signal_1 and signal_2 are lists
         signal_1 = np.asarray(signal_1)
