@@ -1993,10 +1993,11 @@ class Analysis:
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
                               fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
-                              font_size=None, ttest_signals=None, anova_signals=None, ttest_annotations_font_size=10,
+                              font_size=None, ttest_signals=None, anova_signals=None, ttest_marker='circle',
+                              ttest_marker_size=3, ttest_marker_colour='black', ttest_annotations_font_size=10,
                               ttest_annotations_colour='black'):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
-
+        
         Args:
             df (dataframe): dataframe with stimuli data.
             y (list): column names of dataframe to plot.
@@ -2021,7 +2022,6 @@ class Analysis:
             show_text_labels (bool, optional): output automatically positioned text labels.
             name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
-            font_size (int, optional): font size to be used across the figure.
             fig_save_width (int, optional): width of figures to be saved.
             legend_x (float, optional): location of legend, percentage of x axis.
             legend_y (float, optional): location of legend, percentage of y axis.
@@ -2029,9 +2029,12 @@ class Analysis:
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
             ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
-            ttest_annotations_font_size (int, optional): font size of annotations for the ttest lines of markers.
-            ttest_annotations_colour (str, optional): colour of annotations for the ttest lines of markers.
             anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
+            ttest_marker (str, optional): symbol of markers for the ttest.
+            ttest_marker_size (int, optional): size of markers for the ttest.
+            ttest_marker_colour (str, optional): colour of markers for the ttest.
+            ttest_annotations_font_size (int, optional): font size of annotations for ttest.
+            ttest_annotations_colour (str, optional): colour of annotations for ttest.
         """
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
@@ -2177,17 +2180,19 @@ class Analysis:
                 fig.add_trace(go.Scatter(
                     x=filtered_star_x,
                     y=filtered_star_y,
-                    mode='markers',
-                    marker=dict(symbol='diamond',  # marker
-                                size=2,  # adjust size
-                                color='black'),  # adjust colour
+                    mode='markers',  # list of possible values: https://plotly.com/python/marker-style
+                    marker=dict(symbol=ttest_marker,  # marker
+                                size=ttest_marker_size,  # adjust size
+                                color=ttest_marker_colour),  # adjust colour
                     showlegend=False),
                     row=1,
                     col=1)
                 # add label with signals that are compared
                 fig.add_annotation(text=signals['label'],
-                                   x=40,
-                                   y=-1 - counter_lines * 1,  # use ylim value and draw lower
+                                   # put labels at the start of the x axis, as they are likely no significant effects
+                                   # in the start of the trial
+                                   x=1,
+                                   y=-1 - counter_lines * 1,  # draw in the nagative range of y axis
                                    showarrow=False,
                                    font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
                 # increase counter of lines drawn

@@ -273,13 +273,19 @@ if __name__ == '__main__':
                                                fig_save_height=1080,  # preserve ratio 225x152
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
                                                ttest_signals=ttest_signals,
+                                               ttest_marker='circle',
+                                               ttest_marker_size=3,
+                                               # todo: set colour as colour of signal_2
+                                               ttest_marker_colour='black',
+                                               ttest_annotations_font_size=10,
+                                               ttest_annotations_colour='black',
                                                anova_signals=anova_signals)
             # keypresses of an individual stimulus for an individual pp
-            analysis.plot_kp_video_pp(mapping,
-                                      heroku_data,
-                                      pp='R51701197342646JF16777X',
-                                      stimulus='video_2',
-                                      conf_interval=0.95)
+            # analysis.plot_kp_video_pp(mapping,
+            #                           heroku_data,
+            #                           pp='R51701197342646JF16777X',
+            #                           stimulus='video_2',
+            #                           conf_interval=0.95)
             # keypresses of all videos individually
             analysis.plot_kp_videos(mapping, show_menu=False, show_title=False)
             # keypress based on the type of ego car
