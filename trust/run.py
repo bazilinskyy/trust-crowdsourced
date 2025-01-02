@@ -246,9 +246,22 @@ if __name__ == '__main__':
                 # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
                 # prepare signals to compare with ANOVA
                 # todo: signals for ANOVA
-                anova_signals = {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                                 'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                                 'signal_3': df.loc['video_' + str(ids[0])]['kp']}
+                anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                                  'signal_2': df.loc['video_' + str(ids[1])]['kp'],
+                                  'signal_3': df.loc['video_' + str(ids[2])]['kp'],
+                                  'label': '0, 1 and 2',
+                                  'type': 'two-sided'},
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                                  'signal_2': df.loc['video_' + str(ids[1])]['kp'],
+                                  'signal_3': df.loc['video_' + str(ids[3])]['kp'],
+                                  'label': '0, 1 and 3',
+                                  'type': 'two-sided'},
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
+                                  'signal_3': df.loc['video_' + str(ids[3])]['kp'],
+                                  'label': '1, 2 and 3',
+                                  'type': 'two-sided'},
+                                 ]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],

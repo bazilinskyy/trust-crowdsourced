@@ -8,6 +8,7 @@ import seaborn as sns
 import pandas as pd
 import plotly as py
 import plotly.graph_objs as go
+from plotly.colors import qualitative
 import matplotlib.animation as animation
 import subprocess
 import io
@@ -23,7 +24,7 @@ from tqdm import tqdm
 import ast
 from scipy.signal import savgol_filter
 from scipy.stats.kde import gaussian_kde
-from scipy.stats import ttest_rel, ttest_ind
+from scipy.stats import ttest_rel, ttest_ind, f_oneway
 import cv2
 import trust as tr
 import random
@@ -1995,7 +1996,9 @@ class Analysis:
                               fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
                               font_size=None, ttest_signals=None, anova_signals=None, ttest_marker='circle',
                               ttest_marker_size=3, ttest_marker_colour='black', ttest_annotations_font_size=10,
-                              ttest_annotations_colour='black'):
+                              ttest_annotations_colour='black', anova_marker='triangle-up', anova_marker_size=3,
+                              anova_marker_colour='black', anova_annotations_font_size=10,
+                              anova_annotations_colour='black'):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -2035,6 +2038,11 @@ class Analysis:
             ttest_marker_colour (str, optional): colour of markers for the ttest.
             ttest_annotations_font_size (int, optional): font size of annotations for ttest.
             ttest_annotations_colour (str, optional): colour of annotations for ttest.
+            anova_marker (str, optional): symbol of markers for the ttest.
+            anova_marker_size (int, optional): size of markers for the ttest.
+            anova_marker_colour (str, optional): colour of markers for the ttest.
+            anova_annotations_font_size (int, optional): font size of annotations for ttest.
+            anova_annotations_colour (str, optional): colour of annotations for ttest.
         """
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
         # calculate times
@@ -2142,11 +2150,15 @@ class Analysis:
                                  orientation=orientation,
                                  text=text,
                                  textposition='auto'), row=1, col=2)
+
+        # Use the Light24 color palette from Plotly
+        marker_colors = qualitative.Light24
         # output ttest
         if ttest_signals:
             # count lines to calculate increase in coordinates of drawing
             counter_lines = 0
-            for signals in ttest_signals:
+            for signal_index, signals in enumerate(ttest_signals):
+                current_color = marker_colors[signal_index % len(marker_colors)]
                 # # smoothen signal
                 # if self.smoothen_signal:
                 #     signal_1 = self.smoothen_filter(signals['signal_1'])
@@ -2158,24 +2170,16 @@ class Analysis:
                 # add to the plot
                 # todo: adjust the ylim with yaxis_kp_range
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
-                significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
+                p_values = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
                 # plot stars based on random lists
                 star_x = []  # x-coordinates for stars
                 star_y = []  # y-coordinates for stars
                 # assuming `times` and `signals['signal_1']` correspond to x and y data points
-                for i in range(len(significance)):
-                    if significance[i] == 1:  # if value indicates a star
+                for i in range(len(p_values)):
+                    if p_values[i] == 1:  # if value indicates a star
                         star_x.append(times[i])  # use the corresponding x-coordinate
                         # dynamically set y-coordinate, slightly offset for each signal_index
-                        star_y.append(-1 - counter_lines * 1)
-                # filter out NaN values in star_x and star_y
-                # filtered_star_x = []
-                # filtered_star_y = []
-                # # filter out nans in s
-                # for x, y in zip(star_x, star_y):
-                #     if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
-                #         filtered_star_x.append(x)
-                #         filtered_star_y.append(y)
+                        star_y.append(-2 - counter_lines * 1)
                 # add scatter plot trace with cleaned data
                 fig.add_trace(go.Scatter(
                     x=star_x,
@@ -2192,25 +2196,79 @@ class Analysis:
                                    # put labels at the start of the x axis, as they are likely no significant effects
                                    # in the start of the trial
                                    x=1,
-                                   y=-1 - counter_lines * 1,  # draw in the nagative range of y axis
+                                   y=-2 - counter_lines * 1,  # draw in the nagative range of y axis
                                    showarrow=False,
                                    font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
                 # increase counter of lines drawn
                 counter_lines = counter_lines + 1
+            fig.add_annotation(text="T-TEST",  # Specify the test type
+                               x=1,
+                               y=-1,  # Place it slightly above the current label
+                               showarrow=False,
+                               font=dict(size=anova_annotations_font_size, color=anova_annotations_colour)
+                               )
         # hide ticks of negative values on y axis
         # assuming that ticks are at step of 10
         r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
         fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
+
         # output ANOVA
         if anova_signals:
-            # # smoothen signal
-            # if self.smoothen_signal:
-            #     signal_1 = self.smoothen_filter(signals['signal_1'])
-            #     signal_2 = self.smoothen_filter(signals['signal_2'])
-            # receive significance values
-            [p_values, significance] = self.anova(signal_1=anova_signals['signal_1'],
-                                                  signal_2=anova_signals['signal_2'],
-                                                  signal_3=anova_signals['signal_3'])
+            counter_lines = 0
+            for signal_index, signals in enumerate(anova_signals):
+                current_color = marker_colors[signal_index % len(marker_colors)]
+                # # smoothen signal
+                # if self.smoothen_signal:
+                #     signal_1 = self.smoothen_filter(signals['signal_1'])
+                #     signal_2 = self.smoothen_filter(signals['signal_2'])
+                # receive significance values
+                [p_values, stats] = self.anova_test(signal_1=signals['signal_1'],
+                                                    signal_2=signals['signal_2'],
+                                                    signal_3=signals['signal_3'],
+                                                    type=signals['type'])
+
+                signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
+                p_values = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
+                # plot stars based on random lists
+                star_x = []  # x-coordinates for stars
+                star_y = []  # y-coordinates for stars
+                # assuming `times` and `signals['signal_1']` correspond to x and y data points
+                for i in range(len(p_values)):
+                    if p_values[i] == 1:  # if value indicates a star
+                        star_x.append(times[i])  # use the corresponding x-coordinate
+                        # dynamically set y-coordinate, slightly offset for each signal_index
+                        star_y.append(-10 - counter_lines * 1)
+                # add scatter plot trace with cleaned data
+                fig.add_trace(go.Scatter(
+                    x=star_x,
+                    y=star_y,
+                    mode='markers',  # list of possible values: https://plotly.com/python/marker-style
+                    marker=dict(symbol=anova_marker,  # marker
+                                size=anova_marker_size,  # adjust size
+                                color=anova_marker_colour),  # adjust colour
+                    showlegend=False),
+                    row=1,
+                    col=1)
+                # add label with signals that are compared
+                fig.add_annotation(text=signals['label'],
+                                   # put labels at the start of the x axis, as they are likely no significant effects
+                                   # in the start of the trial
+                                   x=1,
+                                   y=-10 - counter_lines * 1,  # draw in the nagative range of y axis
+                                   showarrow=False,
+                                   font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
+                # increase counter of lines drawn
+                counter_lines = counter_lines + 1
+            fig.add_annotation(text="ANOVA",  # Specify the test type
+                               x=1,
+                               y=-9,  # Place it slightly above the current label
+                               showarrow=False,
+                               font=dict(size=anova_annotations_font_size, color=anova_annotations_colour)
+                               )
+        # hide ticks of negative values on y axis
+        # assuming that ticks are at step of 10
+        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
+        fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
             # add to the plot
             # todo: @Shadab, plot those pluses here based on significance
             # todo: @Shadab, adjust the ylim with yaxis_kp_range
@@ -2861,21 +2919,43 @@ class Analysis:
         # return raw p values and binary flags for significance for output
         return [p_values, significance]
 
-    def anova(self, signal_1, signal_2, signal_3):
-        """Summary
+    def anova_test(self, signal_1, signal_2, signal_3, type='two-sided'):
+        """
+        Perform an ANOVA test on three signals, computing p-values and significance.
 
         Args:
-            signal_1 (TYPE): Description
-            signal_2 (TYPE): Description
-            signal_3 (TYPE): Description
+            signal_1 (list): First signal, a list of numeric values.
+            signal_2 (list): Second signal, a list of numeric values.
+            signal_3 (list): Third signal, a list of numeric values.
+            type (str, optional): Type of hypothesis test. Options are "two-sided",
+                                "greater", or "less". Defaults to "two-sided".
 
         Returns:
-            TYPE: Description
+            list: A list containing two elements:
+                  - p_values (list): Raw p-values for each bin.
+                  - significance (list): Binary flags (0 or 1) indicating whether
+                    the p-value for each bin is below the threshold configured in
+                    `tr.common.get_configs('p_value')`.
         """
-        # convert to numpy arrays if signal_1 and signal_2 are lists
+        # Check if the lengths of the three signals are the same
+        if not (len(signal_1) == len(signal_2) == len(signal_3)):
+            logger.error('The lengths of signal_1, signal_2, and signal_3 must be the same.')
+
+        # Convert signals to numpy arrays if they are lists
         signal_1 = np.asarray(signal_1)
         signal_2 = np.asarray(signal_2)
         signal_3 = np.asarray(signal_3)
-        p_values = []  # record raw p value for each bin
-        significance = []  # record binary flag (0 or 1) if p value < tr.common.get_configs('p_value'))
-        return [p_values, significance]
+
+        p_values = []  # Record raw p-values for each bin
+        stats = []  # Record binary flags (0 or 1) if p-value < tr.common.get_configs('p_value')
+
+        # Perform ANOVA test for each value (treated as an independent bin)
+        for i in range(len(signal_1)):
+            f_stat, p_value = f_oneway([signal_1[i]], [signal_2[i]], [signal_3[i]])
+            # Record raw p-value
+            p_values.append(p_value)
+            # Determine significance for this value
+            stats.append(int(p_value < tr.common.get_configs('p_value')))
+
+        # Return raw p-values and binary flags for significance for output
+        return [p_values, stats]
