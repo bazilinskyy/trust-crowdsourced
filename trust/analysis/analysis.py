@@ -1994,10 +1994,10 @@ class Analysis:
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
                               fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
-                              font_size=None, ttest_signals=None, anova_signals=None, ttest_marker='circle',
-                              ttest_marker_size=3, ttest_marker_colour='black', ttest_annotations_font_size=10,
-                              ttest_annotations_colour='black', anova_marker='triangle-up', anova_marker_size=3,
-                              anova_marker_colour='black', anova_annotations_font_size=10,
+                              font_size=None, ttest_signals=None, ttest_marker='circle', ttest_marker_size=3,
+                              ttest_marker_colour='black', ttest_annotations_font_size=10,
+                              ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
+                              anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
                               anova_annotations_colour='black'):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
@@ -2032,19 +2032,19 @@ class Analysis:
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
             ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
-            anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
             ttest_marker (str, optional): symbol of markers for the ttest.
             ttest_marker_size (int, optional): size of markers for the ttest.
             ttest_marker_colour (str, optional): colour of markers for the ttest.
             ttest_annotations_font_size (int, optional): font size of annotations for ttest.
             ttest_annotations_colour (str, optional): colour of annotations for ttest.
-            anova_marker (str, optional): symbol of markers for the ttest.
-            anova_marker_size (int, optional): size of markers for the ttest.
-            anova_marker_colour (str, optional): colour of markers for the ttest.
-            anova_annotations_font_size (int, optional): font size of annotations for ttest.
-            anova_annotations_colour (str, optional): colour of annotations for ttest.
+            anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
+            anova_marker (str, optional): symbol of markers for the ANOVA.
+            anova_marker_size (int, optional): size of markers for the ANOVA.
+            anova_marker_colour (str, optional): colour of markers for the ANOVA.
+            anova_annotations_font_size (int, optional): font size of annotations for ANOVA.
+            anova_annotations_colour (str, optional): colour of annotations for ANOVA.
         """
-        logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
+        logger.info('Creating figure keypress and slider data for {}.', df.index.tolist())
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
         # plotly
@@ -2055,6 +2055,14 @@ class Analysis:
                                      specs=[[{}, {}]],
                                      horizontal_spacing=0.00,
                                      shared_xaxes=False)
+        # adjust ylim, if ttest results need to be plotted
+        if ttest_signals:
+            # yaxis_kp_range[0] = yaxis_kp_range[0] - len(ttest_signals) * 1 - 1  # assume one row takes 1 on y axis
+            yaxis_kp_range[0] = yaxis_kp_range[0] - 5  # assume one row takes 1 on y axis
+        # adjust ylim, if anova results need to be plotted
+        if anova_signals:
+            # yaxis_kp_range[0] = yaxis_kp_range[0] - len(anova_signals) * 1  # assume one row takes 1 on y axis
+            yaxis_kp_range[0] = yaxis_kp_range[0] - 5  # assume one row takes 1 on y axis
         # plot keypress data
         for index, row in df.iterrows():
             values = row['kp']  # keypress data
@@ -2150,15 +2158,13 @@ class Analysis:
                                  orientation=orientation,
                                  text=text,
                                  textposition='auto'), row=1, col=2)
-
-        # Use the Light24 color palette from Plotly
-        marker_colors = qualitative.Light24
+        # count lines to calculate increase in coordinates of drawing
+        counter_ttest = 0
+        # count lines to calculate increase in coordinates of drawing
+        counter_anova = 0
         # output ttest
         if ttest_signals:
-            # count lines to calculate increase in coordinates of drawing
-            counter_lines = 0
-            for signal_index, signals in enumerate(ttest_signals):
-                current_color = marker_colors[signal_index % len(marker_colors)]
+            for signals in ttest_signals:
                 # # smoothen signal
                 # if self.smoothen_signal:
                 #     signal_1 = self.smoothen_filter(signals['signal_1'])
@@ -2168,110 +2174,110 @@ class Analysis:
                                                       signal_2=signals['signal_2'],
                                                       paired=signals['paired'])
                 # add to the plot
-                # todo: adjust the ylim with yaxis_kp_range
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
-                p_values = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
+                # significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
                 # plot stars based on random lists
-                star_x = []  # x-coordinates for stars
-                star_y = []  # y-coordinates for stars
+                marker_x = []  # x-coordinates for stars
+                marker_y = []  # y-coordinates for stars
                 # assuming `times` and `signals['signal_1']` correspond to x and y data points
-                for i in range(len(p_values)):
-                    if p_values[i] == 1:  # if value indicates a star
-                        star_x.append(times[i])  # use the corresponding x-coordinate
+                for i in range(len(significance)):
+                    if significance[i] == 1:  # if value indicates a star
+                        marker_x.append(times[i])  # use the corresponding x-coordinate
                         # dynamically set y-coordinate, slightly offset for each signal_index
-                        star_y.append(-2 - counter_lines * 1)
+                        marker_y.append(-1 - counter_ttest * 1)
+                # filter out NaN values in marker_x and marker_y
+                # filtered_marker_x = []
+                # filtered_marker_y = []
+                # # filter out nans in s
+                # for x, y in zip(marker_x, marker_y):
+                #     if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
+                #         filtered_marker_x.append(x)
+                #         filtered_marker_y.append(y)
                 # add scatter plot trace with cleaned data
-                fig.add_trace(go.Scatter(
-                    x=star_x,
-                    y=star_y,
-                    mode='markers',  # list of possible values: https://plotly.com/python/marker-style
-                    marker=dict(symbol=ttest_marker,  # marker
-                                size=ttest_marker_size,  # adjust size
-                                color=ttest_marker_colour),  # adjust colour
-                    showlegend=False),
-                    row=1,
-                    col=1)
+                fig.add_trace(go.Scatter(x=marker_x,
+                                         y=marker_y,
+                                         # list of possible values: https://plotly.com/python/marker-style
+                                         mode='markers',
+                                         marker=dict(symbol=ttest_marker,  # marker
+                                                     size=ttest_marker_size,  # adjust size
+                                                     color=ttest_marker_colour),  # adjust colour
+                                         text=p_values,
+                                         showlegend=False,
+                                         hovertemplate='time=%{x}, p_value=%{text}'),
+                              row=1,
+                              col=1)
                 # add label with signals that are compared
                 fig.add_annotation(text=signals['label'],
                                    # put labels at the start of the x axis, as they are likely no significant effects
                                    # in the start of the trial
                                    x=1,
-                                   y=-2 - counter_lines * 1,  # draw in the nagative range of y axis
+                                   y=-1 - counter_ttest * 1,  # draw in the nagative range of y axis
                                    showarrow=False,
                                    font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
                 # increase counter of lines drawn
-                counter_lines = counter_lines + 1
-            fig.add_annotation(text="T-TEST",  # Specify the test type
-                               x=1,
-                               y=-1,  # Place it slightly above the current label
-                               showarrow=False,
-                               font=dict(size=anova_annotations_font_size, color=anova_annotations_colour)
-                               )
-        # hide ticks of negative values on y axis
-        # assuming that ticks are at step of 10
-        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
-        fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
-
+                counter_ttest = counter_ttest + 1
         # output ANOVA
         if anova_signals:
-            counter_lines = 0
-            for signal_index, signals in enumerate(anova_signals):
-                current_color = marker_colors[signal_index % len(marker_colors)]
+            # if ttest was plotted, take into account for y of the first row or marker
+            if counter_ttest > 0:
+                counter_anova = counter_ttest
+            # calculate for given signals one by one
+            for signals in anova_signals:
                 # # smoothen signal
                 # if self.smoothen_signal:
                 #     signal_1 = self.smoothen_filter(signals['signal_1'])
                 #     signal_2 = self.smoothen_filter(signals['signal_2'])
                 # receive significance values
-                [p_values, stats] = self.anova_test(signal_1=signals['signal_1'],
-                                                    signal_2=signals['signal_2'],
-                                                    signal_3=signals['signal_3'],
-                                                    type=signals['type'])
-
+                [p_values, significance] = self.anova(signal_1=signals['signal_1'],
+                                                      signal_2=signals['signal_2'],
+                                                      signal_3=signals['signal_3'])
+                # add to the plot
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
-                p_values = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
+                significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
                 # plot stars based on random lists
-                star_x = []  # x-coordinates for stars
-                star_y = []  # y-coordinates for stars
+                marker_x = []  # x-coordinates for stars
+                marker_y = []  # y-coordinates for stars
                 # assuming `times` and `signals['signal_1']` correspond to x and y data points
-                for i in range(len(p_values)):
-                    if p_values[i] == 1:  # if value indicates a star
-                        star_x.append(times[i])  # use the corresponding x-coordinate
+                for i in range(len(significance)):
+                    if significance[i] == 1:  # if value indicates a star
+                        marker_x.append(times[i])  # use the corresponding x-coordinate
                         # dynamically set y-coordinate, slightly offset for each signal_index
-                        star_y.append(-10 - counter_lines * 1)
+                        marker_y.append(-1 - counter_anova * 1)
+                # filter out NaN values in marker_x and marker_y
+                # filtered_marker_x = []
+                # filtered_marker_y = []
+                # # filter out nans in s
+                # for x, y in zip(marker_x, marker_y):
+                #     if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
+                #         filtered_marker_x.append(x)
+                #         filtered_marker_y.append(y)
                 # add scatter plot trace with cleaned data
-                fig.add_trace(go.Scatter(
-                    x=star_x,
-                    y=star_y,
-                    mode='markers',  # list of possible values: https://plotly.com/python/marker-style
-                    marker=dict(symbol=anova_marker,  # marker
-                                size=anova_marker_size,  # adjust size
-                                color=anova_marker_colour),  # adjust colour
-                    showlegend=False),
-                    row=1,
-                    col=1)
+                fig.add_trace(go.Scatter(x=marker_x,
+                                         y=marker_y,
+                                         # list of possible values: https://plotly.com/python/marker-style
+                                         mode='markers',
+                                         marker=dict(symbol=anova_marker,  # marker
+                                                     size=anova_marker_size,  # adjust size
+                                                     color=anova_marker_colour),  # adjust colour
+                                         text=p_values,
+                                         showlegend=False,
+                                         hovertemplate='time=%{x}, p_value=%{text}'),
+                              row=1,
+                              col=1)
                 # add label with signals that are compared
                 fig.add_annotation(text=signals['label'],
                                    # put labels at the start of the x axis, as they are likely no significant effects
                                    # in the start of the trial
                                    x=1,
-                                   y=-10 - counter_lines * 1,  # draw in the nagative range of y axis
+                                   y=-1 - counter_anova * 1,  # draw in the nagative range of y axis
                                    showarrow=False,
                                    font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
                 # increase counter of lines drawn
-                counter_lines = counter_lines + 1
-            fig.add_annotation(text="ANOVA",  # Specify the test type
-                               x=1,
-                               y=-9,  # Place it slightly above the current label
-                               showarrow=False,
-                               font=dict(size=anova_annotations_font_size, color=anova_annotations_colour)
-                               )
+                counter_anova = counter_anova + 1
         # hide ticks of negative values on y axis
         # assuming that ticks are at step of 10
         r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
         fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
-            # add to the plot
-            # todo: @Shadab, plot those pluses here based on significance
-            # todo: @Shadab, adjust the ylim with yaxis_kp_range
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
         fig.update_yaxes(title_text=yaxis_slider_title, row=1, col=2)

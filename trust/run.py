@@ -21,10 +21,10 @@ logger = tr.CustomLogger(__name__)  # use custom logger
 # CALC_COORDS = False  # extract points from heroku data
 # UPDATE_MAPPING = True  # update mapping with keypress data
 # SHOW_OUTPUT = True  # should figures be plotted
-# SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted-
-# SHOW_OUTPUT_ST = False  # should figures with stimulus data to be plotted
-# SHOW_OUTPUT_PP = False  # should figures with info about participants
-# SHOW_OUTPUT_ET = False  # should figures for eye tracking
+# SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
+# SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
+# SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+# SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 # for debugging, skip processing
 SAVE_P = False  # save pickle files with data
@@ -217,29 +217,29 @@ if __name__ == '__main__':
                 #     ttest_signals.append({'signal_1': df.loc['video_' + str(ids[0])]['kp'],
                 #                           'signal_2': df.loc['video_' + str(stim)]['kp'],
                 #                           'paired': True})
-                ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 1 = within
-                                  'signal_2': df.loc['video_' + str(ids[1])]['kp'],
-                                  'label': '0 and 1',
+                ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
+                                  'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
+                                  'label': 'ttest(0, 1)',
                                   'paired': True},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 2 = between
-                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
-                                  'label': '0 and 2',
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                                  'label': 'ttest(0, 2)',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 3 = between
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
-                                  'label': '0 and 3',
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                                  'label': 'ttest(0, 3)',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 2 = between
-                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
-                                  'label': '1 and 2',
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
+                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                                  'label': 'ttest(1, 2)',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[2])]['kp'],  # 2 and 3 = within
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
-                                  'label': '2 and 3',
+                                 {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                                  'label': 'ttest(2, 3)',
                                   'paired': True},
-                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 3 = between
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp'],
-                                  'label': '1 and 3',
+                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
+                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                                  'label': 'ttest(1, 3)',
                                   'paired': False}]
                 # signal_1 = signal_type = list of int, eg: [1,1,0,0]
                 # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
@@ -247,28 +247,24 @@ if __name__ == '__main__':
                 # prepare signals to compare with ANOVA
                 # todo: signals for ANOVA
                 anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_2': df.loc['video_' + str(ids[1])]['kp'],
-                                  'signal_3': df.loc['video_' + str(ids[2])]['kp'],
-                                  'label': '0, 1 and 2',
-                                  'type': 'two-sided'},
+                                  'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                                  'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                                  'label': 'anova(0, 1, 2)'},
                                  {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_2': df.loc['video_' + str(ids[1])]['kp'],
-                                  'signal_3': df.loc['video_' + str(ids[3])]['kp'],
-                                  'label': '0, 1 and 3',
-                                  'type': 'two-sided'},
-                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp'],
-                                  'signal_2': df.loc['video_' + str(ids[2])]['kp'],
-                                  'signal_3': df.loc['video_' + str(ids[3])]['kp'],
-                                  'label': '1, 2 and 3',
-                                  'type': 'two-sided'},
-                                 ]
+                                  'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                                  'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                                  'label': 'anova(0, 2, 3)'},
+                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                                  'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                                  'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                                  'label': 'anova(1, 2, 3)'}]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],
                                                # hardcode based on the longest stimulus
                                                xaxis_kp_range=[0, 43],
                                                # hardcode based on the highest recorded value with space for ttest and anova markers  # noqa: E501
-                                               yaxis_kp_range=[-20, 60],
+                                               yaxis_kp_range=[0, 60],
                                                events=events,
                                                events_width=1,
                                                events_dash='dot',
@@ -288,11 +284,15 @@ if __name__ == '__main__':
                                                ttest_signals=ttest_signals,
                                                ttest_marker='circle',
                                                ttest_marker_size=3,
-                                               # todo: set colour as colour of signal_2
                                                ttest_marker_colour='black',
                                                ttest_annotations_font_size=10,
                                                ttest_annotations_colour='black',
-                                               anova_signals=anova_signals)
+                                               anova_signals=anova_signals,
+                                               anova_marker='cross',
+                                               anova_marker_size=3,
+                                               anova_marker_colour='black',
+                                               anova_annotations_font_size=10,
+                                               anova_annotations_colour='black',)
             # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,
