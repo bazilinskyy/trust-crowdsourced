@@ -1997,7 +1997,7 @@ class Analysis:
                               ttest_marker_size=3, ttest_marker_colour='black', ttest_annotations_font_size=10,
                               ttest_annotations_colour='black'):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
-        
+
         Args:
             df (dataframe): dataframe with stimuli data.
             y (list): column names of dataframe to plot.
@@ -2169,17 +2169,17 @@ class Analysis:
                         # dynamically set y-coordinate, slightly offset for each signal_index
                         star_y.append(-1 - counter_lines * 1)
                 # filter out NaN values in star_x and star_y
-                filtered_star_x = []
-                filtered_star_y = []
-                # filter out nans in s
-                for x, y in zip(star_x, star_y):
-                    if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
-                        filtered_star_x.append(x)
-                        filtered_star_y.append(y)
+                # filtered_star_x = []
+                # filtered_star_y = []
+                # # filter out nans in s
+                # for x, y in zip(star_x, star_y):
+                #     if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
+                #         filtered_star_x.append(x)
+                #         filtered_star_y.append(y)
                 # add scatter plot trace with cleaned data
                 fig.add_trace(go.Scatter(
-                    x=filtered_star_x,
-                    y=filtered_star_y,
+                    x=star_x,
+                    y=star_y,
                     mode='markers',  # list of possible values: https://plotly.com/python/marker-style
                     marker=dict(symbol=ttest_marker,  # marker
                                 size=ttest_marker_size,  # adjust size
