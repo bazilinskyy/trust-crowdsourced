@@ -562,22 +562,28 @@ class Heroku:
         logger.info('Processing keypress data with res={} ms.', self.res)
         # array to store all binned rt data
         mapping_rt = []
-        # array to store all raw binned rt data
+        # array to store all raw binned rt data per pp
         mapping_rt_raw = []
         # counter of videos filtered because of length
         counter_filtered = 0
         # loop through all stimuli
         for num in tqdm(range(self.num_stimuli)):
-            video_kp = []
-            video_kp_raw = []
             # video ID
             video_id = 'video_' + str(num)
+            # extract video length
+            video_len = self.mapping.loc[video_id]['video_length']
+            # add new row to df with raw data
+            video_kp = []
+            video_kp_raw = []
+            # df to store keypresses in bins per pp for this individual stimulus
+            pp_kp = pd.DataFrame(0,
+                                 index=list(range(self.res, video_len + self.res, self.res)),
+                                 columns=self.heroku_data.index)
+            # go over repetitions
             for rep in range(self.num_repeat):
                 # add suffix with repetition ID
                 video_rt = 'video_' + str(num) + '-rt-' + str(rep)
                 video_dur = 'video_' + str(num) + '-dur-' + str(rep)
-                # extract video length
-                video_len = self.mapping.loc[video_id]['video_length']
                 rt_data = []
                 counter_data = 0
                 for (col_name, col_data) in self.heroku_data.items():
@@ -606,17 +612,26 @@ class Heroku:
                                 # if list contains only one value, append to rt_data
                                 if len(row) == 1:
                                     rt_data.append(row[0])
+                                    # record raw value for pp
+                                    for rt_bin in range(self.res, video_len + self.res, self.res):
+                                        if rt_bin - self.res < row[0] <= rt_bin:
+                                            pp_kp.loc[rt_bin, [self.heroku_data.index[row_index]]] = 1
                                 # if list contains more then one value, go  through list to remove keyholds
                                 elif len(row) > 1:
                                     for j in range(1, len(row)):
                                         # if time between 2 stimuli is more than 35 ms, add to array (no hold)
                                         if row[j] - row[j - 1] > 35:
-                                            # append buttonpress data to rt array
+                                            # append button press data to rt array
                                             rt_data.append(row[j])
+                                            # record raw value for pp
+                                            for rt_bin in range(self.res, video_len + self.res, self.res):
+                                                if rt_bin - self.res < row[0] <= rt_bin:
+                                                    pp_kp.loc[rt_bin, [self.heroku_data.index[row_index]]] = 1
                         # if all data for one video was found, divide them in bins
                         kp = []
-                        kp_raw = []
                         # loop over all bins, dependent on resolution
+                        bin_counter = 0  # record number of rt values found within bin
+                        bin_id = 0  # record current bin
                         for rt in range(self.res, video_len + self.res, self.res):
                             bin_counter = 0
                             for data in rt_data:
@@ -624,24 +639,24 @@ class Heroku:
                                 if rt - self.res < data <= rt:
                                     # if data is found, up bin counter
                                     bin_counter = bin_counter + 1
-                                    kp_raw.append(data)
+                                    # kp_raw[bin_id].append(1)
                             if counter_data:
                                 percentage = bin_counter / counter_data
                                 kp.append(round(percentage * 100))
                             else:
                                 kp.append(0)
-                                kp_raw.append(0)
+                            bin_id = bin_id + 1  # increment bin id
                         # store keypresses from repetition
                         video_kp.append(kp)
                         # store raw data from repetition
-                        video_kp_raw.append(kp_raw)
-                        print(video_kp_raw)
+                        # todo: fix extra [] added to results
+                        video_kp_raw.append(pp_kp.values.tolist()[0])
                         break
             # calculate mean keypresses from all repetitions
             kp_mean = [*map(mean, zip(*video_kp))]
-            # kp_mean_raw = [*map(mean, zip(*video_kp_raw))]
             # append data from one video to the mapping array
             mapping_rt.append(kp_mean)
+            # todo: raw data does not take multiple repetitions into account
             mapping_rt_raw.append(video_kp_raw)
         if filter_length:
             logger.info('Filtered out keypress data from {} videos with unexpected length.', counter_filtered)

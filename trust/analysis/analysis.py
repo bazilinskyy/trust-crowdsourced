@@ -2174,7 +2174,7 @@ class Analysis:
                                                       paired=signals['paired'])
                 # add to the plot
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
-                significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
+                # significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
                 # plot stars based on random lists
                 marker_x = []  # x-coordinates for stars
                 marker_y = []  # y-coordinates for stars
