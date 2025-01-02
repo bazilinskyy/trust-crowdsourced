@@ -219,21 +219,27 @@ if __name__ == '__main__':
                 #                           'paired': True})
                 ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 1 = within
                                   'signal_2': df.loc['video_' + str(ids[1])]['kp'],
+                                  'label': '0 and 1',
                                   'paired': True},
                                  {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 2 = between
                                   'signal_2': df.loc['video_' + str(ids[2])]['kp'],
+                                  'label': '0 and 2',
                                   'paired': False},
                                  {'signal_1': df.loc['video_' + str(ids[0])]['kp'],  # 0 and 3 = between
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'label': '0 and 3',
                                   'paired': False},
                                  {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 2 = between
                                   'signal_2': df.loc['video_' + str(ids[2])]['kp'],
+                                  'label': '1 and 2',
                                   'paired': False},
                                  {'signal_1': df.loc['video_' + str(ids[2])]['kp'],  # 2 and 3 = within
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'label': '2 and 3',
                                   'paired': True},
                                  {'signal_1': df.loc['video_' + str(ids[1])]['kp'],  # 1 and 3 = between
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp'],
+                                  'label': '1 and 3',
                                   'paired': False}]
                 # signal_1 = signal_type = list of int, eg: [1,1,0,0]
                 # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
@@ -246,8 +252,10 @@ if __name__ == '__main__':
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],
-                                               xaxis_kp_range=[0, 43],  # hardcode based on the longest stimulus
-                                               yaxis_kp_range=[0, 60],  # hardcode based on the highest recorded value
+                                               # hardcode based on the longest stimulus
+                                               xaxis_kp_range=[0, 43],
+                                               # hardcode based on the highest recorded value with space for ttest and anova markers  # noqa: E501
+                                               yaxis_kp_range=[-20, 60],
                                                events=events,
                                                events_width=1,
                                                events_dash='dot',

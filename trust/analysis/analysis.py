@@ -1993,7 +1993,8 @@ class Analysis:
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
                               fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
-                              font_size=None, ttest_signals=None, anova_signals=None):
+                              font_size=None, ttest_signals=None, anova_signals=None, ttest_annotations_font_size=10,
+                              ttest_annotations_colour='black'):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -2028,6 +2029,8 @@ class Analysis:
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
             ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
+            ttest_annotations_font_size (int, optional): font size of annotations for the ttest lines of markers.
+            ttest_annotations_colour (str, optional): colour of annotations for the ttest lines of markers.
             anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
         """
         logger.info('Creating figure keypress+slider for {}.', df.index.tolist())
@@ -2095,12 +2098,10 @@ class Analysis:
                                        arrowhead=2)
                     # draw text label
                     fig.add_annotation(text=event['annotation'],
-                                       # xref='paper', yref='paper',
                                        x=(event['end'] + event['start']) / 2,
                                        y=yaxis_kp_range[1] - counter_lines * 1.8 - 1,  # use ylim value and draw lower
                                        showarrow=False,
-                                       font=dict(size=events_annotations_font_size,
-                                                 color=events_annotations_colour))
+                                       font=dict(size=events_annotations_font_size, color=events_annotations_colour))
                 # increase counter of lines drawn
                 counter_lines = counter_lines + 1
         # update axis
@@ -2163,8 +2164,8 @@ class Analysis:
                     if significance[i] == 1:  # if value indicates a star
                         star_x.append(times[i])  # use the corresponding x-coordinate
                         # dynamically set y-coordinate, slightly offset for each signal_index
-                        star_y.append(1 + counter_lines * 1)
-                # Filter out NaN values in star_x and star_y
+                        star_y.append(-1 - counter_lines * 1)
+                # filter out NaN values in star_x and star_y
                 filtered_star_x = []
                 filtered_star_y = []
                 # filter out nans in s
@@ -2177,16 +2178,24 @@ class Analysis:
                     x=filtered_star_x,
                     y=filtered_star_y,
                     mode='markers',
-                    marker=dict(
-                            symbol='diamond',  # Choose a close approximation to #
-                            size=5,  # Adjust size
-                            color='red'  # Adjust color
-                            ),
-                    showlegend=False
-                ), row=1, col=1)
+                    marker=dict(symbol='diamond',  # marker
+                                size=2,  # adjust size
+                                color='black'),  # adjust colour
+                    showlegend=False),
+                    row=1,
+                    col=1)
+                # add label with signals that are compared
+                fig.add_annotation(text=signals['label'],
+                                   x=40,
+                                   y=-1 - counter_lines * 1,  # use ylim value and draw lower
+                                   showarrow=False,
+                                   font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
                 # increase counter of lines drawn
                 counter_lines = counter_lines + 1
-
+        # hide ticks of negative values on y axis
+        # assuming that ticks are at step of 10
+        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
+        fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
         # output ANOVA
         if anova_signals:
             # # smoothen signal
