@@ -2925,7 +2925,7 @@ class Analysis:
         # return raw p values and binary flags for significance for output
         return [p_values, significance]
 
-    def anova_test(self, signal_1, signal_2, signal_3, type='two-sided'):
+    def anova(self, signal_1, signal_2, signal_3):
         """
         Perform an ANOVA test on three signals, computing p-values and significance.
 
@@ -2933,8 +2933,6 @@ class Analysis:
             signal_1 (list): First signal, a list of numeric values.
             signal_2 (list): Second signal, a list of numeric values.
             signal_3 (list): Third signal, a list of numeric values.
-            type (str, optional): Type of hypothesis test. Options are "two-sided",
-                                "greater", or "less". Defaults to "two-sided".
 
         Returns:
             list: A list containing two elements:
@@ -2943,25 +2941,21 @@ class Analysis:
                     the p-value for each bin is below the threshold configured in
                     `tr.common.get_configs('p_value')`.
         """
-        # Check if the lengths of the three signals are the same
+        # check if the lengths of the three signals are the same
         if not (len(signal_1) == len(signal_2) == len(signal_3)):
             logger.error('The lengths of signal_1, signal_2, and signal_3 must be the same.')
-
-        # Convert signals to numpy arrays if they are lists
+        # convert signals to numpy arrays if they are lists
         signal_1 = np.asarray(signal_1)
         signal_2 = np.asarray(signal_2)
         signal_3 = np.asarray(signal_3)
-
-        p_values = []  # Record raw p-values for each bin
-        stats = []  # Record binary flags (0 or 1) if p-value < tr.common.get_configs('p_value')
-
-        # Perform ANOVA test for each value (treated as an independent bin)
+        p_values = []  # record raw p-values for each bin
+        significance = []  # record binary flags (0 or 1) if p-value < tr.common.get_configs('p_value')
+        # perform ANOVA test for each value (treated as an independent bin)
         for i in range(len(signal_1)):
             f_stat, p_value = f_oneway([signal_1[i]], [signal_2[i]], [signal_3[i]])
-            # Record raw p-value
+            # record raw p-value
             p_values.append(p_value)
-            # Determine significance for this value
-            stats.append(int(p_value < tr.common.get_configs('p_value')))
-
-        # Return raw p-values and binary flags for significance for output
-        return [p_values, stats]
+            # determine significance for this value
+            significance.append(int(p_value < tr.common.get_configs('p_value')))
+        # return raw p-values and binary flags for significance for output
+        return [p_values, significance]

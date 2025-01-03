@@ -610,6 +610,7 @@ class Heroku:
                                 # saving amount of times the video has been watched
                                 counter_data = counter_data + 1
                                 # if list contains only one value, append to rt_data
+                                # print(video_id, self.heroku_data.iloc[row_index][video_dur], self.heroku_data.index[row_index], row)
                                 if len(row) == 1:
                                     rt_data.append(row[0])
                                     # record raw value for pp
@@ -618,15 +619,25 @@ class Heroku:
                                             pp_kp.loc[rt_bin, [self.heroku_data.index[row_index]]] = 1
                                 # if list contains more then one value, go  through list to remove keyholds
                                 elif len(row) > 1:
+                                    # fill data gap for the first half a second (0.5 s) of holding the key
+                                    if row[0] <= 540:  # If the first button press is 'exactly' at 0.5 seconds
+                                        row = np.concatenate((np.arange(40, row[0] + 40, 40), row[1:]))
+                                    # find indexes with a gap of 'exactly' 0.5 seconds
+                                    gap_indexes = 1 + np.where((np.diff(row) >= 420) & (np.diff(row) <= 540))[0]  
+                                    # loop over all gaps in backward order
+                                    for k in reversed(range(len(gap_indexes))):
+                                        index = gap_indexes[k]
+                                        filled_gap = np.arange(row[index - 1] + 40, row[index] + 40, 40)
+                                        row = np.concatenate((row[:index], filled_gap, row[index:]))
                                     for j in range(1, len(row)):
-                                        # if time between 2 stimuli is more than 35 ms, add to array (no hold)
-                                        if row[j] - row[j - 1] > 35:
-                                            # append button press data to rt array
-                                            rt_data.append(row[j])
-                                            # record raw value for pp
-                                            for rt_bin in range(self.res, video_len + self.res, self.res):
-                                                if rt_bin - self.res < row[j] <= rt_bin:
-                                                    pp_kp.loc[rt_bin, [self.heroku_data.index[row_index]]] = 1
+                                        # # if time between 2 stimuli is more than 35 ms, add to array (no hold)
+                                        # if row[j] - row[j - 1] > 35:
+                                        # append button press data to rt array
+                                        rt_data.append(row[j])
+                                        # record raw value for pp
+                                        for rt_bin in range(self.res, video_len + self.res, self.res):
+                                            if rt_bin - self.res < row[j] <= rt_bin:
+                                                pp_kp.loc[rt_bin, [self.heroku_data.index[row_index]]] = 1
                         # if all data for one video was found, divide them in bins
                         kp = []
                         # loop over all bins, dependent on resolution
