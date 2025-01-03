@@ -202,21 +202,6 @@ if __name__ == '__main__':
                                    'end': end,
                                    'annotation': vert_line_annotations[x]})
                 # prepare pairs of signals to compare with ttest
-                # ttest_signals = []  # list of dictionaries
-                # todo: @Shadab, create list of things to compare using ttest here
-                # 0 and 1 = within (paired): https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html  # noqa: E501
-                # 0 and 2 = between: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html
-                # 0 and 3 = between
-                # 1 and 2 = between
-                # 2 and 3 = within
-                # 1 and 3 = between
-                # todo: @Shadab, we should find some clever way to understand which once should be between and which
-                #       one within. Code below could then be used
-                # for stim in ids[1:]:
-                #     # assume that df[ids[0]] is always the baseline to compare against
-                #     ttest_signals.append({'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                #                           'signal_2': df.loc['video_' + str(stim)]['kp'],
-                #                           'paired': True})
                 ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
                                   'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
                                   'label': 'ttest(0, 1)',
@@ -293,7 +278,7 @@ if __name__ == '__main__':
                                                anova_marker_size=3,
                                                anova_marker_colour='black',
                                                anova_annotations_font_size=10,
-                                               anova_annotations_colour='black',)
+                                               anova_annotations_colour='black')
             # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,
