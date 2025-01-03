@@ -8,7 +8,6 @@ import seaborn as sns
 import pandas as pd
 import plotly as py
 import plotly.graph_objs as go
-from plotly.colors import qualitative
 import matplotlib.animation as animation
 import subprocess
 import io
@@ -1489,7 +1488,16 @@ class Analysis:
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
-            self.save_plotly(fig, 'kp', self.folder, width=fig_save_width, height=fig_save_height)
+            # to "_output/figures"
+            self.save_plotly(fig, 'kp',
+                             os.path.join(tr.settings.output_dir, self.folder),
+                             remove_margins=True, width=fig_save_width,
+                             height=fig_save_height)
+            # to "figures" (as it is a "good" final figure)
+            self.save_plotly(fig, 'kp',
+                             os.path.join(tr.settings.root_dir, self.folder),
+                             remove_margins=True, width=fig_save_width,
+                             height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
@@ -2309,10 +2317,26 @@ class Analysis:
         # save file
         if save_file:
             if not name_file:
-                self.save_plotly(fig, 'kp_videos_sliders', self.folder, remove_margins=True, width=fig_save_width,
+                # to "_output/figures"
+                self.save_plotly(fig, 'kp_videos_sliders',
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
+                # to "figures" (as it is a "good" final figure)
+                self.save_plotly(fig, 'kp_videos_sliders',
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
                                  height=fig_save_height)
             else:
-                self.save_plotly(fig, name_file, self.folder, remove_margins=True, width=fig_save_width,
+                # to "_output/figures"
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
+                # to "figures" (as it is a "good" final figure)
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
                                  height=fig_save_height)
         # open it in localhost instead
         else:
@@ -2322,7 +2346,7 @@ class Analysis:
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
                          yaxis_range=None, show_menu=False, show_title=True, save_file=True,
                          legend_x=0, legend_y=0, fig_save_width=1320, fig_save_height=680, font_family=None,
-                         font_size=None):
+                         font_size=None, name_file=None):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -2344,6 +2368,7 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
+            name_file (str, optional): name of file to save.
         """
         logger.info('Creating visualisation of keypresses based on values {} of variable {}.', values, variable)
         # calculate times
@@ -2436,13 +2461,28 @@ class Analysis:
             fig.update_layout(legend=dict(x=legend_x, y=legend_y))
         # save file
         if save_file:
-            self.save_plotly(fig,
-                             'kp_' + variable + '-' +
-                             '-'.join(str(val) for val in values),
-                             self.folder,
-                             remove_margins=True,
-                             width=fig_save_width,
-                             height=fig_save_height)
+            if not name_file:
+                # to "_output/figures"
+                self.save_plotly(fig, 'kp_' + variable + '-' + '-'.join(str(val) for val in values),
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
+                # to "figures" (as it is a "good" final figure)
+                self.save_plotly(fig, 'kp_' + variable + '-' + '-'.join(str(val) for val in values),
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
+            else:
+                # to "_output/figures"
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
+                # to "figures" (as it is a "good" final figure)
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True, width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
@@ -2714,20 +2754,19 @@ class Analysis:
         else:
             fig.show()
 
-    def save_plotly(self, fig, name, output_subdir, remove_margins=False, width=1320, height=680):
+    def save_plotly(self, fig, name, path, remove_margins=False, width=1320, height=680):
         """
         Helper function to save figure as html file.
 
         Args:
             fig (plotly figure): figure object.
             name (str): name of html file.
-            output_subdir (str): folder for saving file.
+            path (str): folder for saving file.
             remove_margins (bool, optional): remove white margins around EPS figure.
             width (int, optional): width of figures to be saved.
             height (int, optional): height of figures to be saved.
         """
         # build path
-        path = os.path.join(tr.settings.output_dir, output_subdir)
         if not os.path.exists(path):
             os.makedirs(path)
         # limit name to 255 char
