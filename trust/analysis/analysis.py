@@ -1497,7 +1497,7 @@ class Analysis:
             self.save_plotly(fig, 'kp',
                              os.path.join(tr.settings.root_dir, self.folder),
                              remove_margins=True, width=fig_save_width,
-                             height=fig_save_height)
+                             height=fig_save_height, open_browser=False)
         # open it in localhost instead
         else:
             fig.show()
@@ -2326,7 +2326,7 @@ class Analysis:
                 self.save_plotly(fig, 'kp_videos_sliders',
                                  os.path.join(tr.settings.root_dir, self.folder),
                                  remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height)
+                                 height=fig_save_height, open_browser=False)
             else:
                 # to "_output/figures"
                 self.save_plotly(fig, name_file,
@@ -2337,7 +2337,7 @@ class Analysis:
                 self.save_plotly(fig, name_file,
                                  os.path.join(tr.settings.root_dir, self.folder),
                                  remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height)
+                                 height=fig_save_height, open_browser=False)
         # open it in localhost instead
         else:
             fig.show()
@@ -2471,7 +2471,7 @@ class Analysis:
                 self.save_plotly(fig, 'kp_' + variable + '-' + '-'.join(str(val) for val in values),
                                  os.path.join(tr.settings.root_dir, self.folder),
                                  remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height)
+                                 height=fig_save_height, open_browser=False)
             else:
                 # to "_output/figures"
                 self.save_plotly(fig, name_file,
@@ -2482,7 +2482,7 @@ class Analysis:
                 self.save_plotly(fig, name_file,
                                  os.path.join(tr.settings.root_dir, self.folder),
                                  remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height)
+                                 height=fig_save_height, open_browser=False)
         # open it in localhost instead
         else:
             fig.show()
@@ -2750,11 +2750,17 @@ class Analysis:
         # save file
         if save_file:
             self.save_plotly(fig, 'map_' + color, self.folder)
+        # save file
+        if save_file:
+            # to "_output/figures"
+            self.save_plotly(fig, 'map_' + color, os.path.join(tr.settings.output_dir, self.folder))
+            # to "figures" (as it is a "good" final figure)
+            self.save_plotly(fig, 'map_' + color, os.path.join(tr.settings.root_dir, self.folder), open_browser=False)
         # open it in localhost instead
         else:
             fig.show()
 
-    def save_plotly(self, fig, name, path, remove_margins=False, width=1320, height=680):
+    def save_plotly(self, fig, name, path, remove_margins=False, width=1320, height=680, open_browser=True):
         """
         Helper function to save figure as html file.
 
@@ -2765,6 +2771,7 @@ class Analysis:
             remove_margins (bool, optional): remove white margins around EPS figure.
             width (int, optional): width of figures to be saved.
             height (int, optional): height of figures to be saved.
+            open_browser (bool, optional): open figure in the browse.
         """
         # build path
         if not os.path.exists(path):
@@ -2773,7 +2780,12 @@ class Analysis:
         if len(path) + len(name) > 250:
             name = name[:255 - len(path) - 5]
         # save as html
-        py.offline.plot(fig, filename=os.path.join(path, name + '.html'))
+        if open_browser:
+            # open in browser
+            py.offline.plot(fig, filename=os.path.join(path, name + '.html'))
+        else:
+            # do not open in browser
+            py.offline.plot(fig, filename=os.path.join(path, name + '.html'), auto_open=False)
         # remove white margins
         if remove_margins:
             fig.update_layout(margin=dict(l=2, r=2, t=20, b=12))
@@ -2804,7 +2816,6 @@ class Analysis:
         if remove_margins:
             fig.update_layout(margin=dict(l=2, r=2, t=20, b=12))
         # save file
-        print(os.path.join(path, name))
         plt.savefig(os.path.join(path, name), bbox_inches='tight', pad_inches=pad_inches)
         # clear figure from memory
         plt.close(fig)
