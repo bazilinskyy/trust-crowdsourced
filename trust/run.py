@@ -35,8 +35,8 @@ CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = False  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
+SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 # todo: code for eye gaze analysis does not run on mac
@@ -332,9 +332,9 @@ if __name__ == '__main__':
                                       show_menu=False,
                                       show_title=False,
                                       # hardcode based on the longest stimulus
-                                      xaxis_kp_range=[0, 43],
-                                      # hardcode based on the highest recorded value
-                                      yaxis_kp_range=[0, 65],
+                                      xaxis_range=[0, 43],
+                                      # # hardcode based on the highest recorded value
+                                      yaxis_range=[0, 20],
                                       ttest_signals=ttest_signals,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
@@ -347,7 +347,6 @@ if __name__ == '__main__':
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       anova_annotations_font_size=10,
                                       anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                      
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
@@ -404,9 +403,9 @@ if __name__ == '__main__':
                                       show_menu=False,
                                       show_title=False,
                                       # hardcode based on the longest stimulus
-                                      xaxis_kp_range=[0, 43],
+                                      xaxis_range=[0, 43],
                                       # hardcode based on the highest recorded value
-                                      yaxis_kp_range=[0, 65],
+                                      yaxis_range=[0, 20],
                                       ttest_signals=ttest_signals,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
@@ -475,9 +474,9 @@ if __name__ == '__main__':
                                       show_menu=False,
                                       show_title=False,
                                       # hardcode based on the longest stimulus
-                                      xaxis_kp_range=[0, 43],
+                                      xaxis_range=[0, 43],
                                       # hardcode based on the highest recorded value
-                                      yaxis_kp_range=[0, 65],
+                                      yaxis_range=[0, 20],
                                       ttest_signals=ttest_signals,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,

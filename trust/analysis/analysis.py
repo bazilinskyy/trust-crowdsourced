@@ -49,7 +49,8 @@ class Analysis:
     stim_id = None
     points = None
     save_frames = False
-    folder = 'figures'  # subdirectory to save figures
+    folder_figures = 'figures'  # subdirectory to save figures
+    folder_stats = 'statistics'  # subdirectory to save statistical output
     polygons = None
 
     def __init__(self):
@@ -320,7 +321,7 @@ class Analysis:
         """
         logger.info('Creating long video with all animations for {} stimuli.', num_stimuli)
         # create path
-        path = os.path.join(tr.settings.output_dir, self.folder)
+        path = os.path.join(tr.settings.output_dir, self.folder_figures)
         if not os.path.exists(path):
             os.makedirs(path)
         # file with list of animations
@@ -594,7 +595,7 @@ class Analysis:
             buf.seek(0)
             temp_fig = pickle.load(buf)
             # save figure
-            self.save_fig(self.image, temp_fig, os.path.join(tr.settings.output_dir, self.folder), name)
+            self.save_fig(self.image, temp_fig, os.path.join(tr.settings.output_dir, self.folder_figures), name)
         return self.g
         # save each frame as file
         if self.save_frames:
@@ -2297,10 +2298,9 @@ class Analysis:
                                                       signal_2=signals['signal_2'],
                                                       paired=signals['paired'])
                 # save results to csv
-                df_ttest = pd.DataFrame(columns=['t', 'p-value'])  # dataframe to save to csv
-                df_ttest['t'] = list(range(len(signals['signal_1'])))
-                df_ttest['p-value'] = p_values
-                df_ttest.to_csv(os.path.join(tr.settings.output_dir, signals['label'] + '_' + name_file + '.csv'))
+                self.save_stats_csv(t=list(range(len(signals['signal_1']))),
+                                    p_values=p_values,
+                                    name_file=signals['label'] + '_' + name_file + '.csv')
                 # add to the plot
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
                 # plot stars based on random lists
@@ -2347,10 +2347,9 @@ class Analysis:
                                                       signal_2=signals['signal_2'],
                                                       signal_3=signals['signal_3'])
                 # save results to csv
-                df_anova = pd.DataFrame(columns=['t', 'p-value'])  # dataframe to save to csv
-                df_anova['t'] = list(range(len(signals['signal_1'])))
-                df_anova['p-value'] = p_values
-                df_anova.to_csv(os.path.join(tr.settings.output_dir, signals['label'] + '_' + name_file + '.csv'))
+                self.save_stats_csv(t=list(range(len(signals['signal_1']))),
+                                    p_values=p_values,
+                                    name_file=signals['label'] + '_' + name_file + '.csv')
                 # add to the plot
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
                 significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
@@ -2386,8 +2385,8 @@ class Analysis:
                                    font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
                 # increase counter of lines drawn
                 counter_anova = counter_anova + 1
-        # hide ticks of negative values on y axis assuming that ticks are at step of the specified y range / 10
-        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], round(yaxis_kp_range[1] / 10))
+        # hide ticks of negative values on y axis assuming that ticks are at step of 10
+        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
         fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
@@ -2585,10 +2584,9 @@ class Analysis:
                                                       signal_2=signals['signal_2'],
                                                       paired=signals['paired'])
                 # save results to csv
-                df_ttest = pd.DataFrame(columns=['t', 'p-value'])  # dataframe to save to csv
-                df_ttest['t'] = list(range(len(signals['signal_1'])))
-                df_ttest['p-value'] = p_values
-                df_ttest.to_csv(os.path.join(tr.settings.output_dir, signals['label'] + '_' + name_file + '.csv'))
+                self.save_stats_csv(t=list(range(len(signals['signal_1']))),
+                                    p_values=p_values,
+                                    name_file=signals['label'] + '_' + name_file + '.csv')
                 # add to the plot
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
                 # plot stars based on random lists
@@ -2635,10 +2633,9 @@ class Analysis:
                                                       signal_2=signals['signal_2'],
                                                       signal_3=signals['signal_3'])
                 # save results to csv
-                df_anova = pd.DataFrame(columns=['t', 'p-value'])  # dataframe to save to csv
-                df_anova['t'] = list(range(len(signals['signal_1'])))
-                df_anova['p-value'] = p_values
-                df_anova.to_csv(os.path.join(tr.settings.output_dir, signals['label'] + '_' + name_file + '.csv'))
+                self.save_stats_csv(t=list(range(len(signals['signal_1']))),
+                                    p_values=p_values,
+                                    name_file=signals['label'] + '_' + name_file + '.csv')
                 # add to the plot
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
                 significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
@@ -3051,11 +3048,11 @@ class Analysis:
             save_final (bool, optional): whether to save the "good" final figure.
         """
         # build path
-        path = os.path.join(tr.settings.output_dir, self.folder)
+        path = os.path.join(tr.settings.output_dir, self.folder_figures)
         if not os.path.exists(path):
             os.makedirs(path)
         # build path for final figure
-        path_final = os.path.join(tr.settings.output_dir, self.folder)
+        path_final = os.path.join(tr.settings.output_dir, self.folder_figures)
         if save_final and not os.path.exists(path_final):
             os.makedirs(path_final)
         # limit name to max 200 char (for Windows)
@@ -3106,11 +3103,11 @@ class Analysis:
             save_final (bool, optional): whether to save the "good" final figure.
         """
         # build path
-        path = os.path.join(tr.settings.output_dir, self.folder)
+        path = os.path.join(tr.settings.output_dir, self.folder_figures)
         if not os.path.exists(path):
             os.makedirs(path)
         # build path for final figure
-        path_final = os.path.join(tr.settings.output_dir, self.folder)
+        path_final = os.path.join(tr.settings.output_dir, self.folder_figures)
         if save_final and not os.path.exists(path_final):
             os.makedirs(path_final)
         # limit name to max 200 char (for Windows)
@@ -3137,7 +3134,7 @@ class Analysis:
             name (str): suffix to add to the name of the saved file.
         """
         # build path
-        path = os.path.join(tr.settings.output_dir, self.folder)
+        path = os.path.join(tr.settings.output_dir, self.folder_figures)
         if not os.path.exists(path):
             os.makedirs(path)
         # limit name to max 200 char (for Windows)
@@ -3338,3 +3335,20 @@ class Analysis:
             significance.append(int(p_value < tr.common.get_configs('p_value')))
         # return raw p-values and binary flags for significance for output
         return [p_values, significance]
+
+    def save_stats_csv(self, t, p_values, name_file):
+        """Save results of statistical test in csv.
+        
+        Args:
+            t (list): list of time slices.
+            p_values (list): list of p values.
+            name_file (str): name of file.
+        """
+        path = os.path.join(tr.settings.output_dir, self.folder_stats)  # where to save csv
+        # build path
+        if not os.path.exists(path):
+            os.makedirs(path)
+        df = pd.DataFrame(columns=['t', 'p-value'])  # dataframe to save to csv
+        df['t'] = t
+        df['p-value'] = p_values
+        df.to_csv(os.path.join(path, name_file))
