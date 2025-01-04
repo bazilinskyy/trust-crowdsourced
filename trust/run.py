@@ -237,8 +237,7 @@ if __name__ == '__main__':
                                                y=['comfort', 'safety', 'expectation'],
                                                # hardcode based on the longest stimulus
                                                xaxis_kp_range=[0, 43],
-                                               # hardcode based on the highest recorded value with space for ttest and
-                                               # anova markers
+                                               # hardcode based on the highest recorded value
                                                yaxis_kp_range=[0, 65],
                                                events=events,
                                                events_width=1,

@@ -626,7 +626,7 @@ class Heroku:
                                     if row[0] <= 540:  # If the first button press is 'exactly' at 0.5 seconds
                                         row = np.concatenate((np.arange(40, row[0] + 40, 40), row[1:]))
                                     # find indexes with a gap of 'exactly' 0.5 seconds
-                                    gap_indexes = 1 + np.where((np.diff(row) >= 420) & (np.diff(row) <= 540))[0]  
+                                    gap_indexes = 1 + np.where((np.diff(row) >= 420) & (np.diff(row) <= 540))[0]
                                     # loop over all gaps in backward order
                                     for k in reversed(range(len(gap_indexes))):
                                         index = gap_indexes[k]

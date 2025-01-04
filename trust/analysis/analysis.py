@@ -2173,7 +2173,7 @@ class Analysis:
         fig = subplots.make_subplots(rows=1,
                                      cols=2,
                                      column_widths=[0.8, 0.2],
-                                     subplot_titles=('Mean keypress values', 'Responses to sliders'),
+                                     # subplot_titles=('Mean keypress values', 'Responses to sliders'),
                                      specs=[[{}, {}]],
                                      horizontal_spacing=0.00,
                                      shared_xaxes=False)
@@ -2279,7 +2279,9 @@ class Analysis:
                                  name=name,
                                  orientation=orientation,
                                  text=text,
-                                 textposition='auto'), row=1, col=2)
+                                 textposition='auto'),
+                          row=1,
+                          col=2)
         # count lines to calculate increase in coordinates of drawing
         counter_ttest = 0
         # count lines to calculate increase in coordinates of drawing
@@ -2910,7 +2912,7 @@ class Analysis:
                 py.offline.plot(fig, filename=os.path.join(path, name + '.html'))
                 # also save the final figure
                 if save_final:
-                    py.offline.plot(fig, filename=os.path.join(path_final, name + '.html'))
+                    py.offline.plot(fig, filename=os.path.join(path_final, name + '.html'), auto_open=False)
             else:
                 # do not open in browser
                 py.offline.plot(fig, filename=os.path.join(path, name + '.html'), auto_open=False)
