@@ -2113,13 +2113,14 @@ class Analysis:
                               yaxis_kp_title='Percentage of trials with response key pressed',
                               xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
-                              yaxis_slider_title=None, show_text_labels=False, name_file='kp_videos_sliders',
-                              save_file=False, save_final=False, fig_save_width=1320, fig_save_height=680,
-                              legend_x=0.7, legend_y=0.95, font_family=None, font_size=None, ttest_signals=None,
-                              ttest_marker='circle', ttest_marker_size=3, ttest_marker_colour='black',
-                              ttest_annotations_font_size=10, ttest_annotations_colour='black', anova_signals=None,
-                              anova_marker='cross', anova_marker_size=3, anova_marker_colour='black',
-                              anova_annotations_font_size=10, anova_annotations_colour='black'):
+                              yaxis_slider_title=None, show_text_labels=False, xaxis_ticklabels_slider_show=True,
+                              yaxis_ticklabels_slider_show=False, name_file='kp_videos_sliders', save_file=False,
+                              save_final=False, fig_save_width=1320, fig_save_height=680, legend_x=0.7, legend_y=0.95,
+                              font_family=None, font_size=None, ttest_signals=None, ttest_marker='circle',
+                              ttest_marker_size=3,  ttest_marker_colour='black', ttest_annotations_font_size=10, 
+                              ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
+                              anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
+                              anova_annotations_colour='black'):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -2144,6 +2145,8 @@ class Analysis:
             yaxis_slider_show (bool, optional): show y axis or not.
             yaxis_slider_title (None, optional): title for y axis. for the slider data plot.
             show_text_labels (bool, optional): output automatically positioned text labels.
+            xaxis_ticklabels_slider_show (bool, optional): show tick labels for slider plot.
+            yaxis_ticklabels_slider_show (bool, optional): show tick labels for slider plot.
             name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
             save_final (bool, optional): flag for saving an a final figure to /figures.
@@ -2398,14 +2401,15 @@ class Analysis:
                                    font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
                 # increase counter of lines drawn
                 counter_anova = counter_anova + 1
-        # hide ticks of negative values on y axis
-        # assuming that ticks are at step of 10
+        # hide ticks of negative values on y axis assuming that ticks are at step of 10
         r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
         fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
         fig.update_yaxes(title_text=yaxis_slider_title, row=1, col=2)
         fig.update_yaxes(visible=yaxis_slider_show, row=1, col=2)
+        fig.update_xaxes(showticklabels=xaxis_ticklabels_slider_show, row=1, col=2)
+        fig.update_yaxes(showticklabels=yaxis_ticklabels_slider_show, row=1, col=2)
         # update template
         fig.update_layout(template=self.template)
         # format text labels
