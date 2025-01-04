@@ -37,6 +37,8 @@ Configuration of the project needs to be defined in `trust-crowdsourced/config`.
 * `dcutoff`: d-cutoff value used by One Euro Filter.
 * `font_family`: font family to be used on the figures.
 * `font_size`: font size to be used on the figures.
+* `p_value`: p value used for ttest.
+* `save_figures`: save "final" figures to the /figures folder.
 
 ## Preparation of stimuli
 The source files of the video stimuli are outputted from Unity to `config.path_source`. To prepare them for the crowdsourced setup `python trust-crowdsourced/preparation/process_videos.py`. Videos will be outputted to `config.path_stimuli`.

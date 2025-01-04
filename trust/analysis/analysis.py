@@ -91,8 +91,7 @@ class Analysis:
         for k in tqdm(range(0, self.time, hm_resolution_int)):
             os.makedirs(os.path.dirname(path), exist_ok=True)
             fps = cap.get(cv2.CAP_PROP_FPS)
-            cap.set(cv2.CAP_PROP_POS_FRAMES,
-                    round(fps * k / 1000))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, round(fps * k / 1000))
             ret, frame = cap.read()
             if ret:
                 filename = os.path.join(path, 'frame_' + str([round(k / hm_resolution_int)]) + '.jpg')
@@ -137,9 +136,10 @@ class Analysis:
         plt.colorbar()
         # remove white spaces around figure
         plt.gca().set_axis_off()
-        # save image
+        # save video
         if save_file:
-            self.save_fig(image, fig, self.folder, '_video_' + str(id_video) + suffix)
+            self.save_fig(image, fig, os.path.join(tr.settings.output_dir, self.folder),
+                          '_video_' + str(id_video) + suffix)
 
     def create_heatmap(self, image, points, type_heatmap='contourf', add_corners=True, save_file=False):
         """
@@ -150,7 +150,7 @@ class Analysis:
             points (list): data.
             type_heatmap (str, optional): Type=contourf, pcolormesh, kdeplot.
             add_corners (bool, optional): add points to the corners to have the heatmap overlay the whole image.
-            save_file (bool, optional): Description
+            save_file (bool, optional): whether to save file or not.
 
     Returns:
             fig, g: figure.
@@ -230,7 +230,7 @@ class Analysis:
         plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         # save image
         if save_file:
-            self.save_fig(image, fig, self.folder, suffix_file)
+            self.save_fig(image, fig, os.path.join(tr.settings.output_dir, self.folder), suffix_file)
         # return graph objects
         return fig, g
 
@@ -300,7 +300,7 @@ class Analysis:
         self.aoi_y = self.aoi_y.split(", ")
         self.aoi_t = aoi.loc['video_' + str(id_video)]['t']
         self.aoi_t = self.aoi_t.split(", ")
-        # event discription for in the animation plots
+        # event description for in the animation plots
         self.event_discription = re.split(',', mapping.loc['video_' + str(id_video)]['events_description'])
         # animate frames subplots into one animation using animate function
         anim = animation.FuncAnimation(self.fig,
@@ -553,7 +553,7 @@ class Analysis:
                               xaxis_title='time(ms)',
                               yaxis_title="Number of KP")
             file_name = 'lab_only_kp_' + str(self.id_video)
-            self.save_plotly(fig, file_name, self.folder)
+            self.save_plotly(fig, file_name, os.path.join(tr.settings.root_dir, self.folder))
         # Scatter plot data
         # all pp
         # self.g = sns.scatterplot(x=[item[0] for item in self.points[i]],
@@ -595,7 +595,7 @@ class Analysis:
             buf.seek(0)
             temp_fig = pickle.load(buf)
             # save figure
-            self.save_fig(self.image, temp_fig, self.folder, suffix)
+            self.save_fig(self.image, temp_fig, os.path.join(tr.settings.output_dir, self.folder), suffix)
         return self.g
         # save each frame as file
         if self.save_frames:
@@ -607,7 +607,7 @@ class Analysis:
             buf.seek(0)
             temp_fig = pickle.load(buf)
             # save figure
-            self.save_fig(self.image, temp_fig, self.folder, suffix)
+            self.save_fig(self.image, temp_fig, os.path.join(tr.settings.output_dir, self.folder), suffix)
         return self.g
 
     def save_anim(self, image, anim, output_subdir, suffix):
@@ -633,7 +633,7 @@ class Analysis:
         # clear animation from memory
         plt.close(self.fig)
 
-    def corr_matrix(self, df, columns_drop, filename='corr_matrix.jpg', save_file=False):
+    def corr_matrix(self, df, columns_drop, filename='corr_matrix.jpg', save_file=False, save_final=False):
         """
         Output correlation matrix.
 
@@ -642,6 +642,7 @@ class Analysis:
             columns_drop (list): columns dataframes in to ignore.
             filename (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
         """
         logger.info('Creating correlation matrix.')
         # drop columns
@@ -670,14 +671,29 @@ class Analysis:
         # rotate ticks
         for item in g.get_xticklabels():
             item.set_rotation(55)
-        # save image
+        # save file to "_output/figures"
         if save_file:
-            self.save_fig(fig, filename, self.folder, pad_inches=0.05)
+            # check whether figure needs to be cleared from memory
+            if save_final:
+                clear_figure = False
+            else:
+                clear_figure = True
+            self.save_fig(fig, filename,
+                          os.path.join(tr.settings.output_dir, self.folder),
+                          pad_inches=0.05,
+                          clear_figure=clear_figure)
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            self.save_fig(fig, filename,
+                          os.path.join(tr.settings.root_dir, self.folder),
+                          pad_inches=0.05,
+                          clear_figure=True)
         # revert font
         self.reset_font()
 
     def scatter_matrix(self, df, columns_drop, color=None, symbol=None, diagonal_visible=False, xaxis_title=None,
-                       yaxis_title=None, save_file=False, font_family=None, font_size=None):
+                       yaxis_title=None, name_file=None, save_file=False, save_final=False, fig_save_width=1320,
+                       fig_save_height=680, font_family=None, font_size=None):
         """
         Output scatter matrix.
 
@@ -689,7 +705,11 @@ class Analysis:
             diagonal_visible (bool, optional): show/hide diagonal with correlation==1.0.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -723,16 +743,48 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'scatter_matrix', self.folder)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_matrix',
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_matrix',
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def bar(self, df, y: list, y_legend=None, x=None, stacked=False, pretty_text=False, orientation='v',
             xaxis_title=None, yaxis_title=None, show_all_xticks=False, show_all_yticks=False, show_text_labels=False,
-            save_file=False, font_family=None, font_size=None):
+            font_family=None, font_size=None, name_file=None, save_file=False, save_final=False, fig_save_width=1320,
+            fig_save_height=680):
         """
         Barplot for questionnaire data. Passing a list with one variable will output a simple barplot; passing a list
         of variables will output a grouped barplot.
@@ -750,7 +802,11 @@ class Analysis:
             show_all_xticks (bool, optional): show all ticks on x axis.
             show_all_yticks (bool, optional): show all ticks on y axis.
             show_text_labels (bool, optional): output automatically positioned text labels.
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -837,18 +893,50 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            file_name = 'bar_' + '-'.join(str(val) for val in y) + '_' + '-'.join(str(val) for val in x)
-            self.save_plotly(fig, file_name, self.folder)
+            # custom file name not provided
+            if not name_file:
+                name_file = 'bar_' + '-'.join(str(val) for val in y) + '_' + '-'.join(str(val) for val in x)
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                name_file = 'bar_' + '-'.join(str(val) for val in y) + '_' + '-'.join(str(val) for val in x)
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def scatter(self, df, x, y, color=None, symbol=None, size=None, text=None, trendline=None, hover_data=None,
-                marker_size=None,  pretty_text=False, marginal_x='violin', marginal_y='violin', xaxis_title=None,
-                yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True, font_family=None,
-                font_size=None):
+                marker_size=None, pretty_text=False, marginal_x='violin', marginal_y='violin', xaxis_title=None,
+                yaxis_title=None, xaxis_range=None, yaxis_range=None, name_file=None, save_file=False,
+                save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None, font_size=None):
         """
         Output scatter plot of variables x and y with optional assignment of colour and size.
 
@@ -870,7 +958,11 @@ class Analysis:
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -951,17 +1043,48 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'scatter_' + x + '-' + y, self.folder)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_' + x + '-' + y,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_' + x + '-' + y,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def scatter_mult(self, df, x, y, color=None, symbol=None, text=None, trendline=None, hover_data=None,
                      marker_size=None, pretty_text=False, marginal_x='violin', marginal_y='violin', xaxis_title=None,
-                     yaxis_title=None, xaxis_range=None, yaxis_range=None, save_file=True, font_family=None,
-                     font_size=None):
+                     yaxis_title=None, xaxis_range=None, yaxis_range=None, name_file=None, save_file=False,
+                     save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None, font_size=None):
         """
         Output scatter plot of multiple variables x and y with optional assignment of colour and size.
 
@@ -981,7 +1104,11 @@ class Analysis:
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -1074,16 +1201,48 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'scatter_' + ','.join(x) + '-' + y, self.folder)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_' + ','.join(x) + '-' + y,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_' + ','.join(x) + '-' + y,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def scatter_et(self, df, x, y, t, pp, id_video, pretty_text=False, marginal_x='violin', marginal_y='violin',
-                   xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=True,
-                   font_family=None, font_size=None):
+                   xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, name_file=None,
+                   save_file=False, save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None,
+                   font_size=None):
         """
         Output scatter plot of x and y.
 
@@ -1101,7 +1260,11 @@ class Analysis:
             yaxis_range (list, optional): range of the y-axis plot.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -1151,16 +1314,47 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'scatter_map_' + id_video+'_participant_' + pp, self.folder)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_map_' + id_video+'_participant_' + pp,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'scatter_map_' + id_video+'_participant_' + pp,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def heatmap(self, df, x, y, t, id_video, pp, pretty_text=False, marginal_x='violin', marginal_y='violin',
-                xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=True,
-                font_family=None, font_size=None):
+                xaxis_title=None, xaxis_range=True, yaxis_title=None, yaxis_range=True, save_file=False,
+                save_final=False, font_family=None, font_size=None):
         """
         Output heatmap plot of variables x and y.
 
@@ -1174,6 +1368,7 @@ class Analysis:
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -1267,7 +1462,8 @@ class Analysis:
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
-            self.save_plotly(fig, 'heatmap_animation' + id_video+'_participant_' + pp, self.folder)
+            self.save_plotly(fig, 'heatmap_animation' + id_video+'_participant_' + pp,
+                             os.path.join(tr.settings.root_dir, self.folder))
         # open it in localhost instead
         else:
             # plotly.offline.plot(fig, auto_play = False)
@@ -1276,7 +1472,8 @@ class Analysis:
             logger.error('Show not implemented.')
 
     def hist(self, df, x, nbins=None, color=None, pretty_text=False, marginal='rug', xaxis_title=None,
-             yaxis_title=None, save_file=True, font_family=None, font_size=None):
+             yaxis_title=None, name_file=None, save_file=False, save_final=False, fig_save_width=1320,
+             fig_save_height=680, font_family=None, font_size=None):
         """
         Output histogram of time of participation.
 
@@ -1289,7 +1486,11 @@ class Analysis:
             marginal (str, optional): type of marginal on x axis. Can be 'histogram', 'rug', 'box', or 'violin'.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -1335,14 +1536,46 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'hist_' + '-'.join(str(val) for val in x), self.folder)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'hist_' + '-'.join(str(val) for val in x),
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'hist_' + '-'.join(str(val) for val in x),
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
-    def hist_stim_duration_time(self, df, time_ranges, nbins=0, save_file=True, font_family=None, font_size=None):
+    def hist_stim_duration_time(self, df, time_ranges, nbins=0, save_file=False, save_final=False, font_family=None,
+                                font_size=None):
         """
         Output distribution of stimulus durations for time ranges.
 
@@ -1351,6 +1584,7 @@ class Analysis:
             time_ranges (dictionaries): time ranges for analysis.
             nbins (int, optional): number of bins in histogram.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -1400,15 +1634,15 @@ class Analysis:
                              '-'.join(t['start'].strftime('%m.%d.%Y,%H:%M:%S') + '-' +
                                       t['end'].strftime('%m.%d.%Y,%H:%M:%S')
                                       for t in time_ranges),
-                             self.folder)
+                             os.path.join(tr.settings.output_dir, self.folder))
         # open it in localhost instead
         else:
             fig.show()
 
     def plot_kp(self, df, conf_interval=None, xaxis_title='Time (s)',
                 yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680, font_family=None,
-                font_size=None):
+                yaxis_range=None, name_file=None, save_file=False, save_final=False, fig_save_width=1320,
+                fig_save_height=680, font_family=None, font_size=None):
         """Plot keypress data.
 
         Args:
@@ -1418,7 +1652,9 @@ class Analysis:
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
@@ -1486,29 +1722,51 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            # to "_output/figures"
-            self.save_plotly(fig, 'kp',
-                             os.path.join(tr.settings.output_dir, self.folder),
-                             remove_margins=True, width=fig_save_width,
-                             height=fig_save_height)
-            # to "figures" (as it is a "good" final figure)
-            self.save_plotly(fig, 'kp',
-                             os.path.join(tr.settings.root_dir, self.folder),
-                             remove_margins=True, width=fig_save_width,
-                             height=fig_save_height, open_browser=False)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp',
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp',
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
-    def plot_kp_video(self, df, stimulus, extension='mp4', conf_interval=None, vert_lines=None,
-                      events_width=3, events_dash='solid',
-                      events_colour='green', events_annotations=None,
+    def plot_kp_video(self, df, stimulus, extension='mp4', conf_interval=None, vert_lines=None, events_width=3,
+                      events_dash='solid', events_colour='green', events_annotations=None,
                       events_annotations_position='top right', events_annotations_font_size=20,
                       events_annotations_colour='blue', xaxis_title='Time (s)',
                       yaxis_title='Percentage of trials with response key pressed', xaxis_range=None, yaxis_range=None,
-                      save_file=True, fig_save_width=1320, fig_save_height=680, font_family=None, font_size=None):
+                      name_file=None, save_file=False, save_final=False, fig_save_width=1320, fig_save_height=680,
+                      font_family=None, font_size=None):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1528,7 +1786,9 @@ class Analysis:
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
@@ -1601,16 +1861,48 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'kp_' + stimulus, self.folder, width=fig_save_width, height=fig_save_height)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_' + stimulus,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_' + stimulus,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def plot_kp_video_pp(self, df, dt, stimulus, pp, conf_interval=None, trendline=None, xaxis_title='Time (s)',
-                         yaxis_title='response key pressed', xaxis_range=None, yaxis_range=None, save_file=True,
-                         fig_save_width=1320, fig_save_height=680, font_family=None, font_size=None):
+                         yaxis_title='response key pressed', xaxis_range=None, yaxis_range=None, name_file=None,
+                         save_file=False, save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None,
+                         font_size=None):
         """Plot keypresses data of one stimulus for 1 participant.
 
         Args:
@@ -1624,7 +1916,9 @@ class Analysis:
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
@@ -1668,29 +1962,64 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'kp_' + stimulus, self.folder, width=fig_save_width, height=fig_save_height)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_' + stimulus,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_' + stimulus,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
-    def plot_kp_animate(self, df, stimulus, pp='all', extension='mp4', conf_interval=None, xaxis_title='Time (s)',
+    def plot_kp_animate(self, df, stimulus, pp='all', conf_interval=None, xaxis_title='Time (s)',
                         yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                        yaxis_range=None, save_file=True, font_family=None, font_size=None):
+                        yaxis_range=None, name_file=None, save_file=False, save_final=False, fig_save_width=1320,
+                        fig_save_height=680, font_family=None, font_size=None):
         """Animation of keypress data.
 
         Args:
            df (dataframe): dataframe with stimulus data.
             stimulus (str): name of stimulus.
             pp (str): ID of participant.
-            extension (str, optional): file extension.
             conf_interval (None, optional): show confidence interval.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -1768,29 +2097,76 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'kp_animation' + stimulus, self.folder)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_animation' + stimulus,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 save_eps=False,
+                                 save_png=False,
+                                 save_html=False,
+                                 save_mp4=True)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 save_eps=False,
+                                 save_png=False,
+                                 save_html=False,
+                                 save_mp4=True)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_animation' + stimulus,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False,
+                                 save_eps=False,
+                                 save_png=False,
+                                 save_html=False,
+                                 save_mp4=True)
 
-    def plot_video_data(self, df, stimulus, cols, extension='mp4', conf_interval=None, xaxis_title='Time (s)',
+    def plot_video_data(self, df, stimulus, cols, conf_interval=None, xaxis_title='Time (s)',
                         yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                        yaxis_range=None, save_file=True, font_family=None, font_size=None):
+                        yaxis_range=None, name_file=None, save_file=False, save_final=False, fig_save_width=1320,
+                        fig_save_height=680, font_family=None, font_size=None):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
             df (dataframe): dataframe with keypress data.
             stimulus (str): name of stimulus.
             cols: columns of which to plot
-            extension (str, optional): extension of stimulus.
             conf_interval (float, optional): show confidence interval defined by argument.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -1844,7 +2220,34 @@ class Analysis:
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
         # save file
         if save_file:
-            self.save_plotly(fig, 'video_data_' + stimulus, self.folder)
+            if not name_file:
+                # to "_output/figures"
+                self.save_plotly(fig, 'video_data_' + stimulus,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+                # to "figures" (as it is a "good" final figure)
+                self.save_plotly(fig, 'video_data_' + stimulus,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            else:
+                # to "_output/figures"
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+                # to "figures" (as it is a "good" final figure)
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
         # open it in localhost instead
         else:
             fig.show()
@@ -1852,8 +2255,8 @@ class Analysis:
     def plot_kp_videos(self, df, events=None, events_width=1, events_dash='dot', events_colour='black',
                        events_annotations_font_size=20, events_annotations_colour='black', xaxis_title='Time (s)',
                        yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                       yaxis_range=None, save_file=True, fig_save_width=1320, fig_save_height=680, show_menu=False,
-                       show_title=True, name_file=None, font_family=None, font_size=None):
+                       yaxis_range=None, save_file=False, save_final=False, fig_save_width=1320, fig_save_height=680,
+                       show_menu=False, show_title=True, name_file=None, font_family=None, font_size=None):
         """Plot keypresses with multiple variables as a filter.
 
         Args:
@@ -1869,6 +2272,7 @@ class Analysis:
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
@@ -1984,15 +2388,43 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
+            # custom file name not provided
             if not name_file:
-                self.save_plotly(fig, 'kp_videos', self.folder, width=fig_save_width, height=fig_save_height)
+                self.save_plotly(fig, 'kp_videos',
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
             else:
-                self.save_plotly(fig, name_file, self.folder, width=fig_save_width, height=fig_save_height)
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_videos',
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def plot_kp_slider_videos(self, df, y: list, y_legend=None, x=None, events=None, events_width=1, events_dash='dot',
                               events_colour='black', events_annotations_font_size=20,
@@ -2000,10 +2432,10 @@ class Analysis:
                               yaxis_kp_title='Percentage of trials with response key pressed',
                               xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
-                              yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=True,
-                              fig_save_width=1320, legend_x=0.7, legend_y=0.95, fig_save_height=680, font_family=None,
-                              font_size=None, ttest_signals=None, ttest_marker='circle', ttest_marker_size=3,
-                              ttest_marker_colour='black', ttest_annotations_font_size=10,
+                              yaxis_slider_title=None, show_text_labels=False, name_file=None, save_file=False,
+                              save_final=False, fig_save_width=1320, fig_save_height=680, legend_x=0.7, legend_y=0.95,
+                              font_family=None, font_size=None, ttest_signals=None, ttest_marker='circle',
+                              ttest_marker_size=3, ttest_marker_colour='black', ttest_annotations_font_size=10,
                               ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
                               anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
                               anova_annotations_colour='black'):
@@ -2033,10 +2465,11 @@ class Analysis:
             show_text_labels (bool, optional): output automatically positioned text labels.
             name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             legend_x (float, optional): location of legend, percentage of x axis.
             legend_y (float, optional): location of legend, percentage of y axis.
-            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
             ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
@@ -2314,39 +2747,49 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
+            # custom file name not provided
             if not name_file:
-                # to "_output/figures"
                 self.save_plotly(fig, 'kp_videos_sliders',
                                  os.path.join(tr.settings.output_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
+                                 remove_margins=True,
+                                 width=fig_save_width,
                                  height=fig_save_height)
-                # to "figures" (as it is a "good" final figure)
-                self.save_plotly(fig, 'kp_videos_sliders',
-                                 os.path.join(tr.settings.root_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height, open_browser=False)
+            # custom file name provided
             else:
-                # to "_output/figures"
                 self.save_plotly(fig, name_file,
                                  os.path.join(tr.settings.output_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
+                                 remove_margins=True,
+                                 width=fig_save_width,
                                  height=fig_save_height)
-                # to "figures" (as it is a "good" final figure)
-                self.save_plotly(fig, name_file,
-                                 os.path.join(tr.settings.root_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height, open_browser=False)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_videos_sliders',
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def plot_kp_variable(self, df, variable, y_legend=None, values=None, xaxis_title='Time (s)',
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                         yaxis_range=None, show_menu=False, show_title=True, save_file=True,
-                         legend_x=0, legend_y=0, fig_save_width=1320, fig_save_height=680, font_family=None,
-                         font_size=None, name_file=None):
+                         yaxis_range=None, show_menu=False, show_title=True, name_file=None, save_file=False,
+                         save_final=False, fig_save_width=1320, fig_save_height=680, legend_x=0, legend_y=0,
+                         font_family=None, font_size=None):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -2360,15 +2803,16 @@ class Analysis:
             yaxis_range (list, optional): range of y axis in format [min, max].
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
             show_title (bool, optional): show title on top of figure.
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_size (int, optional): font size to be used across the figure.
             legend_x (float, optional): location of legend, percentage of x axis. 0 = use default value.
             legend_y (float, optional): location of legend, percentage of y axis. 0 = use default value.
-            fig_save_width (int, optional): width of figures to be saved.
-            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
-            name_file (str, optional): name of file to save.
         """
         logger.info('Creating visualisation of keypresses based on values {} of variable {}.', values, variable)
         # calculate times
@@ -2459,38 +2903,49 @@ class Analysis:
         # legend
         if legend_x and legend_y:
             fig.update_layout(legend=dict(x=legend_x, y=legend_y))
-        # save file
+        # save file to local output folder
         if save_file:
+            # custom file name not provided
             if not name_file:
-                # to "_output/figures"
                 self.save_plotly(fig, 'kp_' + variable + '-' + '-'.join(str(val) for val in values),
                                  os.path.join(tr.settings.output_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
+                                 remove_margins=True,
+                                 width=fig_save_width,
                                  height=fig_save_height)
-                # to "figures" (as it is a "good" final figure)
-                self.save_plotly(fig, 'kp_' + variable + '-' + '-'.join(str(val) for val in values),
-                                 os.path.join(tr.settings.root_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height, open_browser=False)
+            # custom file name provided
             else:
-                # to "_output/figures"
                 self.save_plotly(fig, name_file,
                                  os.path.join(tr.settings.output_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
+                                 remove_margins=True,
+                                 width=fig_save_width,
                                  height=fig_save_height)
-                # to "figures" (as it is a "good" final figure)
-                self.save_plotly(fig, name_file,
-                                 os.path.join(tr.settings.root_dir, self.folder),
-                                 remove_margins=True, width=fig_save_width,
-                                 height=fig_save_height, open_browser=False)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_' + variable + '-' + '-'.join(str(val) for val in values),
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def plot_kp_variables_or(self, df, variables, xaxis_title='Time (s)',
                              yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                             yaxis_range=None, show_menu=False, save_file=True, fig_save_width=1320,
-                             fig_save_height=680, font_family=None, font_size=None):
+                             yaxis_range=None, show_menu=False, name_file=None, save_file=False,
+                             save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None,
+                             font_size=None):
         """Separate plots of keypresses with multiple variables as a filter.
 
         Args:
@@ -2501,7 +2956,9 @@ class Analysis:
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
@@ -2588,18 +3045,49 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'kp_or' + variables_str, self.folder, remove_margins=True, width=fig_save_width,
-                             height=fig_save_height)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_or' + variables_str,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_or' + variables_str,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
     def plot_kp_variables_and(self, df, plot_names, variables_list, conf_interval=None, xaxis_title='Time (s)',
                               yaxis_title='Percentage of trials with response key pressed',
-                              xaxis_range=None, yaxis_range=None, save_file=True, fig_save_width=1320,
-                              fig_save_height=680, font_family=None, font_size=None):
+                              xaxis_range=None, yaxis_range=None, name_file=None, save_file=False,
+                              save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None,
+                              font_size=None):
         """Separate plots of keypresses with multiple variables as a filter.
 
         Args:
@@ -2611,7 +3099,9 @@ class Analysis:
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
@@ -2707,20 +3197,55 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'kp_and' + variables_str, self.folder, remove_margins=True, width=fig_save_width,
-                             height=fig_save_height)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_and' + variables_str,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'kp_and' + variables_str,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
-    def map(self, df, color, save_file=True, font_family=None, font_size=None):
+    def map(self, df, color, name_file=None, save_file=False, save_final=False, fig_save_width=1320,
+            fig_save_height=680, font_family=None, font_size=None):
         """Map of countries of participation with colour based on column in dataframe.
 
         Args:
             df (dataframe): dataframe with keypress data.
+            name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
+            save_final (bool, optional): flag for saving an a final figure to /figures.
+            fig_save_width (int, optional): width of figures to be saved.
+            fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
         """
@@ -2747,20 +3272,46 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
-        # save file
+        # save file to local output folder
         if save_file:
-            self.save_plotly(fig, 'map_' + color, self.folder)
-        # save file
-        if save_file:
-            # to "_output/figures"
-            self.save_plotly(fig, 'map_' + color, os.path.join(tr.settings.output_dir, self.folder))
-            # to "figures" (as it is a "good" final figure)
-            self.save_plotly(fig, 'map_' + color, os.path.join(tr.settings.root_dir, self.folder), open_browser=False)
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'map_' + color,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.output_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height)
         # open it in localhost instead
         else:
             fig.show()
+        # save file to "figures" (as it is a "good" final figure)
+        if save_final:
+            # custom file name not provided
+            if not name_file:
+                self.save_plotly(fig, 'map_' + color,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
+            # custom file name provided
+            else:
+                self.save_plotly(fig, name_file,
+                                 os.path.join(tr.settings.root_dir, self.folder),
+                                 remove_margins=True,
+                                 width=fig_save_width,
+                                 height=fig_save_height,
+                                 open_browser=False)
 
-    def save_plotly(self, fig, name, path, remove_margins=False, width=1320, height=680, open_browser=True):
+    def save_plotly(self, fig, name, path, remove_margins=False, width=1320, height=680, save_eps=True, save_png=True,
+                    save_html=True, open_browser=True, save_mp4=False):
         """
         Helper function to save figure as html file.
 
@@ -2771,54 +3322,66 @@ class Analysis:
             remove_margins (bool, optional): remove white margins around EPS figure.
             width (int, optional): width of figures to be saved.
             height (int, optional): height of figures to be saved.
+            save_eps (bool, optional): save image as EPS file.
+            save_png (bool, optional): save image as PNG file.
+            save_html (bool, optional): save image as html file.
             open_browser (bool, optional): open figure in the browse.
+            save_mp4 (bool, optional): save video as MP4 file.
         """
         # build path
         if not os.path.exists(path):
             os.makedirs(path)
-        # limit name to 255 char
-        if len(path) + len(name) > 250:
-            name = name[:255 - len(path) - 5]
+        # limit name to max 200 char (for Windows)
+        if len(path) + len(name) > 195:
+            name = name[:200 - len(path) - 5]
         # save as html
-        if open_browser:
-            # open in browser
-            py.offline.plot(fig, filename=os.path.join(path, name + '.html'))
-        else:
-            # do not open in browser
-            py.offline.plot(fig, filename=os.path.join(path, name + '.html'), auto_open=False)
+        if save_html:
+            if open_browser:
+                # open in browser
+                py.offline.plot(fig, filename=os.path.join(path, name + '.html'))
+            else:
+                # do not open in browser
+                py.offline.plot(fig, filename=os.path.join(path, name + '.html'), auto_open=False)
         # remove white margins
         if remove_margins:
             fig.update_layout(margin=dict(l=2, r=2, t=20, b=12))
         # save as eps
-        fig.write_image(os.path.join(path, name + '.eps'), width=width, height=height)
+        if save_eps:
+            fig.write_image(os.path.join(path, name + '.eps'), width=width, height=height)
         # save as png
-        fig.write_image(os.path.join(path, name + '.png'), width=width, height=height)
+        if save_png:
+            fig.write_image(os.path.join(path, name + '.png'), width=width, height=height)
+        # save as mp4
+        if save_mp4:
+            fig.write_image(os.path.join(path, name + '.mp4'), width=width, height=height)
 
-    def save_fig(self, fig, name, output_subdir, remove_margins=False, pad_inches=0):
+    def save_fig(self, fig, name, path, remove_margins=False, pad_inches=0, clear_figure=True):
         """
         Helper function to save figure as file.
 
         Args:
             fig (matplotlib figure): figure object.
             name (str): name of figure to save.
-            output_subdir (str): folder for saving file.
+            path (str): folder for saving file.
             remove_margins (bool, optional): remove white margins around EPS figure.
             pad_inches (int, optional): padding.
+            clear_figure (bool, optional): whether to clear figure from memory (for last time the object needs to be
+                                           used).
         """
         # build path
-        path = os.path.join(tr.settings.output_dir, output_subdir)
         if not os.path.exists(path):
             os.makedirs(path)
-        # limit name to 255 char
-        if len(path) + len(name) > 250:
-            name = name[:255 - len(path) - 5]
+        # limit name to max 200 char (for Windows)
+        if len(path) + len(name) > 195:
+            name = name[:200 - len(path) - 5]
         # remove white margins
         if remove_margins:
             fig.update_layout(margin=dict(l=2, r=2, t=20, b=12))
         # save file
         plt.savefig(os.path.join(path, name), bbox_inches='tight', pad_inches=pad_inches)
         # clear figure from memory
-        plt.close(fig)
+        if clear_figure:
+            plt.close(fig)
 
     def autolabel(self, ax, on_top=False, decimal=True):
         """

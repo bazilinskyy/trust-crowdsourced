@@ -34,11 +34,11 @@ FILTER_DATA = False  # filter Appen and heroku data
 CLEAN_DATA = False  # clean Appen data
 REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = True  # update mapping with keypress data
+UPDATE_MAPPING = False  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 # todo: code for eye gaze analysis does not run on mac
@@ -49,10 +49,7 @@ file_coords = 'coords.p'  # file to save lists with coordinates
 if __name__ == '__main__':
     # create object for working with heroku data
     files_heroku = tr.common.get_configs('files_heroku')
-    heroku = tr.analysis.Heroku(files_data=files_heroku,
-                                save_p=SAVE_P,
-                                load_p=LOAD_P,
-                                save_csv=SAVE_CSV)
+    heroku = tr.analysis.Heroku(files_data=files_heroku, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV)
     # read heroku data
     heroku_data = heroku.read_data(filter_data=FILTER_DATA)
     # directly count participants in each group
@@ -60,35 +57,27 @@ if __name__ == '__main__':
         group_counts = heroku_data['participant_group'].value_counts()
         logger.info('Participant counts by group:')
         for group, count in group_counts.items():
-            logger.info("Group {}: {} participants", group, count)
+            logger.info('Group {}: {} participants', group, count)
     else:
         logger.error("'participant_group' column not found in the data.")
     # create object for working with appen data
     file_appen = tr.common.get_configs('file_appen')
-    appen = tr.analysis.Appen(file_data=file_appen,
-                              save_p=SAVE_P,
-                              load_p=LOAD_P,
-                              save_csv=SAVE_CSV)
+    appen = tr.analysis.Appen(file_data=file_appen, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV)
     # read appen data
-    appen_data = appen.read_data(filter_data=FILTER_DATA,
-                                 clean_data=CLEAN_DATA)
+    appen_data = appen.read_data(filter_data=FILTER_DATA, clean_data=CLEAN_DATA)
     # read frames
     # get keys in data files
     heroku_data_keys = heroku_data.keys()
     appen_data_keys = appen_data.keys()
     # flag and reject cheaters
     if REJECT_CHEATERS:
-        qa = tr.analysis.QA(
-            file_cheaters=tr.common.get_configs('file_cheaters'),
-            job_id=tr.common.get_configs('appen_job'))
+        qa = tr.analysis.QA(file_cheaters=tr.common.get_configs('file_cheaters'),
+                            job_id=tr.common.get_configs('appen_job'))
         qa.reject_users()
         qa.ban_users()
     # merge heroku and appen dataframes into one
-    all_data = heroku_data.merge(appen_data,
-                                 left_on='worker_code',
-                                 right_on='worker_code')
-    logger.info('Data from {} participants included in analysis.',
-                all_data.shape[0])
+    all_data = heroku_data.merge(appen_data, left_on='worker_code', right_on='worker_code')
+    logger.info('Data from {} participants included in analysis.', all_data.shape[0])
     # update original data files
     if tr.common.get_configs('only_lab') == 0:
         heroku_data = all_data[all_data.columns.intersection(heroku_data_keys)]
@@ -103,12 +92,9 @@ if __name__ == '__main__':
     # create arrays with coordinates for stimuli
     if CALC_COORDS:
         points, _, points_duration = heroku.points(heroku_data)
-        tr.common.save_to_p(file_coords,
-                            [points, points_duration],
-                            'points data')
+        tr.common.save_to_p(file_coords, [points, points_duration], 'points data')
     else:
-        points, points_duration = tr.common.load_from_p(file_coords,
-                                                        'points data')
+        points, points_duration = tr.common.load_from_p(file_coords, 'points data')
     # update mapping with keypress data
     if UPDATE_MAPPING:
         # read in mapping of stimuli
@@ -137,7 +123,10 @@ if __name__ == '__main__':
         # Visualisation of keypress data
         if SHOW_OUTPUT_KP:
             # all keypresses with confidence interval
-            analysis.plot_kp(mapping, conf_interval=0.95)
+            analysis.plot_kp(mapping,
+                             conf_interval=0.95,
+                             save_file=True,
+                             save_final=tr.common.get_configs('save_figures'))
             # # keypresses of all individual stimuli
             # logger.info('Creating figures for keypress data of individual stimuli.')
             # for stim in tqdm(range(num_stimuli)):  # tqdm adds progress bar
@@ -264,21 +253,23 @@ if __name__ == '__main__':
                                                font_size=16,
                                                legend_x=0.68,
                                                legend_y=1.0,
-                                               fig_save_width=1600,   # preserve ratio 225x152
+                                               fig_save_width=1600,  # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
                                                ttest_signals=ttest_signals,
                                                ttest_marker='circle',
                                                ttest_marker_size=3,
-                                               ttest_marker_colour='black',
+                                               ttest_marker_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
                                                ttest_annotations_font_size=10,
-                                               ttest_annotations_colour='black',
+                                               ttest_annotations_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
                                                anova_signals=anova_signals,
                                                anova_marker='cross',
                                                anova_marker_size=3,
-                                               anova_marker_colour='black',
+                                               anova_marker_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
                                                anova_annotations_font_size=10,
-                                               anova_annotations_colour='black')
+                                               anova_annotations_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501,
+                                               save_file=True,
+                                               save_final=tr.common.get_configs('save_figures'))
             # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,
@@ -286,7 +277,10 @@ if __name__ == '__main__':
             #                           stimulus='video_2',
             #                           conf_interval=0.95)
             # keypresses of all videos individually
-            analysis.plot_kp_videos(mapping, show_menu=False, show_title=False)
+            analysis.plot_kp_videos(mapping,
+                                    show_menu=False,
+                                    save_file=True,
+                                    save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
             # todo: double check that order of AV/MDV is correct
             analysis.plot_kp_variable(mapping,
@@ -296,7 +290,9 @@ if __name__ == '__main__':
                                       legend_x=0.9,
                                       legend_y=1.0,
                                       show_menu=False,
-                                      show_title=False)
+                                      show_title=False,
+                                      save_file=True,
+                                      save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
             # todo: double check that order of AV/MDV is correct
             analysis.plot_kp_variable(mapping,
@@ -306,7 +302,9 @@ if __name__ == '__main__':
                                       legend_x=0.9,
                                       legend_y=1.0,
                                       show_menu=False,
-                                      show_title=False)
+                                      show_title=False,
+                                      save_file=True,
+                                      save_final=tr.common.get_configs('save_figures'))
             # keypress based on the pp group
             analysis.plot_kp_variable(mapping,
                                       'group',
@@ -316,7 +314,9 @@ if __name__ == '__main__':
                                       legend_x=0.9,
                                       legend_y=1.0,
                                       show_menu=False,
-                                      show_title=False)
+                                      show_title=False,
+                                      save_file=True,
+                                      save_final=tr.common.get_configs('save_figures'))
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
@@ -325,7 +325,8 @@ if __name__ == '__main__':
                          stacked=True,
                          show_text_labels=True,
                          pretty_text=True,
-                         save_file=True)
+                         save_file=True,
+                         save_final=tr.common.get_configs('save_figures'))
             # # post-trial questions of all groups of stimuli
             # logger.info('Creating bar plots of post-trial questions for groups of stimuli.')
             # for stim in tqdm(range(int(num_stimuli/4))):  # tqdm adds progress bar
@@ -346,34 +347,39 @@ if __name__ == '__main__':
             # create correlation matrix
             analysis.corr_matrix(df,
                                  columns_drop=columns_drop,
-                                 save_file=True)
+                                 save_file=True,
+                                 save_final=tr.common.get_configs('save_figures'))
             # create correlation matrix
             analysis.scatter_matrix(df,
                                     columns_drop=columns_drop,
                                     color='group',
                                     symbol='group',
                                     diagonal_visible=False,
-                                    save_file=True)
+                                    save_file=True,
+                                    save_final=tr.common.get_configs('save_figures'))
             # participant group - end question
             analysis.scatter(heroku_data,
                              x='participant_group',
                              y='end-slider-0-0',
                              color='end-slider-1-0',
                              pretty_text=True,
-                             save_file=True)
+                             save_file=True,
+                             save_final=tr.common.get_configs('save_figures'))
             # stimulus duration
             analysis.hist(heroku_data,
                           x=heroku_data.columns[heroku_data.columns.to_series().str.contains('-dur')],
                           nbins=100,
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # browser window dimensions
             analysis.scatter(heroku_data,
                              x='window_width',
                              y='window_height',
                              color='browser_name',
                              pretty_text=True,
-                             save_file=True)
+                             save_file=True,
+                             save_final=tr.common.get_configs('save_figures'))
             # mapping to convert likert values to numeric
             likert_mapping = {'Strongly disagree': 1,
                               'Disagree': 2,
@@ -390,14 +396,16 @@ if __name__ == '__main__':
                              xaxis_title='Before',
                              yaxis_title='After',
                              pretty_text=False,
-                             save_file=True)
+                             save_file=True,
+                             save_final=tr.common.get_configs('save_figures'))
             analysis.scatter(df,
                              x='driving_in_ad',
                              y='end-slider-1-0',
                              xaxis_title='Before',
                              yaxis_title='After',
                              pretty_text=False,
-                             save_file=True)
+                             save_file=True,
+                             save_final=tr.common.get_configs('save_figures'))
         # Visualisation of data about participants
         if SHOW_OUTPUT_PP:
             # time of participation
@@ -409,12 +417,14 @@ if __name__ == '__main__':
                           x=['time'],
                           color='country',
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # histogram of driving frequency
             analysis.hist(appen_data,
                           x=['driving_freq'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # grouped barchart of DBQ data
             analysis.hist(appen_data,
                           x=['dbq1_anger',
@@ -426,23 +436,27 @@ if __name__ == '__main__':
                              'dbq7_mobile'],
                           marginal='violin',
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # histogram of the year of license
             analysis.hist(appen_data,
                           x=['year_license'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # histogram of the highest level of education
             analysis.hist(appen_data,
                           x=['education'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # histogram of communication with other
             analysis.hist(appen_data,
                           x=['communication_others'],
                           marginal='violin',
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # grouped barchart of technology scale
             analysis.hist(appen_data,
                           x=['technology_worried',
@@ -452,56 +466,79 @@ if __name__ == '__main__':
                              'technology_not_interested'],
                           marginal='violin',
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # scatter plot of machines questions
             analysis.scatter(appen_data,
                              x='machines_roles',
                              y='machines_profit',
                              color='year_license',
                              pretty_text=True,
-                             save_file=True)
+                             save_file=True,
+                             save_final=tr.common.get_configs('save_figures'))
             # histogram of attitude towards AD
             analysis.hist(appen_data,
                           x=['attitude_ad'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # scatter plot of driving with AVs
             analysis.scatter(appen_data,
                              x='driving_in_ad',
                              y='driving_alongside_ad',
                              color='year_license',
                              pretty_text=True,
-                             save_file=True)
+                             save_file=True,
+                             save_final=tr.common.get_configs('save_figures'))
             # histogram of the capability of AD
             analysis.hist(appen_data,
                           x=['capability_ad'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # histogram of the experience of AD
             analysis.hist(appen_data,
                           x=['experience_ad'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # histogram of the input device
             analysis.hist(appen_data,
                           x=['device'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # histogram of milage
             analysis.hist(appen_data,
                           x=['milage'],
                           pretty_text=True,
-                          save_file=True)
+                          save_file=True,
+                          save_final=tr.common.get_configs('save_figures'))
             # map of participants
-            analysis.map(countries_data, color='counts', save_file=True)
+            analysis.map(countries_data,
+                         color='counts',
+                         save_file=True,
+                         save_final=tr.common.get_configs('save_figures'))
             # map of mean age per country
-            analysis.map(countries_data, color='age', save_file=True)
+            analysis.map(countries_data,
+                         color='age',
+                         save_file=True,
+                         save_final=tr.common.get_configs('save_figures'))
             # map of gender per country
-            analysis.map(countries_data, color='gender', save_file=True)
+            analysis.map(countries_data,
+                         color='gender',
+                         save_file=True,
+                         save_final=tr.common.get_configs('save_figures'))
             # map of year of obtaining license per country
-            analysis.map(countries_data, color='year_license', save_file=True)
+            analysis.map(countries_data,
+                         color='year_license',
+                         save_file=True,
+                         save_final=tr.common.get_configs('save_figures'))
             # map of year of automated driving per country
-            analysis.map(countries_data, color='year_ad', save_file=True)
+            analysis.map(countries_data,
+                         color='year_ad',
+                         save_file=True,
+                         save_final=tr.common.get_configs('save_figures'))
         # Visualisation of eye tracking data
         if SHOW_OUTPUT_ET:
             # create eye gaze visualisations for all videos
