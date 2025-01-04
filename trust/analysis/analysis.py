@@ -2211,7 +2211,7 @@ class Analysis:
                               x0=event['start'],
                               y0=0,
                               x1=event['start'],
-                              y1=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
+                              y1=yaxis_kp_range[1] - counter_lines * 2 - 2,
                               line=dict(color=events_colour,
                                         dash=events_dash,
                                         width=events_width))
@@ -2222,19 +2222,19 @@ class Analysis:
                                   x0=event['end'],
                                   y0=0,
                                   x1=event['end'],
-                                  y1=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
+                                  y1=yaxis_kp_range[1] - counter_lines * 2 - 2,
                                   line=dict(color=events_colour,
                                             dash=events_dash,
                                             width=events_width))
                     # draw horizontal line
                     fig.add_annotation(ax=event['start'],
                                        axref='x',
-                                       ay=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
+                                       ay=yaxis_kp_range[1] - counter_lines * 2 - 2,
                                        ayref='y',
                                        x=event['end'],
                                        arrowcolor='black',
                                        xref='x',
-                                       y=yaxis_kp_range[1] - counter_lines * 1.8 - 2,
+                                       y=yaxis_kp_range[1] - counter_lines * 2 - 2,
                                        yref='y',
                                        arrowwidth=events_width,
                                        arrowside='end+start',
@@ -2243,7 +2243,7 @@ class Analysis:
                     # draw text label
                     fig.add_annotation(text=event['annotation'],
                                        x=(event['end'] + event['start']) / 2,
-                                       y=yaxis_kp_range[1] - counter_lines * 1.8 - 1,  # use ylim value and draw lower
+                                       y=yaxis_kp_range[1] - counter_lines * 2 - 1,  # use ylim value and draw lower
                                        showarrow=False,
                                        font=dict(size=events_annotations_font_size, color=events_annotations_colour))
                 # increase counter of lines drawn
@@ -2292,10 +2292,6 @@ class Analysis:
         # output ttest
         if ttest_signals:
             for signals in ttest_signals:
-                # # smoothen signal
-                # if self.smoothen_signal:
-                #     signal_1 = self.smoothen_filter(signals['signal_1'])
-                #     signal_2 = self.smoothen_filter(signals['signal_2'])
                 # receive significance values
                 [p_values, significance] = self.ttest(signal_1=signals['signal_1'],
                                                       signal_2=signals['signal_2'],
@@ -2307,7 +2303,6 @@ class Analysis:
                 df_ttest.to_csv(os.path.join(tr.settings.output_dir, signals['label'] + '_' + name_file + '.csv'))
                 # add to the plot
                 signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
-                # significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
                 # plot stars based on random lists
                 marker_x = []  # x-coordinates for stars
                 marker_y = []  # y-coordinates for stars
@@ -2317,14 +2312,6 @@ class Analysis:
                         marker_x.append(times[i])  # use the corresponding x-coordinate
                         # dynamically set y-coordinate, slightly offset for each signal_index
                         marker_y.append(-1 - counter_ttest * 1)
-                # filter out NaN values in marker_x and marker_y
-                # filtered_marker_x = []
-                # filtered_marker_y = []
-                # # filter out nans in s
-                # for x, y in zip(marker_x, marker_y):
-                #     if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
-                #         filtered_marker_x.append(x)
-                #         filtered_marker_y.append(y)
                 # add scatter plot trace with cleaned data
                 fig.add_trace(go.Scatter(x=marker_x,
                                          y=marker_y,
@@ -2342,7 +2329,7 @@ class Analysis:
                 fig.add_annotation(text=signals['label'],
                                    # put labels at the start of the x axis, as they are likely no significant effects
                                    # in the start of the trial
-                                   x=1,
+                                   x=2,
                                    y=-1 - counter_ttest * 1,  # draw in the nagative range of y axis
                                    showarrow=False,
                                    font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
@@ -2355,10 +2342,6 @@ class Analysis:
                 counter_anova = counter_ttest
             # calculate for given signals one by one
             for signals in anova_signals:
-                # # smoothen signal
-                # if self.smoothen_signal:
-                #     signal_1 = self.smoothen_filter(signals['signal_1'])
-                #     signal_2 = self.smoothen_filter(signals['signal_2'])
                 # receive significance values
                 [p_values, significance] = self.anova(signal_1=signals['signal_1'],
                                                       signal_2=signals['signal_2'],
@@ -2380,14 +2363,6 @@ class Analysis:
                         marker_x.append(times[i])  # use the corresponding x-coordinate
                         # dynamically set y-coordinate, slightly offset for each signal_index
                         marker_y.append(-1 - counter_anova * 1)
-                # filter out NaN values in marker_x and marker_y
-                # filtered_marker_x = []
-                # filtered_marker_y = []
-                # # filter out nans in s
-                # for x, y in zip(marker_x, marker_y):
-                #     if not np.isnan(x) and not np.isnan(y):  # ensure x and y are valid
-                #         filtered_marker_x.append(x)
-                #         filtered_marker_y.append(y)
                 # add scatter plot trace with cleaned data
                 fig.add_trace(go.Scatter(x=marker_x,
                                          y=marker_y,
@@ -2405,14 +2380,14 @@ class Analysis:
                 fig.add_annotation(text=signals['label'],
                                    # put labels at the start of the x axis, as they are likely no significant effects
                                    # in the start of the trial
-                                   x=1,
+                                   x=2,
                                    y=-1 - counter_anova * 1,  # draw in the nagative range of y axis
                                    showarrow=False,
                                    font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
                 # increase counter of lines drawn
                 counter_anova = counter_anova + 1
-        # hide ticks of negative values on y axis assuming that ticks are at step of 10
-        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], 10)
+        # hide ticks of negative values on y axis assuming that ticks are at step of the specified y range / 10
+        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], round(yaxis_kp_range[1] / 10))
         fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
@@ -2460,7 +2435,12 @@ class Analysis:
                          yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
                          yaxis_range=None, show_menu=False, show_title=True, name_file=None, save_file=False,
                          save_final=False, fig_save_width=1320, fig_save_height=680, legend_x=0, legend_y=0,
-                         font_family=None, font_size=None):
+                         font_family=None, font_size=None, events=None, events_width=1, events_dash='dot',
+                         events_colour='black', events_annotations_font_size=20, events_annotations_colour='black',
+                         ttest_signals=None, ttest_marker='circle', ttest_marker_size=3,  ttest_marker_colour='black',
+                         ttest_annotations_font_size=10, ttest_annotations_colour='black', anova_signals=None,
+                         anova_marker='cross', anova_marker_size=3, anova_marker_colour='black',
+                         anova_annotations_font_size=10, anova_annotations_colour='black'):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -2484,10 +2464,24 @@ class Analysis:
             legend_y (float, optional): location of legend, percentage of y axis. 0 = use default value.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
+            events (list, optional): list of events to draw formatted as values on x axis.
+            events_width (int, optional): thickness of the vertical lines.
+            events_dash (str, optional): type of the vertical lines.
+            events_colour (str, optional): colour of the vertical lines.
+            events_annotations_font_size (int, optional): font size of annotations for the vertical lines.
+            events_annotations_colour (str, optional): colour of annotations for the vertical lines.
         """
         logger.info('Creating visualisation of keypresses based on values {} of variable {}.', values, variable)
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
+        # adjust ylim, if ttest results need to be plotted
+        if ttest_signals:
+            # assume one row takes 0.5 on y axis
+            yaxis_range[0] = round(yaxis_range[0] - 0.5 * len(ttest_signals))
+        # adjust ylim, if anova results need to be plotted
+        if anova_signals:
+            # assume one row takes 0.5 on y axis
+            yaxis_range[0] = round(yaxis_range[0] - 0.5 * len(anova_signals))
         # if no values specified, plot value
         if not values:
             values = df[variable].unique()
@@ -2514,6 +2508,9 @@ class Analysis:
             if self.smoothen_signal:
                 kp_data = self.smoothen_filter(kp_data)
             extracted_data.append({'value': value, 'data': kp_data})
+        # build filename
+        if not name_file:
+            name_file = 'kp_' + variable + '-' + '-'.join(str(val) for val in values)
         # plotly figure
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
         # plot each variable in data
@@ -2529,6 +2526,154 @@ class Analysis:
                                      name=name),
                           row=1,
                           col=1)
+        # count lines to calculate increase in coordinates of drawing
+        counter_lines = 0
+        # draw lines with annotations for events
+        if events:
+            for event in events:
+                # draw start
+                fig.add_shape(type='line',
+                              x0=event['start'],
+                              y0=0,
+                              x1=event['start'],
+                              y1=yaxis_range[1] - counter_lines * 1.8 - 2,
+                              line=dict(color=events_colour,
+                                        dash=events_dash,
+                                        width=events_width))
+                # draw other elements only is start and finish are not the same
+                if event['start'] != event['end']:
+                    # draw finish
+                    fig.add_shape(type='line',
+                                  x0=event['end'],
+                                  y0=0,
+                                  x1=event['end'],
+                                  y1=yaxis_range[1] - counter_lines * 1.8 - 2,
+                                  line=dict(color=events_colour,
+                                            dash=events_dash,
+                                            width=events_width))
+                    # draw horizontal line
+                    fig.add_annotation(ax=event['start'],
+                                       axref='x',
+                                       ay=xaxis_range[1] - counter_lines * 1.8 - 2,
+                                       ayref='y',
+                                       x=event['end'],
+                                       arrowcolor='black',
+                                       xref='x',
+                                       y=yaxis_range[1] - counter_lines * 1.8 - 2,
+                                       yref='y',
+                                       arrowwidth=events_width,
+                                       arrowside='end+start',
+                                       arrowsize=1,
+                                       arrowhead=2)
+                    # draw text label
+                    fig.add_annotation(text=event['annotation'],
+                                       x=(event['end'] + event['start']) / 2,
+                                       y=yaxis_range[1] - counter_lines * 1.8 - 1,  # use ylim value and draw lower
+                                       showarrow=False,
+                                       font=dict(size=events_annotations_font_size, color=events_annotations_colour))
+                # increase counter of lines drawn
+                counter_lines = counter_lines + 1
+        # count lines to calculate increase in coordinates of drawing
+        counter_ttest = 0
+        # count lines to calculate increase in coordinates of drawing
+        counter_anova = 0
+        # output ttest
+        if ttest_signals:
+            for signals in ttest_signals:
+                # receive significance values
+                [p_values, significance] = self.ttest(signal_1=signals['signal_1'],
+                                                      signal_2=signals['signal_2'],
+                                                      paired=signals['paired'])
+                # save results to csv
+                df_ttest = pd.DataFrame(columns=['t', 'p-value'])  # dataframe to save to csv
+                df_ttest['t'] = list(range(len(signals['signal_1'])))
+                df_ttest['p-value'] = p_values
+                df_ttest.to_csv(os.path.join(tr.settings.output_dir, signals['label'] + '_' + name_file + '.csv'))
+                # add to the plot
+                signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
+                # plot stars based on random lists
+                marker_x = []  # x-coordinates for stars
+                marker_y = []  # y-coordinates for stars
+                # assuming `times` and `signals['signal_1']` correspond to x and y data points
+                for i in range(len(significance)):
+                    if significance[i] == 1:  # if value indicates a star
+                        marker_x.append(times[i])  # use the corresponding x-coordinate
+                        # dynamically set y-coordinate, slightly offset for each signal_index
+                        marker_y.append(-1 - counter_ttest * 0.5)
+                # add scatter plot trace with cleaned data
+                fig.add_trace(go.Scatter(x=marker_x,
+                                         y=marker_y,
+                                         # list of possible values: https://plotly.com/python/marker-style
+                                         mode='markers',
+                                         marker=dict(symbol=ttest_marker,  # marker
+                                                     size=ttest_marker_size,  # adjust size
+                                                     color=ttest_marker_colour),  # adjust colour
+                                         text=p_values,
+                                         showlegend=False,
+                                         hovertemplate=signals['label'] + ': time=%{x}, p_value=%{text}'),
+                              row=1,
+                              col=1)
+                # add label with signals that are compared
+                fig.add_annotation(text=signals['label'],
+                                   # put labels at the start of the x axis, as they are likely no significant effects
+                                   # in the start of the trial
+                                   x=1,
+                                   y=-1 - counter_ttest * 0.5,  # draw in the nagative range of y axis
+                                   showarrow=False,
+                                   font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
+                # increase counter of lines drawn
+                counter_ttest = counter_ttest + 1
+        # output ANOVA
+        if anova_signals:
+            # if ttest was plotted, take into account for y of the first row or marker
+            if counter_ttest > 0:
+                counter_anova = counter_ttest
+            # calculate for given signals one by one
+            for signals in anova_signals:
+                # receive significance values
+                [p_values, significance] = self.anova(signal_1=signals['signal_1'],
+                                                      signal_2=signals['signal_2'],
+                                                      signal_3=signals['signal_3'])
+                # save results to csv
+                df_anova = pd.DataFrame(columns=['t', 'p-value'])  # dataframe to save to csv
+                df_anova['t'] = list(range(len(signals['signal_1'])))
+                df_anova['p-value'] = p_values
+                df_anova.to_csv(os.path.join(tr.settings.output_dir, signals['label'] + '_' + name_file + '.csv'))
+                # add to the plot
+                signal_length = len(signals['signal_1'])  # get the length of 'signal_1'
+                significance = [random.randint(0, 1) for _ in range(signal_length)]  # generate random list
+                # plot stars based on random lists
+                marker_x = []  # x-coordinates for stars
+                marker_y = []  # y-coordinates for stars
+                # assuming `times` and `signals['signal_1']` correspond to x and y data points
+                for i in range(len(significance)):
+                    if significance[i] == 1:  # if value indicates a star
+                        marker_x.append(times[i])  # use the corresponding x-coordinate
+                        # dynamically set y-coordinate, slightly offset for each signal_index
+                        marker_y.append(-1 - counter_anova * 0.5)
+                # add scatter plot trace with cleaned data
+                fig.add_trace(go.Scatter(x=marker_x,
+                                         y=marker_y,
+                                         # list of possible values: https://plotly.com/python/marker-style
+                                         mode='markers',
+                                         marker=dict(symbol=anova_marker,  # marker
+                                                     size=anova_marker_size,  # adjust size
+                                                     color=anova_marker_colour),  # adjust colour
+                                         text=p_values,
+                                         showlegend=False,
+                                         hovertemplate='time=%{x}, p_value=%{text}'),
+                              row=1,
+                              col=1)
+                # add label with signals that are compared
+                fig.add_annotation(text=signals['label'],
+                                   # put labels at the start of the x axis, as they are likely no significant effects
+                                   # in the start of the trial
+                                   x=1,
+                                   y=-1 - counter_anova * 0.5,  # draw in the nagative range of y axis
+                                   showarrow=False,
+                                   font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
+                # increase counter of lines drawn
+                counter_anova = counter_anova + 1
         # create tabs
         buttons = list([dict(label='All',
                              method='update',
@@ -2576,9 +2721,6 @@ class Analysis:
             fig.update_layout(legend=dict(x=legend_x, y=legend_y))
         # save file to local output folder
         if save_file:
-            # build filename
-            if not name_file:
-                name_file = 'kp_' + variable + '-' + '-'.join(str(val) for val in values)
             self.save_plotly(fig=fig,
                              name=name_file,
                              remove_margins=True,

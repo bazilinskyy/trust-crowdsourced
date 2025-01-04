@@ -4,8 +4,6 @@ import matplotlib._pylab_helpers
 from tqdm import tqdm
 import os
 import trust as tr
-# from statistics import mean
-# import pandas as pd
 import re
 from statistics import mean
 tr.logs(show_level='info', show_color=True)
@@ -193,27 +191,27 @@ if __name__ == '__main__':
                 # prepare pairs of signals to compare with ttest
                 ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
                                   'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
-                                  'label': 'ttest(0, 1)',
+                                  'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
                                   'paired': True},
                                  {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
                                   'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                                  'label': 'ttest(0, 2)',
+                                  'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
                                   'paired': False},
                                  {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(0, 3)',
+                                  'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
                                   'paired': False},
                                  {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
                                   'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                                  'label': 'ttest(1, 2)',
+                                  'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
                                   'paired': False},
                                  {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(2, 3)',
+                                  'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
                                   'paired': True},
                                  {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(1, 3)',
+                                  'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
                                   'paired': False}]
                 # signal_1 = signal_type = list of int, eg: [1,1,0,0]
                 # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
@@ -242,15 +240,15 @@ if __name__ == '__main__':
                                                events=events,
                                                events_width=1,
                                                events_dash='dot',
-                                               events_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
+                                               events_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                events_annotations_font_size=12,
-                                               events_annotations_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
+                                               events_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                yaxis_slider_title=None,
                                                show_text_labels=True,
                                                stacked=True,
                                                yaxis_slider_show=False,
                                                font_size=16,
-                                               legend_x=0.68,
+                                               legend_x=0.71,
                                                legend_y=1.0,
                                                fig_save_width=1600,  # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
@@ -258,15 +256,15 @@ if __name__ == '__main__':
                                                ttest_signals=ttest_signals,
                                                ttest_marker='circle',
                                                ttest_marker_size=3,
-                                               ttest_marker_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
+                                               ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                ttest_annotations_font_size=10,
-                                               ttest_annotations_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
+                                               ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                anova_signals=anova_signals,
                                                anova_marker='cross',
                                                anova_marker_size=3,
-                                               anova_marker_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501
+                                               anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                anova_annotations_font_size=10,
-                                               anova_annotations_colour='black' if tr.common.get_configs('plotly_template') == 'plotly_white' else 'white',  # noqa: E501,
+                                               anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501,
                                                save_file=True,
                                                save_final=tr.common.get_configs('save_figures'))
             # keypresses of an individual stimulus for an individual pp
@@ -281,6 +279,49 @@ if __name__ == '__main__':
                                     save_file=True,
                                     save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
+            # prepare pairs of signals to compare with ttest
+            # todo: signals for ttest
+            ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
+                              'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                              'paired': True},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
+                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
+                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
+                              'paired': True},
+                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
+                              'paired': False}]
+            # signal_1 = signal_type = list of int, eg: [1,1,0,0]
+            # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
+            # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
+            # prepare signals to compare with ANOVA
+            # todo: signals for ANOVA
+            anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(0, 1, 2)'},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(0, 2, 3)'},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(1, 2, 3)'}]
             # todo: double check that order of AV/MDV is correct
             analysis.plot_kp_variable(mapping,
                                       'ego_car',
@@ -290,9 +331,69 @@ if __name__ == '__main__':
                                       legend_y=1.0,
                                       show_menu=False,
                                       show_title=False,
+                                      # hardcode based on the longest stimulus
+                                      xaxis_kp_range=[0, 43],
+                                      # hardcode based on the highest recorded value
+                                      yaxis_kp_range=[0, 65],
+                                      ttest_signals=ttest_signals,
+                                      ttest_marker='circle',
+                                      ttest_marker_size=3,
+                                      ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      ttest_annotations_font_size=10,
+                                      ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      anova_signals=anova_signals,
+                                      anova_marker='cross',
+                                      anova_marker_size=3,
+                                      anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      anova_annotations_font_size=10,
+                                      anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
+            # prepare pairs of signals to compare with ttest
+            # todo: signals for ttest
+            ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
+                              'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                              'paired': True},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
+                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
+                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
+                              'paired': True},
+                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
+                              'paired': False}]
+            # signal_1 = signal_type = list of int, eg: [1,1,0,0]
+            # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
+            # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
+            # prepare signals to compare with ANOVA
+            # todo: signals for ANOVA
+            anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(0, 1, 2)'},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(0, 2, 3)'},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(1, 2, 3)'}]
             # todo: double check that order of AV/MDV is correct
             analysis.plot_kp_variable(mapping,
                                       'target_car',
@@ -302,9 +403,68 @@ if __name__ == '__main__':
                                       legend_y=1.0,
                                       show_menu=False,
                                       show_title=False,
+                                      # hardcode based on the longest stimulus
+                                      xaxis_kp_range=[0, 43],
+                                      # hardcode based on the highest recorded value
+                                      yaxis_kp_range=[0, 65],
+                                      ttest_signals=ttest_signals,
+                                      ttest_marker='circle',
+                                      ttest_marker_size=3,
+                                      ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      ttest_annotations_font_size=10,
+                                      ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      anova_signals=anova_signals,
+                                      anova_marker='cross',
+                                      anova_marker_size=3,
+                                      anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      anova_annotations_font_size=10,
+                                      anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
             # keypress based on the pp group
+            # prepare pairs of signals to compare with ttest
+            # todo: signals for ttest
+            ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
+                              'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                              'paired': True},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
+                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
+                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
+                              'paired': False},
+                             {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
+                              'paired': True},
+                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
+                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
+                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
+                              'paired': False}]
+            # signal_1 = signal_type = list of int, eg: [1,1,0,0]
+            # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
+            # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
+            # prepare signals to compare with ANOVA
+            # todo: signals for ANOVA
+            anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(0, 1, 2)'},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(0, 2, 3)'},
+                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                              'label': 'anova(1, 2, 3)'}]
             analysis.plot_kp_variable(mapping,
                                       'group',
                                       # custom labels for slider questions in the legend
@@ -314,6 +474,22 @@ if __name__ == '__main__':
                                       legend_y=1.0,
                                       show_menu=False,
                                       show_title=False,
+                                      # hardcode based on the longest stimulus
+                                      xaxis_kp_range=[0, 43],
+                                      # hardcode based on the highest recorded value
+                                      yaxis_kp_range=[0, 65],
+                                      ttest_signals=ttest_signals,
+                                      ttest_marker='circle',
+                                      ttest_marker_size=3,
+                                      ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      ttest_annotations_font_size=10,
+                                      ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      anova_signals=anova_signals,
+                                      anova_marker='cross',
+                                      anova_marker_size=3,
+                                      anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      anova_annotations_font_size=10,
+                                      anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
         # Visualisation of stimulus data
