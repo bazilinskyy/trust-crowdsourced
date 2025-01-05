@@ -35,8 +35,8 @@ CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = False  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
 
 # todo: code for eye gaze analysis does not run on mac
@@ -259,7 +259,7 @@ if __name__ == '__main__':
                                                ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                ttest_annotations_font_size=10,
                                                ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               anova_signals=anova_signals,
+                                               anova_signals=None,
                                                anova_marker='cross',
                                                anova_marker_size=3,
                                                anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -280,31 +280,10 @@ if __name__ == '__main__':
                                     save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
             # prepare pairs of signals to compare with ttest
-            # todo: signals for ttest
-            ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
-                              'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
-                              'paired': True},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
-                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
-                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
-                              'paired': True},
-                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
-                              'paired': False}]
+            ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(AV, MDV)',
+                              'paired': True}]
             # signal_1 = signal_type = list of int, eg: [1,1,0,0]
             # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
             # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
@@ -341,7 +320,7 @@ if __name__ == '__main__':
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       ttest_annotations_font_size=10,
                                       ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                      anova_signals=anova_signals,
+                                      anova_signals=None,
                                       anova_marker='cross',
                                       anova_marker_size=3,
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -351,31 +330,10 @@ if __name__ == '__main__':
                                       save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
             # prepare pairs of signals to compare with ttest
-            # todo: signals for ttest
-            ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
-                              'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
-                              'paired': True},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
-                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
-                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
-                              'paired': True},
-                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
-                              'paired': False}]
+            ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(AV, MDV)',
+                              'paired': True}]
             # signal_1 = signal_type = list of int, eg: [1,1,0,0]
             # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
             # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
@@ -412,7 +370,7 @@ if __name__ == '__main__':
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       ttest_annotations_font_size=10,
                                       ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                      anova_signals=anova_signals,
+                                      anova_signals=None,
                                       anova_marker='cross',
                                       anova_marker_size=3,
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -422,31 +380,30 @@ if __name__ == '__main__':
                                       save_final=tr.common.get_configs('save_figures'))
             # keypress based on the pp group
             # prepare pairs of signals to compare with ttest
-            # todo: signals for ttest
-            ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
-                              'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+            ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(0, 1)',
                               'paired': True},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
-                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
-                              'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
-                              'paired': False},
-                             {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
+                             {'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(0, 2)',
                               'paired': True},
-                             {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
-                              'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                              'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
-                              'paired': False}]
+                             {'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(0, 3)',
+                              'paired': True},
+                             {'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(1, 2)',
+                              'paired': True},
+                             {'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(2, 3)',
+                              'paired': True},
+                             {'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
+                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0]),  # noqa: E501
+                              'label': 'ttest(1, 3)',
+                              'paired': True}]
             # signal_1 = signal_type = list of int, eg: [1,1,0,0]
             # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
             # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
@@ -483,7 +440,7 @@ if __name__ == '__main__':
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       ttest_annotations_font_size=10,
                                       ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                      anova_signals=anova_signals,
+                                      anova_signals=None,
                                       anova_marker='cross',
                                       anova_marker_size=3,
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501

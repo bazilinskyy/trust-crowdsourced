@@ -4,6 +4,8 @@ import os
 import json
 import pickle
 import sys
+import numpy as np
+
 import trust as tr
 
 logger = tr.CustomLogger(__name__)  # use custom logger
@@ -110,3 +112,18 @@ def load_from_p(file, desription_data='data'):
         data = pickle.load(f)
     logger.info('Loaded ' + desription_data + ' from pickle file {}.', file)
     return data
+
+
+def vertical_sum(data):
+    """Calculate vertical sum of lists in list.
+
+    Args:
+        data (list of lists): data
+    
+    Returns:
+        list: sum of lists in list.
+    """
+    # convert each sublist (a list of lists) into a NumPy array and sum vertically (axis=0)
+    result = np.sum([np.array(sublist) for sublist in data], axis=0)
+    # convert the result back to a list
+    return result.tolist()
