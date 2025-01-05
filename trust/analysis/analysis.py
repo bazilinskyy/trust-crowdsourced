@@ -2260,8 +2260,8 @@ class Analysis:
                               ttest_marker=ttest_marker,
                               ttest_marker_size=ttest_marker_size,
                               ttest_marker_colour=ttest_marker_colour,
-                              ttest_annotations_font_size=ttest_annotations_font_size, 
-                              ttest_annotations_colour=ttest_annotations_colour, 
+                              ttest_annotations_font_size=ttest_annotations_font_size,
+                              ttest_annotations_colour=ttest_annotations_colour,
                               anova_signals=anova_signals,
                               anova_marker=anova_marker,
                               anova_marker_size=anova_marker_size,
@@ -2447,8 +2447,8 @@ class Analysis:
                               ttest_marker=ttest_marker,
                               ttest_marker_size=ttest_marker_size,
                               ttest_marker_colour=ttest_marker_colour,
-                              ttest_annotations_font_size=ttest_annotations_font_size, 
-                              ttest_annotations_colour=ttest_annotations_colour, 
+                              ttest_annotations_font_size=ttest_annotations_font_size,
+                              ttest_annotations_colour=ttest_annotations_colour,
                               anova_signals=anova_signals,
                               anova_marker=anova_marker,
                               anova_marker_size=anova_marker_size,
@@ -2632,8 +2632,8 @@ class Analysis:
                               ttest_marker=ttest_marker,
                               ttest_marker_size=ttest_marker_size,
                               ttest_marker_colour=ttest_marker_colour,
-                              ttest_annotations_font_size=ttest_annotations_font_size, 
-                              ttest_annotations_colour=ttest_annotations_colour, 
+                              ttest_annotations_font_size=ttest_annotations_font_size,
+                              ttest_annotations_colour=ttest_annotations_colour,
                               anova_signals=anova_signals,
                               anova_marker=anova_marker,
                               anova_marker_size=anova_marker_size,
@@ -2704,7 +2704,7 @@ class Analysis:
                               xaxis_range=None, yaxis_range=None, name_file=None, save_file=False,
                               save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None,
                               font_size=None, events=None, events_width=1, events_dash='dot',
-                              events_colour='black', events_annotations_font_size=20, 
+                              events_colour='black', events_annotations_font_size=20,
                               events_annotations_colour='black', ttest_signals=None, ttest_marker='circle',
                               ttest_marker_size=3, ttest_marker_colour='black', ttest_annotations_font_size=10,
                               ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
@@ -2843,8 +2843,8 @@ class Analysis:
                               ttest_marker=ttest_marker,
                               ttest_marker_size=ttest_marker_size,
                               ttest_marker_colour=ttest_marker_colour,
-                              ttest_annotations_font_size=ttest_annotations_font_size, 
-                              ttest_annotations_colour=ttest_annotations_colour, 
+                              ttest_annotations_font_size=ttest_annotations_font_size,
+                              ttest_annotations_colour=ttest_annotations_colour,
                               anova_signals=anova_signals,
                               anova_marker=anova_marker,
                               anova_marker_size=anova_marker_size,
@@ -3243,7 +3243,7 @@ class Analysis:
 
     def save_stats_csv(self, t, p_values, name_file):
         """Save results of statistical test in csv.
-        
+
         Args:
             t (list): list of time slices.
             p_values (list): list of p values.
@@ -3392,7 +3392,7 @@ class Analysis:
     def draw_events(self, fig, yaxis_range, events, events_width, events_dash, events_colour,
                     events_annotations_font_size, events_annotations_colour):
         """Draw lines and annotations of events.
-        
+
         Args:
             fig (figure): figure object.
             yaxis_range (list): range of x axis in format [min, max] for the keypress plot.
