@@ -2118,7 +2118,7 @@ class Analysis:
                               yaxis_ticklabels_slider_show=False, name_file='kp_videos_sliders', save_file=False,
                               save_final=False, fig_save_width=1320, fig_save_height=680, legend_x=0.7, legend_y=0.95,
                               font_family=None, font_size=None, ttest_signals=None, ttest_marker='circle',
-                              ttest_marker_size=3,  ttest_marker_colour='black', ttest_annotations_font_size=10, 
+                              ttest_marker_size=3,  ttest_marker_colour='black', ttest_annotations_font_size=10,
                               ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
                               anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
                               anova_annotations_colour='black', ttest_anova_row_height=0.5, yaxis_step=10):

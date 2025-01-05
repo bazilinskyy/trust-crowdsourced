@@ -119,7 +119,7 @@ def vertical_sum(data):
 
     Args:
         data (list of lists): data
-    
+
     Returns:
         list: sum of lists in list.
     """
