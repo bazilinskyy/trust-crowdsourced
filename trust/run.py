@@ -236,7 +236,8 @@ if __name__ == '__main__':
                                                # hardcode based on the longest stimulus
                                                xaxis_kp_range=[0, 43],
                                                # hardcode based on the highest recorded value
-                                               yaxis_kp_range=[0, 65],
+                                               yaxis_kp_range=[0, 70],
+                                               yaxis_step=10,
                                                events=events,
                                                events_width=1,
                                                events_dash='dot',
@@ -265,6 +266,7 @@ if __name__ == '__main__':
                                                anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                anova_annotations_font_size=10,
                                                anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501,
+                                               ttest_anova_row_height=1.0,
                                                save_file=True,
                                                save_final=tr.common.get_configs('save_figures'))
             # keypresses of an individual stimulus for an individual pp
@@ -314,6 +316,7 @@ if __name__ == '__main__':
                                       xaxis_range=[0, 43],
                                       # # hardcode based on the highest recorded value
                                       yaxis_range=[0, 20],
+                                      yaxis_step=5,
                                       ttest_signals=ttest_signals,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
@@ -326,6 +329,7 @@ if __name__ == '__main__':
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       anova_annotations_font_size=10,
                                       anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      ttest_anova_row_height=0.4,
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
             # keypress based on the type of ego car
@@ -364,6 +368,7 @@ if __name__ == '__main__':
                                       xaxis_range=[0, 43],
                                       # hardcode based on the highest recorded value
                                       yaxis_range=[0, 20],
+                                      yaxis_step=5,
                                       ttest_signals=ttest_signals,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
@@ -376,6 +381,7 @@ if __name__ == '__main__':
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       anova_annotations_font_size=10,
                                       anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      ttest_anova_row_height=0.4,
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
             # keypress based on the pp group
@@ -434,6 +440,7 @@ if __name__ == '__main__':
                                       xaxis_range=[0, 43],
                                       # hardcode based on the highest recorded value
                                       yaxis_range=[0, 20],
+                                      yaxis_step=5,
                                       ttest_signals=ttest_signals,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
@@ -446,6 +453,7 @@ if __name__ == '__main__':
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       anova_annotations_font_size=10,
                                       anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                      ttest_anova_row_height=0.4,
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
         # Visualisation of stimulus data

@@ -2121,7 +2121,7 @@ class Analysis:
                               ttest_marker_size=3,  ttest_marker_colour='black', ttest_annotations_font_size=10, 
                               ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
                               anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
-                              anova_annotations_colour='black'):
+                              anova_annotations_colour='black', ttest_anova_row_height=0.5, yaxis_step=10):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
         Args:
@@ -2169,6 +2169,8 @@ class Analysis:
             anova_marker_colour (str, optional): colour of markers for the ANOVA.
             anova_annotations_font_size (int, optional): font size of annotations for ANOVA.
             anova_annotations_colour (str, optional): colour of annotations for ANOVA.
+            ttest_anova_row_height (int, optional): height of row of ttest/anova markers.
+            yaxis_step (int): step between ticks on y axis.
         """
         logger.info('Creating figure keypress and slider data for {}.', df.index.tolist())
         # calculate times
@@ -2183,12 +2185,12 @@ class Analysis:
                                      shared_xaxes=False)
         # adjust ylim, if ttest results need to be plotted
         if ttest_signals:
-            # assume one row takes 0.5 on y axis
-            yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(ttest_signals)) - 1
+            # assume one row takes ttest_anova_row_height on y axis
+            yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(ttest_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
         # adjust ylim, if anova results need to be plotted
         if anova_signals:
-            # assume one row takes 0.5 on y axis
-            yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(anova_signals)) - 1
+            # assume one row takes ttest_anova_row_height on y axis
+            yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(anova_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
         # plot keypress data
         for index, row in df.iterrows():
             values = row['kp']  # keypress data
@@ -2202,53 +2204,15 @@ class Analysis:
                                      name=os.path.splitext(index)[0]),
                           row=1,
                           col=1)
-        # count lines to calculate increase in coordinates of drawing
-        counter_lines = 0
-        # draw lines with annotations for events
-        if events:
-            for event in events:
-                # draw start
-                fig.add_shape(type='line',
-                              x0=event['start'],
-                              y0=0,
-                              x1=event['start'],
-                              y1=yaxis_kp_range[1] - counter_lines * 2 - 2,
-                              line=dict(color=events_colour,
-                                        dash=events_dash,
-                                        width=events_width))
-                # draw other elements only is start and finish are not the same
-                if event['start'] != event['end']:
-                    # draw finish
-                    fig.add_shape(type='line',
-                                  x0=event['end'],
-                                  y0=0,
-                                  x1=event['end'],
-                                  y1=yaxis_kp_range[1] - counter_lines * 2 - 2,
-                                  line=dict(color=events_colour,
-                                            dash=events_dash,
-                                            width=events_width))
-                    # draw horizontal line
-                    fig.add_annotation(ax=event['start'],
-                                       axref='x',
-                                       ay=yaxis_kp_range[1] - counter_lines * 2 - 2,
-                                       ayref='y',
-                                       x=event['end'],
-                                       arrowcolor='black',
-                                       xref='x',
-                                       y=yaxis_kp_range[1] - counter_lines * 2 - 2,
-                                       yref='y',
-                                       arrowwidth=events_width,
-                                       arrowside='end+start',
-                                       arrowsize=1,
-                                       arrowhead=2)
-                    # draw text label
-                    fig.add_annotation(text=event['annotation'],
-                                       x=(event['end'] + event['start']) / 2,
-                                       y=yaxis_kp_range[1] - counter_lines * 2 - 1,  # use ylim value and draw lower
-                                       showarrow=False,
-                                       font=dict(size=events_annotations_font_size, color=events_annotations_colour))
-                # increase counter of lines drawn
-                counter_lines = counter_lines + 1
+        # draw events
+        self.draw_events(fig=fig,
+                         yaxis_range=yaxis_kp_range,
+                         events=events,
+                         events_width=events_width,
+                         events_dash=events_dash,
+                         events_colour=events_colour,
+                         events_annotations_font_size=events_annotations_font_size,
+                         events_annotations_colour=events_annotations_colour)
         # update axis
         fig.update_xaxes(title_text=xaxis_kp_title, range=xaxis_kp_range, row=1, col=1)
         fig.update_yaxes(title_text=yaxis_kp_title, range=yaxis_kp_range, row=1, col=1)
@@ -2291,6 +2255,7 @@ class Analysis:
                               times=times,
                               name_file=name_file,
                               yaxis_range=yaxis_kp_range,
+                              yaxis_step=yaxis_step,
                               ttest_signals=ttest_signals,
                               ttest_marker=ttest_marker,
                               ttest_marker_size=ttest_marker_size,
@@ -2302,7 +2267,8 @@ class Analysis:
                               anova_marker_size=anova_marker_size,
                               anova_marker_colour=anova_marker_colour,
                               anova_annotations_font_size=anova_annotations_font_size,
-                              anova_annotations_colour=anova_annotations_colour)
+                              anova_annotations_colour=anova_annotations_colour,
+                              ttest_anova_row_height=ttest_anova_row_height)
         # update axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
         fig.update_yaxes(title_text=yaxis_slider_title, row=1, col=2)
@@ -2354,7 +2320,8 @@ class Analysis:
                          ttest_signals=None, ttest_marker='circle', ttest_marker_size=3,  ttest_marker_colour='black',
                          ttest_annotations_font_size=10, ttest_annotations_colour='black', anova_signals=None,
                          anova_marker='cross', anova_marker_size=3, anova_marker_colour='black',
-                         anova_annotations_font_size=10, anova_annotations_colour='black'):
+                         anova_annotations_font_size=10, anova_annotations_colour='black', ttest_anova_row_height=0.5,
+                         yaxis_step=10):
         """Plot figures of values of a certain variable.
 
         Args:
@@ -2373,7 +2340,6 @@ class Analysis:
             save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
-            font_size (int, optional): font size to be used across the figure.
             legend_x (float, optional): location of legend, percentage of x axis. 0 = use default value.
             legend_y (float, optional): location of legend, percentage of y axis. 0 = use default value.
             font_family (str, optional): font family to be used across the figure. None = use config value.
@@ -2384,18 +2350,34 @@ class Analysis:
             events_colour (str, optional): colour of the vertical lines.
             events_annotations_font_size (int, optional): font size of annotations for the vertical lines.
             events_annotations_colour (str, optional): colour of annotations for the vertical lines.
+            ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
+            ttest_marker (str, optional): symbol of markers for the ttest.
+            ttest_marker_size (int, optional): size of markers for the ttest.
+            ttest_marker_colour (str, optional): colour of markers for the ttest.
+            ttest_annotations_font_size (int, optional): font size of annotations for ttest.
+            ttest_annotations_colour (str, optional): colour of annotations for ttest.
+            anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
+            anova_marker (str, optional): symbol of markers for the ANOVA.
+            anova_marker_size (int, optional): size of markers for the ANOVA.
+            anova_marker_colour (str, optional): colour of markers for the ANOVA.
+            anova_annotations_font_size (int, optional): font size of annotations for ANOVA.
+            anova_annotations_colour (str, optional): colour of annotations for ANOVA.
+            ttest_anova_row_height (int, optional): height of row of ttest/anova markers.
+            yaxis_step (int): step between ticks on y axis.
+            ttest_anova_row_height (int, optional): height of row of ttest/anova markers.
+            yaxis_step (int): step between ticks on y axis.
         """
         logger.info('Creating visualisation of keypresses based on values {} of variable {}.', values, variable)
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
         # adjust ylim, if ttest results need to be plotted
         if ttest_signals:
-            # assume one row takes 0.5 on y axis
-            yaxis_range[0] = round(yaxis_range[0] - len(ttest_signals)) - 1
+            # assume one row takes ttest_anova_row_height on y axis
+            yaxis_range[0] = round(yaxis_range[0] - len(ttest_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
         # adjust ylim, if anova results need to be plotted
         if anova_signals:
-            # assume one row takes 0.5 on y axis
-            yaxis_range[0] = round(yaxis_range[0] - len(anova_signals)) - 1
+            # assume one row takes ttest_anova_row_height on y axis
+            yaxis_range[0] = round(yaxis_range[0] - len(anova_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
         # if no values specified, plot value
         if not values:
             values = df[variable].unique()
@@ -2446,58 +2428,21 @@ class Analysis:
                           yaxis_title=yaxis_title,
                           xaxis_range=xaxis_range,
                           yaxis_range=yaxis_range)
-        # count lines to calculate increase in coordinates of drawing
-        counter_lines = 0
-        # draw lines with annotations for events
-        if events:
-            for event in events:
-                # draw start
-                fig.add_shape(type='line',
-                              x0=event['start'],
-                              y0=0,
-                              x1=event['start'],
-                              y1=yaxis_range[1] - counter_lines * 1.8 - 2,
-                              line=dict(color=events_colour,
-                                        dash=events_dash,
-                                        width=events_width))
-                # draw other elements only is start and finish are not the same
-                if event['start'] != event['end']:
-                    # draw finish
-                    fig.add_shape(type='line',
-                                  x0=event['end'],
-                                  y0=0,
-                                  x1=event['end'],
-                                  y1=yaxis_range[1] - counter_lines * 1.8 - 2,
-                                  line=dict(color=events_colour,
-                                            dash=events_dash,
-                                            width=events_width))
-                    # draw horizontal line
-                    fig.add_annotation(ax=event['start'],
-                                       axref='x',
-                                       ay=xaxis_range[1] - counter_lines * 1.8 - 2,
-                                       ayref='y',
-                                       x=event['end'],
-                                       arrowcolor='black',
-                                       xref='x',
-                                       y=yaxis_range[1] - counter_lines * 1.8 - 2,
-                                       yref='y',
-                                       arrowwidth=events_width,
-                                       arrowside='end+start',
-                                       arrowsize=1,
-                                       arrowhead=2)
-                    # draw text label
-                    fig.add_annotation(text=event['annotation'],
-                                       x=(event['end'] + event['start']) / 2,
-                                       y=yaxis_range[1] - counter_lines * 1.8 - 1,  # use ylim value and draw lower
-                                       showarrow=False,
-                                       font=dict(size=events_annotations_font_size, color=events_annotations_colour))
-                # increase counter of lines drawn
-                counter_lines = counter_lines + 1
+        # draw events
+        self.draw_events(fig=fig,
+                         yaxis_range=yaxis_range,
+                         events=events,
+                         events_width=events_width,
+                         events_dash=events_dash,
+                         events_colour=events_colour,
+                         events_annotations_font_size=events_annotations_font_size,
+                         events_annotations_colour=events_annotations_colour)
         # draw ttest and anova rows
         self.draw_ttest_anova(fig=fig,
                               times=times,
                               name_file=name_file,
                               yaxis_range=yaxis_range,
+                              yaxis_step=yaxis_step,
                               ttest_signals=ttest_signals,
                               ttest_marker=ttest_marker,
                               ttest_marker_size=ttest_marker_size,
@@ -2509,7 +2454,8 @@ class Analysis:
                               anova_marker_size=anova_marker_size,
                               anova_marker_colour=anova_marker_colour,
                               anova_annotations_font_size=anova_annotations_font_size,
-                              anova_annotations_colour=anova_annotations_colour)
+                              anova_annotations_colour=anova_annotations_colour,
+                              ttest_anova_row_height=ttest_anova_row_height)
         # create tabs
         buttons = list([dict(label='All',
                              method='update',
@@ -2561,28 +2507,60 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_variables_or(self, df, variables, xaxis_title='Time (s)',
+    def plot_kp_variables_or(self, df, variables, y_legend=None, xaxis_title='Time (s)',
                              yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
-                             yaxis_range=None, show_menu=False, name_file=None, save_file=False,
-                             save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None,
-                             font_size=None):
+                             yaxis_range=None, show_menu=False, show_title=True, name_file=None, save_file=False,
+                             save_final=False, fig_save_width=1320, fig_save_height=680, legend_x=0, legend_y=0,
+                             font_family=None, font_size=None, events=None, events_width=1, events_dash='dot',
+                             events_colour='black', events_annotations_font_size=20, events_annotations_colour='black',
+                             ttest_signals=None, ttest_marker='circle', ttest_marker_size=3,
+                             ttest_marker_colour='black', ttest_annotations_font_size=10,
+                             ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
+                             anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
+                             anova_annotations_colour='black', ttest_anova_row_height=0.5, yaxis_step=10):
         """Separate plots of keypresses with multiple variables as a filter.
 
         Args:
             df (dataframe): dataframe with keypress data.
             variables (list): variables to plot.
+            y_legend (list, optional): names for variables to be shown in the legend.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
             xaxis_range (list, optional): range of x axis in format [min, max].
             yaxis_range (list, optional): range of y axis in format [min, max].
             show_menu (bool, optional): show menu on top left with variables to select for plotting.
+            show_title (bool, optional): show title on top of figure.
             name_file (str, optional): name of file to save.
             save_file (bool, optional): flag for saving an html file with plot.
             save_final (bool, optional): flag for saving an a final figure to /figures.
             fig_save_width (int, optional): width of figures to be saved.
             fig_save_height (int, optional): height of figures to be saved.
+            legend_x (float, optional): location of legend, percentage of x axis. 0 = use default value.
+            legend_y (float, optional): location of legend, percentage of y axis. 0 = use default value.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
+            events (list, optional): list of events to draw formatted as values on x axis.
+            events_width (int, optional): thickness of the vertical lines.
+            events_dash (str, optional): type of the vertical lines.
+            events_colour (str, optional): colour of the vertical lines.
+            events_annotations_font_size (int, optional): font size of annotations for the vertical lines.
+            events_annotations_colour (str, optional): colour of annotations for the vertical lines.
+            ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
+            ttest_marker (str, optional): symbol of markers for the ttest.
+            ttest_marker_size (int, optional): size of markers for the ttest.
+            ttest_marker_colour (str, optional): colour of markers for the ttest.
+            ttest_annotations_font_size (int, optional): font size of annotations for ttest.
+            ttest_annotations_colour (str, optional): colour of annotations for ttest.
+            anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
+            anova_marker (str, optional): symbol of markers for the ANOVA.
+            anova_marker_size (int, optional): size of markers for the ANOVA.
+            anova_marker_colour (str, optional): colour of markers for the ANOVA.
+            anova_annotations_font_size (int, optional): font size of annotations for ANOVA.
+            anova_annotations_colour (str, optional): colour of annotations for ANOVA.
+            ttest_anova_row_height (int, optional): height of row of ttest/anova markers.
+            yaxis_step (int): step between ticks on y axis.
+            ttest_anova_row_height (int, optional): height of row of ttest/anova markers.
+            yaxis_step (int): step between ticks on y axis.
         """
         logger.info('Creating visualisation of keypresses based on variables {} with OR filter.', variables)
         # build string with variables
@@ -2611,16 +2589,62 @@ class Analysis:
             if self.smoothen_signal:
                 kp_data = self.smoothen_filter(kp_data)
             extracted_data.append({'value': str(var['variable']) + '-' + str(var['value']), 'data': kp_data})
+        # build filename
+        if not name_file:
+            name_file = 'kp_or' + variables_str
         # plotly figure
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
         # plot each variable in data
-        for data in extracted_data:
-            fig.add_trace(go.Scatter(y=data['data'],
+        for data in range(len(extracted_data)):
+            # custom labels for legend
+            if y_legend:
+                name = y_legend[data]
+            else:
+                name = str(extracted_data[data]['value'])
+            fig.add_trace(go.Scatter(y=extracted_data[data]['data'],
                                      mode='lines',
                                      x=times,
-                                     name=data['value']),
+                                     name=name),
                           row=1,
                           col=1)
+        # update layout
+        fig.update_layout(template=self.template,
+                          xaxis_title=xaxis_title,
+                          yaxis_title=yaxis_title,
+                          xaxis_range=xaxis_range,
+                          yaxis_range=yaxis_range)
+        # draw events
+        self.draw_events(fig=fig,
+                         yaxis_range=yaxis_range,
+                         events=events,
+                         events_width=events_width,
+                         events_dash=events_dash,
+                         events_colour=events_colour,
+                         events_annotations_font_size=events_annotations_font_size,
+                         events_annotations_colour=events_annotations_colour)
+        # draw ttest and anova rows
+        self.draw_ttest_anova(fig=fig,
+                              times=times,
+                              name_file=name_file,
+                              yaxis_range=yaxis_range,
+                              yaxis_step=yaxis_step,
+                              ttest_signals=ttest_signals,
+                              ttest_marker=ttest_marker,
+                              ttest_marker_size=ttest_marker_size,
+                              ttest_marker_colour=ttest_marker_colour,
+                              ttest_annotations_font_size=ttest_annotations_font_size, 
+                              ttest_annotations_colour=ttest_annotations_colour, 
+                              anova_signals=anova_signals,
+                              anova_marker=anova_marker,
+                              anova_marker_size=anova_marker_size,
+                              anova_marker_colour=anova_marker_colour,
+                              anova_annotations_font_size=anova_annotations_font_size,
+                              anova_annotations_colour=anova_annotations_colour,
+                              ttest_anova_row_height=ttest_anova_row_height)
+        # create tabs
+        buttons = list([dict(label='All',
+                             method='update',
+                             args=[{'visible': [True] * len(variables)}, {'title': 'All', 'showlegend': True}])])
         # show menu with selection of variable to plot
         if show_menu:
             # create tabs
@@ -2644,13 +2668,8 @@ class Analysis:
             updatemenus = [dict(x=-0.15, buttons=buttons, showactive=True)]
             fig['layout']['updatemenus'] = updatemenus
         # update layout
-        fig['layout']['title'] = 'Keypresses with OR filter'
-        # update layout
-        fig.update_layout(template=self.template,
-                          xaxis_title=xaxis_title,
-                          yaxis_title=yaxis_title,
-                          xaxis_range=xaxis_range,
-                          yaxis_range=yaxis_range)
+        if show_title:
+            fig['layout']['title'] = 'Keypresses for ' + variable
         # update font family
         if font_family:
             # use given value
@@ -2665,11 +2684,11 @@ class Analysis:
         else:
             # use value from config file
             fig.update_layout(font=dict(size=tr.common.get_configs('font_size')))
+        # legend
+        if legend_x and legend_y:
+            fig.update_layout(legend=dict(x=legend_x, y=legend_y))
         # save file to local output folder
         if save_file:
-            # build filename
-            if not name_file:
-                name_file = 'kp_or' + variables_str
             self.save_plotly(fig=fig,
                              name=name_file,
                              remove_margins=True,
@@ -2680,17 +2699,23 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_variables_and(self, df, plot_names, variables_list, conf_interval=None, xaxis_title='Time (s)',
+    def plot_kp_variables_and(self, df, plot_names, variables, conf_interval=None, xaxis_title='Time (s)',
                               yaxis_title='Percentage of trials with response key pressed',
                               xaxis_range=None, yaxis_range=None, name_file=None, save_file=False,
                               save_final=False, fig_save_width=1320, fig_save_height=680, font_family=None,
-                              font_size=None):
+                              font_size=None, events=None, events_width=1, events_dash='dot',
+                              events_colour='black', events_annotations_font_size=20, 
+                              events_annotations_colour='black', ttest_signals=None, ttest_marker='circle',
+                              ttest_marker_size=3, ttest_marker_colour='black', ttest_annotations_font_size=10,
+                              ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
+                              anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
+                              anova_annotations_colour='black', ttest_anova_row_height=0.5, yaxis_step=10):
         """Separate plots of keypresses with multiple variables as a filter.
 
         Args:
             df (dataframe): dataframe with keypress data.
             plot_names (list): names of plots.
-            variables_list (list): variables to plot.
+            variables (list): variables to plot.
             conf_interval (float, optional): show confidence interval defined by argument.
             xaxis_title (str, optional): title for x axis.
             yaxis_title (str, optional): title for y axis.
@@ -2703,17 +2728,36 @@ class Analysis:
             fig_save_height (int, optional): height of figures to be saved.
             font_family (str, optional): font family to be used across the figure. None = use config value.
             font_size (int, optional): font size to be used across the figure. None = use config value.
-
-        Returns:
-            TYPE: Description
+            events (list, optional): list of events to draw formatted as values on x axis.
+            events_width (int, optional): thickness of the vertical lines.
+            events_dash (str, optional): type of the vertical lines.
+            events_colour (str, optional): colour of the vertical lines.
+            events_annotations_font_size (int, optional): font size of annotations for the vertical lines.
+            events_annotations_colour (str, optional): colour of annotations for the vertical lines.
+            ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
+            ttest_marker (str, optional): symbol of markers for the ttest.
+            ttest_marker_size (int, optional): size of markers for the ttest.
+            ttest_marker_colour (str, optional): colour of markers for the ttest.
+            ttest_annotations_font_size (int, optional): font size of annotations for ttest.
+            ttest_annotations_colour (str, optional): colour of annotations for ttest.
+            anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
+            anova_marker (str, optional): symbol of markers for the ANOVA.
+            anova_marker_size (int, optional): size of markers for the ANOVA.
+            anova_marker_colour (str, optional): colour of markers for the ANOVA.
+            anova_annotations_font_size (int, optional): font size of annotations for ANOVA.
+            anova_annotations_colour (str, optional): colour of annotations for ANOVA.
+            ttest_anova_row_height (int, optional): height of row of ttest/anova markers.
+            yaxis_step (int): step between ticks on y axis.
+            ttest_anova_row_height (int, optional): height of row of ttest/anova markers.
+            yaxis_step (int): step between ticks on y axis.
         """
-        logger.info('Creating visualisation of keypresses based on variables {} with AND filter.', variables_list)
+        logger.info('Creating visualisation of keypresses based on variables {} with AND filter.', variables)
         # build string with variables
         # create an empty figure, to add scatters to
         fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
         counter = 0
         # retrieve lists to make combined AND plot
-        for variables in variables_list:
+        for variables in variables:
             variables_str = ''
             for variable in variables:
                 variables_str = variables_str + '_' + str(variable['variable'])
@@ -2780,6 +2824,34 @@ class Analysis:
                               xaxis_range=xaxis_range,
                               yaxis_range=yaxis_range)
             counter = counter + 1
+        # draw events
+        self.draw_events(fig=fig,
+                         yaxis_range=yaxis_range,
+                         events=events,
+                         events_width=events_width,
+                         events_dash=events_dash,
+                         events_colour=events_colour,
+                         events_annotations_font_size=events_annotations_font_size,
+                         events_annotations_colour=events_annotations_colour)
+        # draw ttest and anova rows
+        self.draw_ttest_anova(fig=fig,
+                              times=times,
+                              name_file=name_file,
+                              yaxis_range=yaxis_range,
+                              yaxis_step=yaxis_step,
+                              ttest_signals=ttest_signals,
+                              ttest_marker=ttest_marker,
+                              ttest_marker_size=ttest_marker_size,
+                              ttest_marker_colour=ttest_marker_colour,
+                              ttest_annotations_font_size=ttest_annotations_font_size, 
+                              ttest_annotations_colour=ttest_annotations_colour, 
+                              anova_signals=anova_signals,
+                              anova_marker=anova_marker,
+                              anova_marker_size=anova_marker_size,
+                              anova_marker_colour=anova_marker_colour,
+                              anova_annotations_font_size=anova_annotations_font_size,
+                              anova_annotations_colour=anova_annotations_colour,
+                              ttest_anova_row_height=ttest_anova_row_height)
         # update font family
         if font_family:
             # use given value
@@ -3186,28 +3258,30 @@ class Analysis:
         df['p-value'] = p_values
         df.to_csv(os.path.join(path, name_file))
 
-    def draw_ttest_anova(self, fig, times, name_file, yaxis_range, ttest_signals, ttest_marker, ttest_marker_size,
-                         ttest_marker_colour, ttest_annotations_font_size, ttest_annotations_colour, anova_signals,
-                         anova_marker, anova_marker_size, anova_marker_colour, anova_annotations_font_size,
-                         anova_annotations_colour):
+    def draw_ttest_anova(self, fig, times, name_file, yaxis_range, yaxis_step, ttest_signals, ttest_marker,
+                         ttest_marker_size, ttest_marker_colour, ttest_annotations_font_size, ttest_annotations_colour,
+                         anova_signals, anova_marker, anova_marker_size, anova_marker_colour,
+                         anova_annotations_font_size, anova_annotations_colour, ttest_anova_row_height):
         """Draw ttest and anova test rows.
 
         Args:
-            fig (TYPE): Description
-            name_file (str, optional): name of file to save.
+            fig (figure): figure object.
+            name_file (str): name of file to save.
             yaxis_range (list): range of x axis in format [min, max] for the keypress plot.
-            ttest_signals (list, optional): signals to compare with ttest. None = do not compare.
-            ttest_marker (str, optional): symbol of markers for the ttest.
-            ttest_marker_size (int, optional): size of markers for the ttest.
-            ttest_marker_colour (str, optional): colour of markers for the ttest.
-            ttest_annotations_font_size (int, optional): font size of annotations for ttest.
-            ttest_annotations_colour (str, optional): colour of annotations for ttest.
-            anova_signals (dict, optional): signals to compare with ANOVA. None = do not compare.
-            anova_marker (str, optional): symbol of markers for the ANOVA.
-            anova_marker_size (int, optional): size of markers for the ANOVA.
-            anova_marker_colour (str, optional): colour of markers for the ANOVA.
-            anova_annotations_font_size (int, optional): font size of annotations for ANOVA.
-            anova_annotations_colour (str, optional): colour of annotations for ANOVA.
+            yaxis_step (int): step between ticks on y axis.
+            ttest_signals (list): signals to compare with ttest. None = do not compare.
+            ttest_marker (str): symbol of markers for the ttest.
+            ttest_marker_size (int): size of markers for the ttest.
+            ttest_marker_colour (str): colour of markers for the ttest.
+            ttest_annotations_font_size (int): font size of annotations for ttest.
+            ttest_annotations_colour (str): colour of annotations for ttest.
+            anova_signals (dict): signals to compare with ANOVA. None = do not compare.
+            anova_marker (str): symbol of markers for the ANOVA.
+            anova_marker_size (int): size of markers for the ANOVA.
+            anova_marker_colour (str): colour of markers for the ANOVA.
+            anova_annotations_font_size (int): font size of annotations for ANOVA.
+            anova_annotations_colour (str): colour of annotations for ANOVA.
+            ttest_anova_row_height (int): height of row of ttest/anova markers.
         """
         # count lines to calculate increase in coordinates of drawing
         counter_ttest = 0
@@ -3234,8 +3308,8 @@ class Analysis:
                 for i in range(len(significance)):
                     if significance[i] == 1:  # if value indicates a star
                         marker_x.append(times[i])  # use the corresponding x-coordinate
-                        # dynamically set y-coordinate, slightly offset for each signal_index
-                        marker_y.append(-1 - counter_ttest)
+                        # dynamically set y-coordinate, offset by ttest_anova_row_height for each signal_index
+                        marker_y.append(-ttest_anova_row_height - counter_ttest * ttest_anova_row_height)
                 # add scatter plot trace with cleaned data
                 fig.add_trace(go.Scatter(x=marker_x,
                                          y=marker_y,
@@ -3254,7 +3328,8 @@ class Analysis:
                                    # put labels at the start of the x axis, as they are likely no significant effects
                                    # in the start of the trial
                                    x=1,
-                                   y=-1 - counter_ttest,  # draw in the nagative range of y axis
+                                   # draw in the negative range of y axis
+                                   y=-ttest_anova_row_height - counter_ttest * ttest_anova_row_height,
                                    showarrow=False,
                                    font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
                 # increase counter of lines drawn
@@ -3285,7 +3360,7 @@ class Analysis:
                     if significance[i] == 1:  # if value indicates a star
                         marker_x.append(times[i])  # use the corresponding x-coordinate
                         # dynamically set y-coordinate, slightly offset for each signal_index
-                        marker_y.append(-1 - counter_anova * 0.5)
+                        marker_y.append(-ttest_anova_row_height - counter_anova * ttest_anova_row_height)
                 # add scatter plot trace with cleaned data
                 fig.add_trace(go.Scatter(x=marker_x,
                                          y=marker_y,
@@ -3304,11 +3379,74 @@ class Analysis:
                                    # put labels at the start of the x axis, as they are likely no significant effects
                                    # in the start of the trial
                                    x=1,
-                                   y=-1 - counter_anova * 0.5,  # draw in the nagative range of y axis
+                                   # draw in the negative range of y axis
+                                   y=-ttest_anova_row_height - counter_anova * ttest_anova_row_height,
                                    showarrow=False,
                                    font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
                 # increase counter of lines drawn
                 counter_anova = counter_anova + 1
-        # hide ticks of negative values on y axis assuming that ticks are at step of the specified y range / 10
-        r = range(fig.layout['yaxis']['range'][0], fig.layout['yaxis']['range'][1], round(yaxis_range[1] / 5))
+        # hide ticks of negative values on y axis assuming that ticks are at step of 5
+        r = range(0, fig.layout['yaxis']['range'][1], yaxis_step)
         fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
+
+    def draw_events(self, fig, yaxis_range, events, events_width, events_dash, events_colour,
+                    events_annotations_font_size, events_annotations_colour):
+        """Draw lines and annotations of events.
+        
+        Args:
+            fig (figure): figure object.
+            yaxis_range (list): range of x axis in format [min, max] for the keypress plot.
+            events (list): list of events to draw formatted as values on x axis.
+            events_width (int): thickness of the vertical lines.
+            events_dash (str): type of the vertical lines.
+            events_colour (str): colour of the vertical lines.
+            events_annotations_font_size (int): font size of annotations for the vertical lines.
+            events_annotations_colour (str): colour of annotations for the vertical lines.
+        """
+        # count lines to calculate increase in coordinates of drawing
+        counter_lines = 0
+        # draw lines with annotations for events
+        if events:
+            for event in events:
+                # draw start
+                fig.add_shape(type='line',
+                              x0=event['start'],
+                              y0=0,
+                              x1=event['start'],
+                              y1=yaxis_range[1] - counter_lines * 2 - 2,
+                              line=dict(color=events_colour,
+                                        dash=events_dash,
+                                        width=events_width))
+                # draw other elements only is start and finish are not the same
+                if event['start'] != event['end']:
+                    # draw finish
+                    fig.add_shape(type='line',
+                                  x0=event['end'],
+                                  y0=0,
+                                  x1=event['end'],
+                                  y1=yaxis_range[1] - counter_lines * 2 - 2,
+                                  line=dict(color=events_colour,
+                                            dash=events_dash,
+                                            width=events_width))
+                    # draw horizontal line
+                    fig.add_annotation(ax=event['start'],
+                                       axref='x',
+                                       ay=yaxis_range[1] - counter_lines * 2 - 2,
+                                       ayref='y',
+                                       x=event['end'],
+                                       arrowcolor='black',
+                                       xref='x',
+                                       y=yaxis_range[1] - counter_lines * 2 - 2,
+                                       yref='y',
+                                       arrowwidth=events_width,
+                                       arrowside='end+start',
+                                       arrowsize=1,
+                                       arrowhead=2)
+                    # draw text label
+                    fig.add_annotation(text=event['annotation'],
+                                       x=(event['end'] + event['start']) / 2,
+                                       y=yaxis_range[1] - counter_lines * 2 - 1,  # use ylim value and draw lower
+                                       showarrow=False,
+                                       font=dict(size=events_annotations_font_size, color=events_annotations_colour))
+                # increase counter of lines drawn
+                counter_lines = counter_lines + 1
