@@ -259,7 +259,7 @@ if __name__ == '__main__':
                                                ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                ttest_annotations_font_size=10,
                                                ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               anova_signals=None,
+                                               anova_signals=anova_signals,
                                                anova_marker='cross',
                                                anova_marker_size=3,
                                                anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
