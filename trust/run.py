@@ -287,24 +287,12 @@ if __name__ == '__main__':
                               'signal_2': tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
                               'label': 'ttest(AV, MDV)',
                               'paired': True}]
-            # signal_1 = signal_type = list of int, eg: [1,1,0,0]
-            # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
-            # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
-            # prepare signals to compare with ANOVA
-            # todo: signals for ANOVA
-            anova_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(Group 0, Group 1, Group 2)'},
-                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(Group 0, Group 2, Group 3)'},
-                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(Group 1, Group 2, Group 3)'}]
+            # prepare signals to compare with oneway ANOVA on the res level
+            anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+                                          tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0])],  # noqa: E501
+                              'label': 'anova'}]
             # todo: double check that order of AV/MDV is correct
+            # plot keypress data
             analysis.plot_kp_variable(mapping,
                                       'ego_car',
                                       y_legend=['AV', 'MDV'],
@@ -324,7 +312,7 @@ if __name__ == '__main__':
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       ttest_annotations_font_size=10,
                                       ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                      anova_signals=None,
+                                      anova_signals=anova_signals,
                                       anova_marker='cross',
                                       anova_marker_size=3,
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -339,24 +327,12 @@ if __name__ == '__main__':
                               'signal_2': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
                               'label': 'ttest(AV, MDV)',
                               'paired': True}]
-            # signal_1 = signal_type = list of int, eg: [1,1,0,0]
-            # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
-            # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
-            # prepare signals to compare with ANOVA
-            # todo: signals for ANOVA
-            anova_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(0, 1, 2)'},
-                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(0, 2, 3)'},
-                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(1, 2, 3)'}]
+            # prepare signals to compare with oneway ANOVA on the res level
+            anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+                                          tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0])],  # noqa: E501
+                              'label': 'anova'}]
             # todo: double check that order of AV/MDV is correct
+            # plot keypress data
             analysis.plot_kp_variable(mapping,
                                       'target_car',
                                       y_legend=['AV', 'MDV'],
@@ -376,7 +352,7 @@ if __name__ == '__main__':
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       ttest_annotations_font_size=10,
                                       ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                      anova_signals=None,
+                                      anova_signals=anova_signals,
                                       anova_marker='cross',
                                       anova_marker_size=3,
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -411,23 +387,12 @@ if __name__ == '__main__':
                               'signal_2': tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0]),  # noqa: E501
                               'label': 'ttest(1, 3)',
                               'paired': True}]
-            # signal_1 = signal_type = list of int, eg: [1,1,0,0]
-            # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
-            # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
-            # prepare signals to compare with ANOVA
-            # todo: signals for ANOVA
-            anova_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(0, 1, 2)'},
-                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(0, 2, 3)'},
-                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
-                              'label': 'anova(1, 2, 3)'}]
+            # prepare signals to compare with oneway ANOVA on the res level
+            anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+                                          tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0]),   # noqa: E501
+                                          tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),   # noqa: E501
+                                          tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])],  # noqa: E501
+                              'label': 'anova'}]
             analysis.plot_kp_variable(mapping,
                                       'group',
                                       # custom labels for slider questions in the legend
@@ -448,7 +413,7 @@ if __name__ == '__main__':
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                       ttest_annotations_font_size=10,
                                       ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                      anova_signals=None,
+                                      anova_signals=anova_signals,
                                       anova_marker='cross',
                                       anova_marker_size=3,
                                       anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
