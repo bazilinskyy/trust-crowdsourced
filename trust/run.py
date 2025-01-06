@@ -4,7 +4,6 @@ import matplotlib._pylab_helpers
 from tqdm import tqdm
 import os
 import re
-import numpy as np
 from statistics import mean
 
 import trust as tr
