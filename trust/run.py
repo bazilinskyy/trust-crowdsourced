@@ -160,7 +160,6 @@ if __name__ == '__main__':
                 df = mapping[mapping['id'].isin(ids)]
                 # extract timestamps of events
                 events = []
-                print(df.index)
                 vert_lines = list(map(int, re.findall(r'\d+', df.loc['V' + str(stim), 'events'])))
                 vert_lines_ids = list(map(int, re.findall(r'\d+', df.loc['V' + str(stim), 'events_id'])))
                 # convert to s
@@ -225,10 +224,13 @@ if __name__ == '__main__':
                 sublist_length = len(signal3[0])  # determine the length of each sublist in signal3
                 signal1 = [[signal1[i]] * sublist_length for i in range(num_sublists)]
                 signal2 = [[signal2[i]] * sublist_length for i in range(num_sublists)]
-                anova_signals = [{'signal_1': signal1,  # target
-                                  'signal_2': signal2,  # ego
-                                  'signal_3': signal3,  # kp
-                                  'label': 'anova(target, ego, kp)'}]
+                # todo: console output with ANOVA results
+                # prepare signals to compare with oneway ANOVA on the res level
+                anova_signals = [{'signals': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
+                                              df.loc['V' + str(ids[1])]['kp_raw'][0],  
+                                              df.loc['V' + str(ids[2])]['kp_raw'][0],  
+                                              df.loc['V' + str(ids[3])]['kp_raw'][0]],  
+                                  'label': 'anova'}]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],
@@ -259,7 +261,7 @@ if __name__ == '__main__':
                                                ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                ttest_annotations_font_size=10,
                                                ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               anova_signals=None,
+                                               anova_signals=anova_signals,
                                                anova_marker='cross',
                                                anova_marker_size=3,
                                                anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
