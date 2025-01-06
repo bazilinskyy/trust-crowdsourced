@@ -131,18 +131,18 @@ if __name__ == '__main__':
             # logger.info('Creating figures for keypress data of individual stimuli.')
             # for stim in tqdm(range(num_stimuli)):  # tqdm adds progress bar
             #     # extract timestamps of events
-            #     vert_lines = list(map(int, re.findall(r'\d+', mapping.loc['video_' + str(stim), 'events'])))
+            #     vert_lines = list(map(int, re.findall(r'\d+', mapping.loc['V' + str(stim), 'events'])))
             #     # convert to s
             #     vert_lines = [x / 1000 for x in vert_lines]  # type: ignore
             #     # extract annotations
-            #     vert_line_annotations = mapping.loc['video_' + str(stim), 'events_description'].split(',')
+            #     vert_line_annotations = mapping.loc['V' + str(stim), 'events_description'].split(',')
             #     # remove [
             #     vert_line_annotations[0] = vert_line_annotations[0][1:]
             #     # remove ]
             #     vert_line_annotations[-1] = vert_line_annotations[-1][:-1]
             #     # plot
             #     analysis.plot_kp_video(mapping,
-            #                            'video_' + str(stim),
+            #                            'V' + str(stim),
             #                            vert_lines=vert_lines,
             #                            vert_lines_width=1,
             #                            vert_lines_dash='solid',
@@ -160,12 +160,13 @@ if __name__ == '__main__':
                 df = mapping[mapping['id'].isin(ids)]
                 # extract timestamps of events
                 events = []
-                vert_lines = list(map(int, re.findall(r'\d+', df.loc['video_' + str(stim), 'events'])))
-                vert_lines_ids = list(map(int, re.findall(r'\d+', df.loc['video_' + str(stim), 'events_id'])))
+                print(df.index)
+                vert_lines = list(map(int, re.findall(r'\d+', df.loc['V' + str(stim), 'events'])))
+                vert_lines_ids = list(map(int, re.findall(r'\d+', df.loc['V' + str(stim), 'events_id'])))
                 # convert to s
                 vert_lines = [x / 1000 for x in vert_lines]  # type: ignore
                 # extract annotations
-                vert_line_annotations = df.loc['video_' + str(stim), 'events_name'].split(',')
+                vert_line_annotations = df.loc['V' + str(stim), 'events_name'].split(',')
                 # remove [
                 vert_line_annotations[0] = vert_line_annotations[0][1:]
                 # remove ]
@@ -191,29 +192,29 @@ if __name__ == '__main__':
                                    'end': end,
                                    'annotation': vert_line_annotations[x]})
                 # prepare pairs of signals to compare with ttest
-                ttest_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
-                                  'signal_2': df.loc['video_' + str(ids[1])]['kp_raw'][0],
-                                  'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                ttest_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
+                                  'signal_2': df.loc['V' + str(ids[1])]['kp_raw'][0],
+                                  'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[1]) + ')',
                                   'paired': True},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
-                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                                  'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[1]) + ')',
+                                 {'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
+                                  'signal_2': df.loc['V' + str(ids[2])]['kp_raw'][0],
+                                  'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[1]) + ')',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(' + str(ids[0]) + ', ' + str(ids[3]) + ')',
+                                 {'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
+                                  'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
+                                  'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[3]) + ')',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
-                                  'signal_2': df.loc['video_' + str(ids[2])]['kp_raw'][0],
-                                  'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[2]) + ')',
+                                 {'signal_1': df.loc['V' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
+                                  'signal_2': df.loc['V' + str(ids[2])]['kp_raw'][0],
+                                  'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[2]) + ')',
                                   'paired': False},
-                                 {'signal_1': df.loc['video_' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(' + str(ids[2]) + ', ' + str(ids[3]) + ')',
+                                 {'signal_1': df.loc['V' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
+                                  'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
+                                  'label': 'ttest(V' + str(ids[2]) + ', V' + str(ids[3]) + ')',
                                   'paired': True},
-                                 {'signal_1': df.loc['video_' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
-                                  'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
+                                 {'signal_1': df.loc['V' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
+                                  'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
+                                  'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[3]) + ')',
                                   'paired': False}]
                 # prepare signals to compare with ANOVA
                 signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
@@ -258,7 +259,7 @@ if __name__ == '__main__':
                                                ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
                                                ttest_annotations_font_size=10,
                                                ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               anova_signals=anova_signals,
+                                               anova_signals=None,
                                                anova_marker='cross',
                                                anova_marker_size=3,
                                                anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -289,18 +290,18 @@ if __name__ == '__main__':
             # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
             # prepare signals to compare with ANOVA
             # todo: signals for ANOVA
-            anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
-                              'label': 'anova(0, 1, 2)'},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
-                              'label': 'anova(0, 2, 3)'},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
-                              'label': 'anova(1, 2, 3)'}]
+            anova_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
+                              'label': 'anova(Group 0, Group 1, Group 2)'},
+                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
+                              'label': 'anova(Group 0, Group 2, Group 3)'},
+                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
+                              'label': 'anova(Group 1, Group 2, Group 3)'}]
             # todo: double check that order of AV/MDV is correct
             analysis.plot_kp_variable(mapping,
                                       'ego_car',
@@ -341,17 +342,17 @@ if __name__ == '__main__':
             # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
             # prepare signals to compare with ANOVA
             # todo: signals for ANOVA
-            anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+            anova_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
                               'label': 'anova(0, 1, 2)'},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
                               'label': 'anova(0, 2, 3)'},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
                               'label': 'anova(1, 2, 3)'}]
             # todo: double check that order of AV/MDV is correct
             analysis.plot_kp_variable(mapping,
@@ -413,17 +414,17 @@ if __name__ == '__main__':
             # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
             # prepare signals to compare with ANOVA
             # todo: signals for ANOVA
-            anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+            anova_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
                               'label': 'anova(0, 1, 2)'},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
                               'label': 'anova(0, 2, 3)'},
-                             {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                              'signal_3': df.loc['video_' + str(ids[0])]['kp'],
+                             {'signal_1': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_2': df.loc['V' + str(ids[0])]['kp'],
+                              'signal_3': df.loc['V' + str(ids[0])]['kp'],
                               'label': 'anova(1, 2, 3)'}]
             analysis.plot_kp_variable(mapping,
                                       'group',
@@ -705,7 +706,7 @@ if __name__ == '__main__':
                 # To create animation for scenario 1,2,3 & 4 in the
                 # same animation extract for all senarios.
                 # for individual animations or scenario
-                dur = heroku_data['video_'+str(id_video)+'-dur-0'].tolist()
+                dur = heroku_data['V'+str(id_video)+'-dur-0'].tolist()
                 dur = [x for x in dur if str(x) != 'nan']
                 dur = int(round(mean(dur) / 1000) * 1000)
                 hm_resolution_range = int(50000 / tr.common.get_configs('hm_resolution'))

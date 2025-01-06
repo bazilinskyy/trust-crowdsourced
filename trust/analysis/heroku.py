@@ -570,7 +570,7 @@ class Heroku:
         # todo: account for multiple repetitions
         for num in tqdm(range(self.num_stimuli)):
             # video ID
-            video_id = 'video_' + str(num)
+            video_id = 'V' + str(num)
             # extract video length
             video_len = self.mapping.loc[video_id]['video_length']
             # add new row to df with raw data
