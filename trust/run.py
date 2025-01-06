@@ -3,9 +3,12 @@ import matplotlib.pyplot as plt
 import matplotlib._pylab_helpers
 from tqdm import tqdm
 import os
-import trust as tr
 import re
+import numpy as np
 from statistics import mean
+
+import trust as tr
+
 tr.logs(show_level='info', show_color=True)
 logger = tr.CustomLogger(__name__)  # use custom logger
 
@@ -121,10 +124,10 @@ if __name__ == '__main__':
         # Visualisation of keypress data
         if SHOW_OUTPUT_KP:
             # all keypresses with confidence interval
-            analysis.plot_kp(mapping,
-                             conf_interval=0.95,
-                             save_file=True,
-                             save_final=tr.common.get_configs('save_figures'))
+            # analysis.plot_kp(mapping,
+            #                  conf_interval=0.95,
+            #                  save_file=True,
+            #                  save_final=tr.common.get_configs('save_figures'))
             # # keypresses of all individual stimuli
             # logger.info('Creating figures for keypress data of individual stimuli.')
             # for stim in tqdm(range(num_stimuli)):  # tqdm adds progress bar
@@ -213,23 +216,19 @@ if __name__ == '__main__':
                                   'signal_2': df.loc['video_' + str(ids[3])]['kp_raw'][0],
                                   'label': 'ttest(' + str(ids[1]) + ', ' + str(ids[3]) + ')',
                                   'paired': False}]
-                # signal_1 = signal_type = list of int, eg: [1,1,0,0]
-                # signal_2 = signal_ego = list of int, eg: [1,1,0,0]
-                # signal_3 = signal_kp = list of lists, eg: [[1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1]]
                 # prepare signals to compare with ANOVA
-                # todo: signals for ANOVA
-                anova_signals = [{'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_3': df.loc['video_' + str(ids[0])]['kp'],
-                                  'label': 'anova(0, 1, 2)'},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_3': df.loc['video_' + str(ids[0])]['kp'],
-                                  'label': 'anova(0, 2, 3)'},
-                                 {'signal_1': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_2': df.loc['video_' + str(ids[0])]['kp'],
-                                  'signal_3': df.loc['video_' + str(ids[0])]['kp'],
-                                  'label': 'anova(1, 2, 3)'}]
+                signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+                signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+                signal3 = tr.common.vertical_sum(mapping.loc[mapping['id'].isin(ids)]['kp_raw'].iloc[0])
+                # prepare signal1 and signal2 to be of the same dimensions as signal3
+                num_sublists = len(signal1)  # determine the amount of sublists to expand
+                sublist_length = len(signal3[0])  # determine the length of each sublist in signal3
+                signal1 = [[signal1[i]] * sublist_length for i in range(num_sublists)]
+                signal2 = [[signal2[i]] * sublist_length for i in range(num_sublists)]
+                anova_signals = [{'signal_1': signal1,  # target
+                                  'signal_2': signal2,  # ego
+                                  'signal_3': signal3,  # kp
+                                  'label': 'anova(target, ego, kp)'}]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
                                                y=['comfort', 'safety', 'expectation'],

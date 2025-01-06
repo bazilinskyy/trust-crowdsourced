@@ -3222,9 +3222,12 @@ class Analysis:
                     `tr.common.get_configs('p_value')`.
         """
         # check if the lengths of the three signals are the same
-        if not (len(signal_1) == len(signal_2) == len(signal_3)):
-            logger.error('The lengths of signal_1, signal_2, and signal_3 must be the same.')
-            return -1
+        # print(len(signal_1))
+        # print(len(signal_2))
+        # print(len(signal_3))
+        # if not (len(signal_1) == len(signal_2) == len(signal_3)):
+        #     logger.error('The lengths of signal_1, signal_2, and signal_3 must be the same.')
+        #     return -1
         # convert signals to numpy arrays if they are lists
         signal_1 = np.asarray(signal_1)
         signal_2 = np.asarray(signal_2)
