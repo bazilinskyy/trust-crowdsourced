@@ -25,6 +25,8 @@ from scipy.signal import savgol_filter
 from scipy.stats.kde import gaussian_kde
 from scipy.stats import ttest_rel, ttest_ind, f_oneway
 import cv2
+from statsmodels.stats.anova import anova_lm
+from statsmodels.formula.api import ols 
 
 import trust as tr
 
@@ -3235,6 +3237,37 @@ class Analysis:
             significance.append(int(p_value < tr.common.get_configs('p_value')))
         # return raw p-values and binary flags for significance for output
         return [p_values, significance]
+
+    def twoway_anova_kp(self, signal1, signal2, signal3, output_console=True):
+        """Perform twoway ANOVA on 2 independent variables and 1 dependent variable (as list of lists).
+
+        Args:
+            signal1 (list): independent variable 1.
+            signal2 (list): independent variable 2.
+            signal3 (list of lists): dependent variable 1 (keypress data).
+            output_console (bool, optional): whether to print results to console.
+
+        Returns:
+            df: results of ANOVA
+        """
+        # prepare signal1 and signal2 to be of the same dimensions as signal3
+        signal3_flat = [value for sublist in signal3 for value in sublist]
+        # number of observations in the dependent variable
+        n_observations = len(signal3_flat)
+        # repeat signal1 and signal2 to match the length of signal3_flat
+        signal1_expanded = np.tile(signal1, n_observations // len(signal1))
+        signal2_expanded = np.tile(signal2, n_observations // len(signal2))
+        # create a datafarme with data
+        data = pd.DataFrame({'signal1': signal1_expanded,
+                             'signal2': signal2_expanded,
+                             'dependent': signal3_flat
+                             })
+        # perform two-way ANOVA
+        model = ols('dependent ~ C(signal1) + C(signal2) + C(signal1):C(signal2)', data=data).fit()
+        anova_results = anova_lm(model)
+        if output_console:
+            print('Results for two-way ANOVA:\n', anova_results.to_string())
+        return anova_results
 
     def save_stats_csv(self, t, p_values, name_file):
         """Save results of statistical test in csv.
