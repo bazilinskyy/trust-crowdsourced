@@ -323,15 +323,15 @@ if __name__ == '__main__':
             # prepare signals to compare with two-way ANOVA
             signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
             signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-            signal3 = tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0])
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0])
             # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='target car=AV')
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='ego car=AV')
             # prepare signals to compare with two-way ANOVA
             signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
             signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-            signal3 = tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0])
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 1]['kp_raw'].iloc[0])
             # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='target car=MDV')
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='ego car=MDV')
             # keypress based on the type of ego car
             # prepare pairs of signals to compare with ttest
             ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
@@ -372,6 +372,19 @@ if __name__ == '__main__':
                                       ttest_anova_row_height=0.4,
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
+            # two-way ANOVA
+            # prepare signals to compare with two-way ANOVA
+            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0])
+            # perform test
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='target car=AV')
+            # prepare signals to compare with two-way ANOVA
+            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0])
+            # perform test
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='target car=MDV')
             # keypress based on the pp group
             # prepare pairs of signals to compare with ttest
             ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
@@ -404,6 +417,7 @@ if __name__ == '__main__':
                                           tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),   # noqa: E501
                                           tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])],  # noqa: E501
                               'label': 'anova'}]
+            # plot keypress data
             analysis.plot_kp_variable(mapping,
                                       'group',
                                       # custom labels for slider questions in the legend
@@ -433,6 +447,32 @@ if __name__ == '__main__':
                                       ttest_anova_row_height=0.4,
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
+        # two-way ANOVA
+        # prepare signals to compare with two-way ANOVA
+        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0])
+        # perform test
+        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=0')
+        # two-way ANOVA
+        # prepare signals to compare with two-way ANOVA
+        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0])
+        # perform test
+        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=1')
+        # prepare signals to compare with two-way ANOVA
+        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0])
+        # perform test
+        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=2')
+        # prepare signals to compare with two-way ANOVA
+        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])
+        # perform test
+        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=3')
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
