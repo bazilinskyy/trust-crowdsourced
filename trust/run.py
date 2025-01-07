@@ -4,7 +4,11 @@ import matplotlib._pylab_helpers
 from tqdm import tqdm
 import os
 import re
+import pandas as pd
+import numpy as np
 from statistics import mean
+import statsmodels.api as sm
+from statsmodels.formula.api import ols 
 
 import trust as tr
 
@@ -215,15 +219,6 @@ if __name__ == '__main__':
                                   'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
                                   'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[3]) + ')',
                                   'paired': False}]
-                # prepare signals to compare with ANOVA
-                signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-                signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-                signal3 = tr.common.vertical_sum(mapping.loc[mapping['id'].isin(ids)]['kp_raw'].iloc[0])
-                # prepare signal1 and signal2 to be of the same dimensions as signal3
-                num_sublists = len(signal1)  # determine the amount of sublists to expand
-                sublist_length = len(signal3[0])  # determine the length of each sublist in signal3
-                signal1 = [[signal1[i]] * sublist_length for i in range(num_sublists)]
-                signal2 = [[signal2[i]] * sublist_length for i in range(num_sublists)]
                 # todo: console output with ANOVA results
                 # prepare signals to compare with oneway ANOVA on the res level
                 anova_signals = [{'signals': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
@@ -270,6 +265,26 @@ if __name__ == '__main__':
                                                ttest_anova_row_height=1.0,
                                                save_file=True,
                                                save_final=tr.common.get_configs('save_figures'))
+                # prepare signals to compare with two-way ANOVA
+                signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+                signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+                signal3 = tr.common.vertical_sum(mapping.loc[mapping['id'].isin(ids)]['kp_raw'].iloc[0])
+                # prepare signal1 and signal2 to be of the same dimensions as signal3
+                num_sublists = len(signal1)  # determine the amount of sublists to expand
+                sublist_length = len(signal3[0])  # determine the length of each sublist in signal3
+                signal1 = [[signal1[i]] * sublist_length for i in range(num_sublists)]
+                signal2 = [[signal2[i]] * sublist_length for i in range(num_sublists)]
+                print(len(signal1))
+                print(len(signal2))
+                print(len(signal3))
+                # Create a dataframe 
+                dataframe = pd.DataFrame({'target_car': signal1, 
+                                          'ego_car': signal2, 
+                                          'kp': signal3})
+                # Performing two-way ANOVA 
+                model = ols('kp ~ C(target_car) + C(ego_car) +C(target_car):C(ego_car)',  data=dataframe).fit() 
+                result = sm.stats.anova_lm(model, type=2) 
+                print(result)
             # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,
