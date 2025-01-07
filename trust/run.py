@@ -227,9 +227,9 @@ if __name__ == '__main__':
                 # todo: console output with ANOVA results
                 # prepare signals to compare with oneway ANOVA on the res level
                 anova_signals = [{'signals': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
-                                              df.loc['V' + str(ids[1])]['kp_raw'][0],  
-                                              df.loc['V' + str(ids[2])]['kp_raw'][0],  
-                                              df.loc['V' + str(ids[3])]['kp_raw'][0]],  
+                                              df.loc['V' + str(ids[1])]['kp_raw'][0],
+                                              df.loc['V' + str(ids[2])]['kp_raw'][0],
+                                              df.loc['V' + str(ids[3])]['kp_raw'][0]],
                                   'label': 'anova'}]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,

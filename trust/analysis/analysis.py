@@ -3374,7 +3374,7 @@ class Analysis:
                 # increase counter of lines drawn
                 counter_anova = counter_anova + 1
         # hide ticks of negative values on y axis assuming that ticks are at step of 5
-        r = range(0, fig.layout['yaxis']['range'][1], yaxis_step)
+        r = range(0, fig.layout['yaxis']['range'][1] + 1, yaxis_step)
         fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
 
     def draw_events(self, fig, yaxis_range, events, events_width, events_dash, events_colour,
