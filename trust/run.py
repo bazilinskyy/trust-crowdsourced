@@ -222,44 +222,44 @@ if __name__ == '__main__':
                                               df.loc['V' + str(ids[3])]['kp_raw'][0]],
                                   'label': 'anova'}]
                 # plot keypress data and slider questions
-                # analysis.plot_kp_slider_videos(df,
-                #                                y=['comfort', 'safety', 'expectation'],
-                #                                # hardcode based on the longest stimulus
-                #                                xaxis_kp_range=[0, 43],
-                #                                # hardcode based on the highest recorded value
-                #                                yaxis_kp_range=[0, 70],
-                #                                yaxis_step=10,
-                #                                events=events,
-                #                                events_width=1,
-                #                                events_dash='dot',
-                #                                events_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                #                                events_annotations_font_size=12,
-                #                                events_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                #                                yaxis_slider_title=None,
-                #                                show_text_labels=True,
-                #                                stacked=True,
-                #                                yaxis_slider_show=False,
-                #                                font_size=16,
-                #                                legend_x=0.71,
-                #                                legend_y=1.0,
-                #                                fig_save_width=1600,  # preserve ratio 225x152
-                #                                fig_save_height=1080,  # preserve ratio 225x152
-                #                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
-                #                                ttest_signals=ttest_signals,
-                #                                ttest_marker='circle',
-                #                                ttest_marker_size=3,
-                #                                ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                #                                ttest_annotations_font_size=10,
-                #                                ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                #                                anova_signals=anova_signals,
-                #                                anova_marker='cross',
-                #                                anova_marker_size=3,
-                #                                anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                #                                anova_annotations_font_size=10,
-                #                                anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501,
-                #                                ttest_anova_row_height=1.0,
-                #                                save_file=True,
-                #                                save_final=tr.common.get_configs('save_figures'))
+                analysis.plot_kp_slider_videos(df,
+                                               y=['comfort', 'safety', 'expectation'],
+                                               # hardcode based on the longest stimulus
+                                               xaxis_kp_range=[0, 43],
+                                               # hardcode based on the highest recorded value
+                                               yaxis_kp_range=[0, 70],
+                                               yaxis_step=10,
+                                               events=events,
+                                               events_width=1,
+                                               events_dash='dot',
+                                               events_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                               events_annotations_font_size=12,
+                                               events_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                               yaxis_slider_title=None,
+                                               show_text_labels=True,
+                                               stacked=True,
+                                               yaxis_slider_show=False,
+                                               font_size=16,
+                                               legend_x=0.71,
+                                               legend_y=1.0,
+                                               fig_save_width=1600,  # preserve ratio 225x152
+                                               fig_save_height=1080,  # preserve ratio 225x152
+                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
+                                               ttest_signals=ttest_signals,
+                                               ttest_marker='circle',
+                                               ttest_marker_size=3,
+                                               ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                               ttest_annotations_font_size=10,
+                                               ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                               anova_signals=anova_signals,
+                                               anova_marker='cross',
+                                               anova_marker_size=3,
+                                               anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
+                                               anova_annotations_font_size=10,
+                                               anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501,
+                                               ttest_anova_row_height=1.0,
+                                               save_file=True,
+                                               save_final=tr.common.get_configs('save_figures'))
                 # two-way ANOVA
                 # prepare signals to compare with two-way ANOVA
                 signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
