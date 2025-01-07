@@ -3238,7 +3238,7 @@ class Analysis:
         # return raw p-values and binary flags for significance for output
         return [p_values, significance]
 
-    def twoway_anova_kp(self, signal1, signal2, signal3, output_console=True):
+    def twoway_anova_kp(self, signal1, signal2, signal3, output_console=True, label_str=None):
         """Perform twoway ANOVA on 2 independent variables and 1 dependent variable (as list of lists).
 
         Args:
@@ -3246,6 +3246,7 @@ class Analysis:
             signal2 (list): independent variable 2.
             signal3 (list of lists): dependent variable 1 (keypress data).
             output_console (bool, optional): whether to print results to console.
+            label_str (str, optional): label to add before console output.
 
         Returns:
             df: results of ANOVA
@@ -3265,8 +3266,11 @@ class Analysis:
         # perform two-way ANOVA
         model = ols('dependent ~ C(signal1) + C(signal2) + C(signal1):C(signal2)', data=data).fit()
         anova_results = anova_lm(model)
-        if output_console:
+        # print results to console
+        if output_console and not label_str:
             print('Results for two-way ANOVA:\n', anova_results.to_string())
+        if output_console and label_str:
+            print('Results for two-way ANOVA for ' + label_str + ':\n', anova_results.to_string())
         return anova_results
 
     def save_stats_csv(self, t, p_values, name_file):
