@@ -35,7 +35,7 @@ CLEAN_DATA = False  # clean Appen data
 REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
 UPDATE_MAPPING = False  # update mapping with keypress data
-SHOW_OUTPUT = True  # should figures be plotted
+SHOW_OUTPUT = False  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
@@ -65,6 +65,16 @@ if __name__ == '__main__':
     appen = tr.analysis.Appen(file_data=file_appen, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV)
     # read appen data
     appen_data = appen.read_data(filter_data=FILTER_DATA, clean_data=CLEAN_DATA)
+    # add data for only lab participants
+    if tr.common.get_configs('process_lab'):
+        # get data only from the lab
+        print(heroku_data['worker_code'].to_string())
+        print(heroku_data['worker_code'].str.contains(r'^lab_pp*', regex=True).to_string())
+        # heroku_data['worker_code'] = heroku_data['worker_code'].astype(str)
+        # appen_data['worker_code'] = appen_data['worker_code'].astype(str)
+        heroku_data_lab = heroku_data[heroku_data['worker_code'].str.contains(r'^lab_.*', regex=True)]
+        appen_data_lab = appen_data[appen_data['worker_code'].str.contains(r'^lab_.*', regex=True)]
+        print(appen_data_lab['worker_code'].to_string())
     # read frames
     # get keys in data files
     heroku_data_keys = heroku_data.keys()
@@ -79,9 +89,8 @@ if __name__ == '__main__':
     all_data = heroku_data.merge(appen_data, left_on='worker_code', right_on='worker_code')
     logger.info('Data from {} participants included in analysis.', all_data.shape[0])
     # update original data files
-    if tr.common.get_configs('only_lab') == 0:
-        heroku_data = all_data[all_data.columns.intersection(heroku_data_keys)]
-        appen_data = all_data[all_data.columns.intersection(appen_data_keys)]
+    heroku_data = all_data[all_data.columns.intersection(heroku_data_keys)]
+    appen_data = all_data[all_data.columns.intersection(appen_data_keys)]
     heroku_data = heroku_data.set_index('worker_code')
     heroku.set_data(heroku_data)  # update object with filtered data
     appen_data = appen_data.set_index('worker_code')
@@ -447,32 +456,32 @@ if __name__ == '__main__':
                                       ttest_anova_row_height=0.4,
                                       save_file=True,
                                       save_final=tr.common.get_configs('save_figures'))
-        # two-way ANOVA
-        # prepare signals to compare with two-way ANOVA
-        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0])
-        # perform test
-        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=0')
-        # two-way ANOVA
-        # prepare signals to compare with two-way ANOVA
-        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0])
-        # perform test
-        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=1')
-        # prepare signals to compare with two-way ANOVA
-        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0])
-        # perform test
-        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=2')
-        # prepare signals to compare with two-way ANOVA
-        signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-        signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-        signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])
-        # perform test
-        analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=3')
+            # two-way ANOVA
+            # prepare signals to compare with two-way ANOVA
+            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0])
+            # perform test
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=0')
+            # two-way ANOVA
+            # prepare signals to compare with two-way ANOVA
+            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0])
+            # perform test
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=1')
+            # prepare signals to compare with two-way ANOVA
+            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0])
+            # perform test
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=2')
+            # prepare signals to compare with two-way ANOVA
+            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+            signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])
+            # perform test
+            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=3')
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli
