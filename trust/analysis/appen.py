@@ -70,12 +70,12 @@ class Appen:
                        'if_yes_please_provide_your_email_address': 'email'}  # noqa: E501
 
     def __init__(self,
-                 file_data: list,
+                 files_data: list,
                  save_p: bool,
                  load_p: bool,
                  save_csv: bool):
-        # file with raw data
-        self.file_data = file_data
+        # files with raw data
+        self.files_data = files_data
         # save data as pickle file
         self.save_p = save_p
         # load data as pickle file
@@ -88,9 +88,7 @@ class Appen:
         """
         old_shape = self.appen_data.shape  # store old shape for logging
         self.appen_data = appen_data
-        logger.info('Updated appen_data. Old shape: {}. New shape: {}.',
-                    old_shape,
-                    self.appen_data.shape)
+        logger.info('Updated appen_data. Old shape: {}. New shape: {}.', old_shape, self.appen_data.shape)
 
     def read_data(self, filter_data=True, clean_data=True):
         """Read data into an attribute.
@@ -104,18 +102,20 @@ class Appen:
         """
         # load data
         if self.load_p:
-            df = tr.common.load_from_p(self.file_p,
-                                       'appen data')
+            df = tr.common.load_from_p(self.file_p, 'appen data')
         # process data
         else:
-            logger.info('Reading appen data from {}.', self.file_data)
-            # load from csv
-            df = pd.read_csv(self.file_data)
+            logger.info('Reading appen data from {}.', self.files_data)
+            dataframes = []  # initialise an empty list to hold DataFrames
+            for file in self.files_data:
+                df = pd.read_csv(file)  # read the csv file into a df
+                dataframes.append(df)   # append the df to the list
+            # merge into one df
+            df = pd.concat(dataframes, ignore_index=True)
             # drop legacy worker code column
             df = df.drop('inoutstartend', axis=1)
             # drop _gold columns
-            df = df.drop((x for x in df.columns.tolist() if '_gold' in x),
-                         axis=1)
+            df = df.drop((x for x in df.columns.tolist() if '_gold' in x), axis=1)
             # replace linebreaks
             df = df.replace('\n', '', regex=True)
             # rename columns to readable names
@@ -305,8 +305,7 @@ class Appen:
 
                             # fetch previously used mask for the IP
                             df.at[i, 'ip'] = item['m']
-                            logger.debug('{}: replaced repeating IP {} with ' +
-                                         '{}.',
+                            logger.debug('{}: replaced repeating IP {} with {}.',
                                          df['worker_code'][i],
                                          item['o'],
                                          item['m'])
@@ -315,12 +314,10 @@ class Appen:
                 # new worker ID
                 if not any(d['o'] == df['worker_id'][i] for d in proc_ids):
                     # mask in format random_int - worker_id
-                    masked_id = (str(tr.common.get_configs('mask_id') -
-                                     df['worker_id'][i]))
+                    masked_id = (str(tr.common.get_configs('mask_id') - df['worker_id'][i]))
                     # record IP as already replaced
-                    proc_ids.append({'o': df['worker_id'][i],
-                                     'm': masked_id})
-                    df.at[i, 'worker_id'] = masked_id
+                    proc_ids.append({'o': df['worker_id'][i], 'm': masked_id})
+                    df.at[i, 'worker_id'] = float(masked_id)
                     logger.debug('{}: replaced ID {} with {}.',
                                  df['worker_code'][i],
                                  proc_ids[-1]['o'],
@@ -331,8 +328,7 @@ class Appen:
                         if item['o'] == df['worker_id'][i]:
                             # fetch previously used mask for the ID
                             df.at[i, 'worker_id'] = item['m']
-                            logger.debug('{}: replaced repeating ID {} '
-                                         + 'with {}.',
+                            logger.debug('{}: replaced repeating ID {} with {}.',
                                          df['worker_code'][i],
                                          item['o'],
                                          item['m'])
@@ -346,10 +342,16 @@ class Appen:
         # return dataframe with replaced values
         return df
 
-    def process_countries(self):
+    def process_countries(self, df):
+        """Process data on the level of countries.
+
+        Args:
+            df (dataframe): dataframe with data.
+
+        Returns:
+            dataframe: updated dataframe.
+        """
         # todo: map textual questions to int
-        # df for reassignment of textual values
-        df = self.appen_data
         # df for storing counts
         df_counts = pd.DataFrame()
         # get countries and counts of participants
@@ -361,19 +363,13 @@ class Appen:
         di = {'female': 0, 'male': 1}
         df = df.replace({'gender': di})
         # get mean values for countries
-        df_country = df.groupby('country').mean(
-            numeric_only=True).reset_index()
+        df_country = df.groupby('country').mean(numeric_only=True).reset_index()
         # use median for year
-        df_country['year_ad'] = df.groupby('country').median(
-            numeric_only=True).reset_index()['year_ad']
-        df_country['year_license'] = df.groupby('country').median(
-            numeric_only=True).reset_index()['year_license']
+        df_country['year_ad'] = df.groupby('country').median(numeric_only=True).reset_index()['year_ad']
+        df_country['year_license'] = df.groupby('country').median(numeric_only=True).reset_index()['year_license']
         # assign counts after manipulations
         df_country = df_country.set_index('country', drop=False)
-        df_country = df_country.merge(df_counts,
-                                      left_index=True,
-                                      right_index=True,
-                                      how='left')
+        df_country = df_country.merge(df_counts, left_index=True, right_index=True, how='left')
         # drop not needed columns
         df_country = df_country.drop(columns=['unit_id', 'id'])
         # convert from to 3-letter codes
@@ -382,31 +378,28 @@ class Appen:
         self.countries_data = df_country
         # save to csv
         if self.save_csv:
-            df_country.to_csv(os.path.join(tr.settings.output_dir,
-                                           self.file_country_csv))
+            df_country.to_csv(os.path.join(tr.settings.output_dir, self.file_country_csv))
             logger.info('Saved country data to csv file {}', self.file_csv)
         # return df with data
         return df_country
 
-    def show_info(self):
+    def show_info(self, df):
         """Output info for data in object.
+
+        Args:
+            df (dataframe): dataframe with data.
         """
         # info on age
-        logger.info('Age: mean={:,.2f}, std={:,.2f}',
-                    self.appen_data['age'].mean(),
-                    self.appen_data['age'].std())
+        logger.info('Age: mean={:,.2f}, std={:,.2f}',  df['age'].mean(), df['age'].std())
         # info on gender
-        count = Counter(self.appen_data['gender'])
+        count = Counter(df['gender'])
         logger.info('Gender: {}', count.most_common())
         # info on most represted countries in minutes
-        count = Counter(self.appen_data['country'])
+        count = Counter(df['country'])
         logger.info('Countires: {}', count.most_common())
         # info on duration in minutes
-        logger.info('Time of participation: mean={:,.2f} min, '
-                    + 'median={:,.2f} min, std={:,.2f} min.',
-                    self.appen_data['time'].mean() / 60,
-                    self.appen_data['time'].median() / 60,
-                    self.appen_data['time'].std() / 60)
-        logger.info('Oldest timestamp={}, newest timestamp={}.',
-                    self.appen_data['start'].min(),
-                    self.appen_data['start'].max())
+        logger.info('Time of participation: mean={:,.2f} min, median={:,.2f} min, std={:,.2f} min.',
+                    df['time'].mean() / 60,
+                    df['time'].median() / 60,
+                    df['time'].std() / 60)
+        logger.info('Oldest timestamp={}, newest timestamp={}.', df['start'].min(), df['start'].max())

@@ -86,9 +86,7 @@ class Heroku:
         """
         old_shape = self.heroku_data.shape  # store old shape for logging
         self.heroku_data = heroku_data
-        logger.info('Updated heroku_data. Old shape: {}. New shape: {}.',
-                    old_shape,
-                    self.heroku_data.shape)
+        logger.info('Updated heroku_data. Old shape: {}. New shape: {}.', old_shape, self.heroku_data.shape)
 
     def read_data(self, filter_data=True):
         """Read data into an attribute.
@@ -101,8 +99,7 @@ class Heroku:
         """
         # load data
         if self.load_p:
-            df = tr.common.load_from_p(self.file_p,
-                                       'heroku data')
+            df = tr.common.load_from_p(self.file_p, 'heroku data')
         # process data
         else:
             # read files with heroku data one by one
@@ -115,8 +112,7 @@ class Heroku:
                 data_list += f.readlines()
                 f.close()
             # hold info on previous row for worker
-            prev_row_info = pd.DataFrame(columns=['worker_code',
-                                                  'time_elapsed'])
+            prev_row_info = pd.DataFrame(columns=['worker_code', 'time_elapsed'])
             prev_row_info.set_index('worker_code', inplace=True)
             # read rows in data
             for row in tqdm(data_list):  # tqdm adds progress bar
@@ -131,12 +127,8 @@ class Heroku:
                 # last time_elapsed for logging duration of trial and stimulus
                 elapsed_l = 0
                 elapsed_l_stim = 0
-                # record worker_code in the row. assuming that each row has at
-                # least one worker_code
+                # record worker_code in the row. assuming that each row has at least one worker_code
                 worker_code = [d['worker_code'] for d in list_row['data'] if 'worker_code' in d][0]
-                if tr.common.get_configs('only_lab') == 1:
-                    if re.search("lab_pp_", worker_code) is None:
-                        continue
                 # go over cells in the row with data
                 for data_cell in list_row['data']:
                     # extract meta info form the call
@@ -145,8 +137,7 @@ class Heroku:
                             # piece of meta data found, update dictionary
                             dict_row[key] = data_cell[key]
                             if key == 'worker_code':
-                                logger.debug('{}: working with row with data.',
-                                             data_cell['worker_code'])
+                                logger.debug('{}: working with row with data.', data_cell['worker_code'])
                     # check if stimulus data is present
                     if 'stimulus' in data_cell.keys():
                         # record last timestamp before video
@@ -552,12 +543,15 @@ class Heroku:
         # return points
         return points, points_worker, points_duration
 
-    def process_kp(self, filter_length=True):
+    def process_kp(self, df, filter_length=True, kp_col='kp', kp_raw_col='kp_raw'):
         """Process keypresses for resolution self.res.
+        
+        Args:
+            df (dataframe): dataframe with data.
+            filter_length (bool, optional): filter out stimuli with unexpected length.
+
         Returns:
             mapping: updated mapping df.
-        Args:
-            filter_length (bool, optional): filter out stimuli with unexpected length.
         """
         logger.info('Processing keypress data with res={} ms.', self.res)
         # array to store all binned rt data
@@ -578,11 +572,11 @@ class Heroku:
             video_kp_raw = []
             # df to store keypresses in bins per pp for this individual stimulus with array of zeros to be able to
             # store counters for multiple repetitions
-            cols = len(self.heroku_data.index)
+            cols = len(df.index)
             rows = len(list(range(self.res, video_len + self.res, self.res)))
             pp_kp = pd.DataFrame([[np.zeros(self.num_repeat) * self.num_repeat for _ in range(cols)] for _ in range(rows)],  # noqa: E501
                                  index=list(range(self.res, video_len + self.res, self.res)),
-                                 columns=self.heroku_data.index)
+                                 columns=df.index)
             # go over repetitions
             for rep in range(self.num_repeat):
                 # add suffix with repetition ID
@@ -590,22 +584,22 @@ class Heroku:
                 video_dur = 'video_' + str(num) + '-dur-' + str(rep)
                 rt_data = []
                 counter_data = 0
-                for (col_name, col_data) in self.heroku_data.items():
+                for (col_name, col_data) in df.items():
                     # find the right column to loop through
                     if video_rt == col_name:
                         # loop through rows in column
                         for row_index, row in enumerate(col_data):
                             # consider only videos of allowed length
-                            if video_dur in self.heroku_data.keys() and filter_length:
+                            if video_dur in df.keys() and filter_length:
                                 # extract recorded duration
-                                dur = self.heroku_data.iloc[row_index][video_dur]
+                                dur = df.iloc[row_index][video_dur]
                                 # check if duration is within limits
                                 if dur < self.mapping['min_dur'][video_id] or dur > self.mapping['max_dur'][video_id]:
                                     # increase counter of filtered videos
                                     logger.debug('Filtered keypress data from video {} of detected duration of {} for '
                                                  + 'worker {}.',
                                                  video_id, dur,
-                                                 self.heroku_data.index[row_index])
+                                                 df.index[row_index])
                                     # increase counter of filtered videos
                                     counter_filtered = counter_filtered + 1
                                     continue
@@ -619,7 +613,7 @@ class Heroku:
                                     # record raw value for pp
                                     for rt_bin in range(self.res, video_len + self.res, self.res):
                                         if rt_bin - self.res < row[0] <= rt_bin:
-                                            pp_kp.at[rt_bin, self.heroku_data.index[row_index]][rep] = 1
+                                            pp_kp.at[rt_bin, df.index[row_index]][rep] = 1
                                 # if list contains more then one value, go  through list to remove keyholds
                                 elif len(row) > 1:
                                     # fill data gap for the first half a second (0.5 s) of holding the key
@@ -644,7 +638,7 @@ class Heroku:
                                         # record raw value for pp
                                         for rt_bin in range(self.res, video_len + self.res, self.res):
                                             if rt_bin - self.res < row[j] <= rt_bin:
-                                                pp_kp.at[rt_bin, self.heroku_data.index[row_index]][rep] = 1
+                                                pp_kp.at[rt_bin, df.index[row_index]][rep] = 1
                                 # if list contains more then one value, go  through list to remove keyholds
                         # print(self.heroku_data.index[row_index], video_id, pp_kp.sum())
                         # print(len(pp_kp.index))
@@ -694,11 +688,10 @@ class Heroku:
         if filter_length:
             logger.info('Filtered out keypress data from {} videos with unexpected length.', counter_filtered)
         # update own mapping to include keypress data
-        self.mapping['kp'] = mapping_rt
-        self.mapping['kp_raw'] = mapping_rt_raw
+        self.mapping[kp_col] = mapping_rt
+        self.mapping[kp_raw_col] = mapping_rt_raw
         # save to csv
         if self.save_csv:
-            # save to csv
             self.mapping.to_csv(os.path.join(tr.settings.output_dir, self.file_mapping_csv))
         # return new mapping
         return self.mapping

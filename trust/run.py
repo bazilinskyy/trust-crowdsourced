@@ -12,39 +12,43 @@ tr.logs(show_level='info', show_color=True)
 logger = tr.CustomLogger(__name__)  # use custom logger
 
 # const
-# SAVE_P = True  # save pickle files with data
-# LOAD_P = False  # load pickle files with data
-# SAVE_CSV = True  # load csv files with data
-# FILTER_DATA = True  # filter Appen and heroku data
-# CLEAN_DATA = True  # clean Appen data
-# REJECT_CHEATERS = False  # reject cheaters on Appen
-# CALC_COORDS = False  # extract points from heroku data
-# UPDATE_MAPPING = True  # update mapping with keypress data
-# SHOW_OUTPUT = True  # should figures be plotted
-# SHOW_OUTPUT_KP = False  # should figures with keypress data be plotted
-# SHOW_OUTPUT_ST = False  # should figures with stimulus data be plotted
-# SHOW_OUTPUT_PP = False  # should figures with info about participants be plotted
-# SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
-
-# for debugging, skip processing
-SAVE_P = False  # save pickle files with data
-LOAD_P = True  # load pickle files with data
+SAVE_P = True  # save pickle files with data
+LOAD_P = False  # load pickle files with data
 SAVE_CSV = True  # load csv files with data
-FILTER_DATA = False  # filter Appen and heroku data
-CLEAN_DATA = False  # clean Appen data
+FILTER_DATA = True  # filter Appen and heroku data
+CLEAN_DATA = True  # clean Appen data
 REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = False  # update mapping with keypress data
-SHOW_OUTPUT = False  # should figures be plotted
+UPDATE_MAPPING = True  # update mapping with keypress data
+SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
 SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
 SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+SHOW_OUTPUT_KP_LAB = False  # should figures with keypress data be plotted (for lab/crowd data)
+SHOW_OUTPUT_ST_LAB = False  # should figures with stimulus data be plotted (for lab/crowd data)
+SHOW_OUTPUT_PP_LAB = False  # should figures with info about participants be plotted (for lab/crowd data)
+
+# for debugging, skip processing
+# SAVE_P = False  # save pickle files with data
+# LOAD_P = True  # load pickle files with data
+# SAVE_CSV = True  # load csv files with data
+# FILTER_DATA = False  # filter Appen and heroku data
+# CLEAN_DATA = False  # clean Appen data
+# REJECT_CHEATERS = False  # reject cheaters on Appen
+# CALC_COORDS = False  # extract points from heroku data
+# UPDATE_MAPPING = False  # update mapping with keypress data
+# SHOW_OUTPUT = True  # should figures be plotted
+# SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+# SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+# SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
+# SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+# SHOW_OUTPUT_KP_LAB = False  # should figures with keypress data be plotted (for lab/crowd data)
+# SHOW_OUTPUT_ST_LAB = False  # should figures with stimulus data be plotted (for lab/crowd data)
+# SHOW_OUTPUT_PP_LAB = False  # should figures with info about participants be plotted (for lab/crowd data)
 
 # todo: code for eye gaze analysis does not run on mac
 
-file_mapping = 'mapping.p'  # file to save updated mapping
-file_coords = 'coords.p'  # file to save lists with coordinates
 
 if __name__ == '__main__':
     # create object for working with heroku data
@@ -61,20 +65,10 @@ if __name__ == '__main__':
     else:
         logger.error("'participant_group' column not found in the data.")
     # create object for working with appen data
-    file_appen = tr.common.get_configs('file_appen')
-    appen = tr.analysis.Appen(file_data=file_appen, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV)
+    files_appen = tr.common.get_configs('files_appen')
+    appen = tr.analysis.Appen(files_data=files_appen, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV)
     # read appen data
     appen_data = appen.read_data(filter_data=FILTER_DATA, clean_data=CLEAN_DATA)
-    # add data for only lab participants
-    if tr.common.get_configs('process_lab'):
-        # get data only from the lab
-        print(heroku_data['worker_code'].to_string())
-        print(heroku_data['worker_code'].str.contains(r'^lab_pp*', regex=True).to_string())
-        # heroku_data['worker_code'] = heroku_data['worker_code'].astype(str)
-        # appen_data['worker_code'] = appen_data['worker_code'].astype(str)
-        heroku_data_lab = heroku_data[heroku_data['worker_code'].str.contains(r'^lab_.*', regex=True)]
-        appen_data_lab = appen_data[appen_data['worker_code'].str.contains(r'^lab_.*', regex=True)]
-        print(appen_data_lab['worker_code'].to_string())
     # read frames
     # get keys in data files
     heroku_data_keys = heroku_data.keys()
@@ -85,6 +79,13 @@ if __name__ == '__main__':
                             job_id=tr.common.get_configs('appen_job'))
         qa.reject_users()
         qa.ban_users()
+    # get data for lab and crowd samples separately
+    if tr.common.get_configs('separate_lab'):
+        # get data only from the lab and crowd samples
+        heroku_data_lab = heroku_data[heroku_data['worker_code'].str.contains(r'\blab_.*', regex=True)]
+        appen_data_lab = appen_data[appen_data['worker_code'].str.contains(r'\blab_.*', regex=True)]
+        heroku_data_crowd = heroku_data[~heroku_data['worker_code'].str.contains(r'\blab_.*', regex=True)]
+        appen_data_crowd = appen_data[~appen_data['worker_code'].str.contains(r'\blab_.*', regex=True)]
     # merge heroku and appen dataframes into one
     all_data = heroku_data.merge(appen_data, left_on='worker_code', right_on='worker_code')
     logger.info('Data from {} participants included in analysis.', all_data.shape[0])
@@ -95,21 +96,50 @@ if __name__ == '__main__':
     heroku.set_data(heroku_data)  # update object with filtered data
     appen_data = appen_data.set_index('worker_code')
     appen.set_data(appen_data)  # update object with filtered data
-    appen.show_info()  # show info for filtered data
+    appen.show_info(appen_data)  # show info for filtered data
     # generate country-specific data
-    countries_data = appen.process_countries()
+    countries_data = appen.process_countries(appen_data)
+    # get data for lab and crowd samples separately
+    if tr.common.get_configs('separate_lab'):
+        # merge heroku and appen dataframes into one for the lab and crowd samples
+        all_data_lab = heroku_data_lab.merge(appen_data_lab, left_on='worker_code', right_on='worker_code')
+        all_data_crowd = heroku_data_crowd.merge(appen_data_crowd, left_on='worker_code', right_on='worker_code')
+        # print info for the lab and crowd samples
+        logger.info('INFO FOR THE LAB SAMPLE:')
+        logger.info('Data from {} participants included in analysis of the lab sample.', all_data_lab.shape[0])
+        heroku_data_lab = heroku_data_lab.set_index('worker_code')
+        appen_data_lab = appen_data_lab.set_index('worker_code')
+        appen.show_info(appen_data_lab)    # show info for filtered data in lab sample
+        logger.info('INFO FOR THE CROWD SAMPLE:')
+        logger.info('Data from {} participants included in analysis of the crowd sample.', all_data_crowd.shape[0])
+        heroku_data_crowd = heroku_data_crowd.set_index('worker_code')
+        appen_data_crowd = appen_data_crowd.set_index('worker_code')
+        appen.show_info(appen_data_crowd)  # show info for filtered data in appen sample
+        # generate country-specific data for the lab and crowd samples
+        countries_data_lab = appen.process_countries(appen_data_lab)
+        countries_data_crowd = appen.process_countries(appen_data_crowd)
     # create arrays with coordinates for stimuli
     if CALC_COORDS:
         points, _, points_duration = heroku.points(heroku_data)
-        tr.common.save_to_p(file_coords, [points, points_duration], 'points data')
+        tr.common.save_to_p('coords.p', [points, points_duration], 'points data')
+        # calculate coordinates for lab and crowd samples separately
+        if tr.common.get_configs('separate_lab'):
+            points_lab, _, points_duration_lab = heroku.points(heroku_data_lab)
+            tr.common.save_to_p('coords_lab.p', [points_lab, points_duration_lab], 'points data lab')
+            points_crowd, _, points_duration_crowd = heroku.points(heroku_data_crowd)
+            tr.common.save_to_p('coords_crowd.p', [points_crowd, points_duration_crowd], 'points data crowd')
     else:
-        points, points_duration = tr.common.load_from_p(file_coords, 'points data')
+        points, points_duration = tr.common.load_from_p('coords.p', 'points data')
+        # load coordinates for lab and crowd samples separately
+        if tr.common.get_configs('separate_lab'):
+            points_lab, points_duration_lab = tr.common.load_from_p('coords_lab.p', 'points data lab')
+            points_crowd, points_duration_crowd = tr.common.load_from_p('coords_crowd.p', 'points data crowd')
     # update mapping with keypress data
     if UPDATE_MAPPING:
         # read in mapping of stimuli
         mapping = heroku.read_mapping()
         # process keypresses and update mapping
-        mapping = heroku.process_kp(filter_length=False)
+        mapping = heroku.process_kp(heroku_data, filter_length=False)
         # post-trial questions to process
         questions = [{'question': 'slider-0', 'type': 'num'},
                      {'question': 'slider-1', 'type': 'num'},
@@ -121,9 +151,22 @@ if __name__ == '__main__':
                                           'slider-1': 'safety',
                                           'slider-2': 'expectation'})
         # export to pickle
-        tr.common.save_to_p(file_mapping,  mapping, 'mapping of stimuli')
+        tr.common.save_to_p('mapping.p',  mapping, 'mapping of stimuli')
+        # update mapping with keypress data for lab and crowd samples separately
+        if tr.common.get_configs('separate_lab'):
+            # process keypresses and update mapping
+            mapping = heroku.process_kp(heroku_data_lab,
+                                        filter_length=False,
+                                        kp_col='kp_lab',
+                                        kp_raw_col='kp_raw_lab')
+            mapping = heroku.process_kp(heroku_data_crowd,
+                                        filter_length=False,
+                                        kp_col='kp_crowd',
+                                        kp_raw_col='kp_raw_crowd')
+            # export to pickle (and overwrite mapping without separation)
+            tr.common.save_to_p('mapping.p',  mapping, 'mapping of stimuli')
     else:
-        mapping = tr.common.load_from_p(file_mapping, 'mapping of stimuli')
+        mapping = tr.common.load_from_p('mapping.p', 'mapping of stimuli')
     # Output
     if SHOW_OUTPUT:
         analysis = tr.analysis.Analysis()
@@ -776,6 +819,17 @@ if __name__ == '__main__':
                                           save_frames=True)
                 # stitch animations into 1 long videos
                 analysis.create_animation_all_stimuli(num_stimuli)
+            # Visualisation of keypress data with lab/crowd separation
+            if SHOW_OUTPUT_KP_LAB:
+                pass
+                # todo: figures with lab/crowd separation
+            if SHOW_OUTPUT_ST_LAB:
+                pass
+                # todo: figures with lab/crowd separation
+            # Visualisation of data about participants
+            if SHOW_OUTPUT_PP_LAB:
+                pass
+                # todo: figures with lab/crowd separation
         # collect figure objects
         figures = [manager.canvas.figure
                    for manager in

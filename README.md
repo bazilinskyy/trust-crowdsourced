@@ -29,8 +29,8 @@ Configuration of the project needs to be defined in `trust-crowdsourced/config`.
 * `stimulus_width`: width of stimuli.
 * `stimulus_height`: height of stimuli.
 * `aoi`: csv file with AOI data.
-* `process_lab`: process data from the lab experiment separately.
-* `smoothen_signal`: toggle to apply filter to smoothen data.,
+* `separate_lab`: separate data from the lab experiment and crowdsourced experiments.
+* `smoothen_signal`: toggle to apply filter to smoothen data.
 * `freq`: frequency used by One Euro Filter.
 * `mincutoff`: minimal cutoff used by One Euro Filter.
 * `beta`: beta value used by One Euro Filter.
