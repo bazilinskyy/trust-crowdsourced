@@ -20,7 +20,7 @@ Configuration of the project needs to be defined in `trust-crowdsourced/config`.
 * `sign_answers`: answers to the questions on traffic signs.
 * `mask_id`: number for masking worker IDs in appen data.
 * `files_heroku`: files with data from heroku.
-* `file_appen`: file with data from appen.
+* `files_appen`: files with data from appen.
 * `file_cheaters`: CSV file with cheaters for flagging.
 * `path_source`: path with source files for the stimuli from the Unity3D project.
 * `path_stimuli`: path consisting of all videos included in the survey.
