@@ -4,7 +4,7 @@ import numpy as np
 import os
 import datetime as dt
 from collections import Counter
-from pycountry_convert import country_alpha2_to_country_name, country_name_to_country_alpha3  # noqa: E501
+from pycountry_convert import country_alpha2_to_country_name, country_name_to_country_alpha3
 
 
 import trust as tr
@@ -52,13 +52,9 @@ class Appen:
                        'what_is_your_age': 'age',
                        'what_is_your_gender': 'gender',
                        'what_is_the_highest_level_of_education_you_have_completed': 'education',  # noqa: E501
-                       'what_is_your_primary_mode_of_transportation': 'mode_transportation',  # noqa: E501
                        'which_input_device_are_you_using_now': 'device',
                        'if_you_answered_other_in_the_previous_question_please_describe_your_input_device_below': 'device_other',  # noqa: E501
-                       'as_a_driver_what_does_it_mean_to_you_when_a_pedestrian_makes_eye_contact_with_you': 'ec_driver',  # noqa: E501
-                       'as_a_pedestrian_what_does_it_mean_to_you_when_a_driver_makes_eye_contact_with_you': 'ec_pedestrian',  # noqa: E501
-                       'how_do_you_feel_about_the_following_communication_between_driver_and_pedestrian_is_important_for_road_safety': 'communication_importance',  # noqa: E501
-                       'i_would_like_to_communicate_with_other_road_users_while_driving_for_instance_using_eye_contact_gestures_verbal_communication_etc': 'communcation_others',  # noqa: E501
+                       'i_would_like_to_communicate_with_other_road_users_while_driving_for_instance_using_eye_contact_gestures_verbal_communication_etc': 'communication_others',  # noqa: E501
                        'i_am_worried_about_where_all_this_technology_is_leading': 'technology_worried',  # noqa: E501
                        'i_enjoy_making_use_of_the_latest_technological_products_and_services_when_i_have_the_opportunity': 'technology_enjoyment',  # noqa: E501
                        'science_and_technology_are_making_our_lives_healthier_easier_and_more_comfortable': 'technology_lives_easier',  # noqa: E501
@@ -147,6 +143,12 @@ class Appen:
             tr.common.save_to_p(self.file_p, df, 'appen data')
         # save to csv
         if self.save_csv:
+            # replace line breaks to avoid problem with lines spanning over multiple rows
+            df.replace(to_replace=[r"\\t|\\n|\\r", "\t|\n|\r"], value=["", ""], regex=True, inplace=True)
+            # create folder if not present
+            if not os.path.exists(tr.settings.output_dir):
+                os.makedirs(tr.settings.output_dir)
+            # save to file
             df.to_csv(os.path.join(tr.settings.output_dir, self.file_csv))
             logger.info('Saved appen data to csv file {}', self.file_csv)
         # assign to attribute
@@ -160,24 +162,20 @@ class Appen:
             2. People who did not give consent.
             3. People that are under 18 years of age.
             4. People who completed the study in under 5 min.
-            5. People who completed the study from the same IP more than once
-               (the 1st data entry is retained).
+            5. People who completed the study from the same IP more than once (the 1st data entry is retained).
             6. People who used the same `worker_code` multiple times.
             7. People with invalid `worker_id`.
         """
         logger.info('Filtering appen data.')
         # people that did not read instructions
         df_1 = df.loc[df['instructions'] == 'no']
-        logger.info('Filter-a1. People who did not read instructions: {}',
-                    df_1.shape[0])
+        logger.info('Filter-a1. People who did not read instructions: {}', df_1.shape[0])
         # people that did not give consent
         df_2 = df.loc[df['consent'] == 'no']
-        logger.info('Filter-a2. People who did not give consent: {}',
-                    df_2.shape[0])
+        logger.info('Filter-a2. People who did not give consent: {}', df_2.shape[0])
         # people that are underages
         df_3 = df.loc[df['age'] < 18]
-        logger.info('Filter-a3. People that are under 18 years of age: {}',
-                    df_3.shape[0])
+        logger.info('Filter-a3. People that are under 18 years of age: {}', df_3.shape[0])
         # People that took less than tr.common.get_configs('allowed_min_time')
         # minutes to complete the study
         df_4 = df.loc[df['time'] < tr.common.get_configs('allowed_min_time')]
@@ -187,24 +185,18 @@ class Appen:
                     df_4.shape[0])
         # people that completed the study from the same IP address
         df_5 = df[df['ip'].duplicated(keep='first')]
-        logger.info('Filter-a5. People who completed the study from the ' +
-                    'same IP: {}',
-                    df_5.shape[0])
+        logger.info('Filter-a5. People who completed the study from the same IP: {}', df_5.shape[0])
         # people that entered the same worker_code more than once
         df_6 = df[df['worker_code'].duplicated(keep='first')]
-        logger.info('Filter-a6. People who used the same worker_code: {}',
-                    df_6.shape[0])
+        logger.info('Filter-a6. People who used the same worker_code: {}', df_6.shape[0])
         # save to csv
         if self.save_csv:
             df_6 = df_6.reset_index()
-            df_6.to_csv(os.path.join(tr.settings.output_dir,
-                                     self.file_cheaters_csv))
-            logger.info('Filter-a6. Saved list of cheaters to csv file {}',
-                        self.file_cheaters_csv)
+            df_6.to_csv(os.path.join(tr.settings.output_dir, self.file_cheaters_csv))
+            logger.info('Filter-a6. Saved list of cheaters to csv file {}', self.file_cheaters_csv)
         # people with nan for worker_id
         df_7 = df[df['worker_id'].isnull()]
-        logger.info('Filter-a7. People who have not valid worker_id: {}',
-                    df_7.shape[0])
+        logger.info('Filter-a7. People who had not valid worker_id: {}', df_7.shape[0])
         # concatenate dfs with filtered data
         old_size = df.shape[0]
         df_filtered = pd.concat([df_1, df_2, df_3, df_4, df_5, df_6, df_7])

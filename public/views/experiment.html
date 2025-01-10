@@ -49,12 +49,14 @@ var videos_av_av_last = 83;  // last videos with ego-av and target-av
 var n_videos_per_participant = 42; // number of videos per participant
 var n_videos_repeat = 1; // number of repeats of each condition
 var image_pfefix = 'img/'; // prefix for images
-var video_pfefix = 'https://storage.googleapis.com/trust-crowdsourced-2/video_'; // prefix for videos
-var video_pfefix_local = 'videos/video_'; // prefix for videos
+// var video_pfefix = 'https://storage.googleapis.com/trust-crowdsourced-2/video_'; // prefix for videos
+// var video_pfefix = 'https://raw.githubusercontent.com/bazilinskyy/trust-crowdsourced/main/public/videos/stimuli/video_'; // prefix for videos
+var video_pfefix = 'videos/stimuli/video_'; // prefix for videos
+var video_pfefix_local = 'videos/stimuli/video_'; // prefix for videos
 var SHOW_DEBUG = false; // switch for debugging output
 var SAVE_DATA = true; // save data or not
 var EYE_TRACKING = true; // use eye_tracking or not
-var CALIBRATION_NUM = 2; // use eye_tracking or not
+var CALIBRATION_NUM = 2; // how many times to calibrate eye tracking
 
 // Arrays
 var video_ids = [];
@@ -632,7 +634,7 @@ var continue_test_1 = {
 // build between blocks
 for (var i = 1; i < n_videos_per_participant * n_videos_repeat; i++) {
     var videos_done = i;
-    
+
     if (videos_done === 10 || videos_done === 31) {
         between_blocks.push({
             type: jsPsychHtmlKeyboardResponse,
