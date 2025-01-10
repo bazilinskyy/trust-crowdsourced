@@ -2,6 +2,7 @@
 import json
 import os
 import pandas as pd
+from statsmodels.stats.anova import AnovaRM
 import numpy as np
 import re
 from tqdm import tqdm
@@ -68,7 +69,8 @@ class Heroku:
                  files_data: list,
                  save_p: bool,
                  load_p: bool,
-                 save_csv: bool):
+                 save_csv: bool,
+                 output_dir='output'):
         # list of files with raw data
         self.files_data = files_data
         # save data as pickle file
@@ -80,7 +82,14 @@ class Heroku:
         # read in durations of stimuli from a config file
         self.hm_resolution_range = int(50000/tr.common.get_configs('hm_resolution'))
         self.num_stimuli = tr.common.get_configs('num_stimuli')
+        self.output_dir = output_dir
+        # Define subdirectories for batches and other outputs
+        self.batch_dir = os.path.join(self.output_dir, 'batches')
+        self.anova_dir = os.path.join(self.output_dir, 'anova_results')
 
+        # Ensure directories exist
+        os.makedirs(self.batch_dir, exist_ok=True)
+        os.makedirs(self.anova_dir, exist_ok=True)
     def set_data(self, heroku_data):
         """Setter for the data object.
         """
@@ -702,6 +711,87 @@ class Heroku:
             self.mapping.to_csv(os.path.join(tr.settings.output_dir, self.file_mapping_csv))
         # return new mapping
         return self.mapping
+        
+    def process_kp_to_batches(self, filter_length=True):
+        logger.info('Processing keypress data into 21 video batches with res={} ms.', self.res)
+        os.makedirs(self.batch_dir, exist_ok=True)
+
+        self.heroku_data['EgoCar'] = self.heroku_data['participant_group'].map(lambda x: 0 if x in [0, 1] else 1)
+        video_batches = [[i, i + 21, i + 42, i + 63] for i in range(21)]
+
+        for batch_num, videos in enumerate(video_batches):
+            logger.info(f'Processing batch {batch_num + 1} for videos: {videos}')
+            batch_data = []
+
+            for video_num in videos:
+                video_id = f'V{video_num}'
+                if video_id not in self.mapping.index:
+                    logger.warning(f"Video {video_id} not found in mapping. Skipping...")
+                    continue
+
+                video_len = self.mapping.loc[video_id]['video_length']
+
+                for rep in range(self.num_repeat):
+                    video_rt = f'video_{video_num}-rt-{rep}'
+                    video_dur = f'video_{video_num}-dur-{rep}'
+
+                    for row_index, row in self.heroku_data.iterrows():
+                        participant_id = row.name
+                        ego_car = row['EgoCar']
+                        target_car = 0 if (video_num % 2 == 0) else 1
+
+                        if ((ego_car == 0 and video_num >= 42) or
+                            (ego_car == 1 and video_num < 42)):
+                            continue
+
+                        if video_rt not in self.heroku_data.columns:
+                            continue
+
+                        rt_data = row[video_rt]
+                        if not isinstance(rt_data, list):
+                            continue
+
+                        if video_dur in self.heroku_data.columns and filter_length:
+                            dur = row[video_dur]
+                            if dur < self.mapping['min_dur'][video_id] or dur > self.mapping['max_dur'][video_id]:
+                                logger.debug(f"Filtered video {video_id} duration {dur} for worker {participant_id}.")
+                                continue
+
+                        for rt_bin in range(self.res, video_len + self.res, self.res):
+                            kp_count = sum(1 for rt in rt_data if rt_bin - self.res < rt <= rt_bin)
+                            batch_data.append({
+                                'ParticipantID': participant_id,
+                                'EgoCar': ego_car,
+                                'TargetCar': target_car,
+                                'TimeBin': rt_bin,
+                                'KPNumber': kp_count
+                            })
+
+            # Create a DataFrame
+            batch_df = pd.DataFrame(batch_data)
+
+            # Remove incomplete data
+            batch_df = batch_df.dropna(subset=['TimeBin', 'KPNumber'])
+
+            # Check if all conditions are present for each group
+            valid_data = []
+            for time_bin in batch_df['TimeBin'].unique():
+                time_bin_data = batch_df[batch_df['TimeBin'] == time_bin]
+                group_counts = time_bin_data.groupby(['EgoCar', 'TargetCar']).size()
+                if group_counts.min() > 1:  # Ensure at least 2 participants per group-condition combination
+                    valid_data.append(time_bin_data)
+
+            # Combine valid data and save
+            if valid_data:
+                final_df = pd.concat(valid_data)
+                final_df['EgoCar'] = final_df['EgoCar'].astype('category')
+                final_df['TargetCar'] = final_df['TargetCar'].astype('category')
+                batch_file = os.path.join(self.batch_dir, f'batch_{batch_num + 1}_keypress_data.csv')
+                final_df.to_csv(batch_file, index=False)
+                logger.info(f"Batch {batch_num + 1} data saved to {batch_file}.")
+            else:
+                logger.warning(f"No valid data for batch {batch_num + 1}. File not created.")
+
 
     def process_stimulus_questions(self, questions):
         """Process questions that follow each stimulus.

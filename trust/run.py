@@ -34,7 +34,7 @@ FILTER_DATA = False  # filter Appen and heroku data
 CLEAN_DATA = False  # clean Appen data
 REJECT_CHEATERS = False  # reject cheaters on Appen
 CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = False  # update mapping with keypress data
+UPDATE_MAPPING = True  # update mapping with keypress data
 SHOW_OUTPUT = True  # should figures be plotted
 SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
@@ -49,7 +49,9 @@ file_coords = 'coords.p'  # file to save lists with coordinates
 if __name__ == '__main__':
     # create object for working with heroku data
     files_heroku = tr.common.get_configs('files_heroku')
-    heroku = tr.analysis.Heroku(files_data=files_heroku, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV)
+    output_dir = "output"
+    heroku = tr.analysis.Heroku(files_data=files_heroku, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV, output_dir=output_dir)
+
     # read heroku data
     heroku_data = heroku.read_data(filter_data=FILTER_DATA)
     # directly count participants in each group
@@ -101,6 +103,9 @@ if __name__ == '__main__':
         mapping = heroku.read_mapping()
         # process keypresses and update mapping
         mapping = heroku.process_kp(filter_length=False)
+        heroku.process_kp_to_batches()
+        # Perform 2-way mixed ANOVA on the batch files
+
         # post-trial questions to process
         questions = [{'question': 'slider-0', 'type': 'num'},
                      {'question': 'slider-1', 'type': 'num'},
@@ -118,6 +123,12 @@ if __name__ == '__main__':
     # Output
     if SHOW_OUTPUT:
         analysis = tr.analysis.Analysis()
+        logger.info("Performing 2-way mixed ANOVA on batch files...")
+        analysis = tr.analysis.Analysis()  # Create an Analysis object
+        analysis.conduct_mixed_anova_pingouin(batch_dir=heroku.batch_dir, output_dir=heroku.anova_dir)
+
+        logger.info(f"Processing completed. ANOVA results saved in {heroku.anova_dir}.")
+
         num_stimuli = tr.common.get_configs('num_stimuli')
         logger.info('Creating figures.')
         # Visualisation of keypress data

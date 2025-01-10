@@ -27,8 +27,11 @@ from scipy.stats import ttest_rel, ttest_ind, f_oneway
 import cv2
 from statsmodels.stats.anova import anova_lm
 from statsmodels.formula.api import ols 
-
+import statsmodels.api as sm
+from statsmodels.stats.anova import AnovaRM
+import logging
 import trust as tr
+import pingouin as pg
 
 
 matplotlib.use('TkAgg')
@@ -3206,6 +3209,99 @@ class Analysis:
             significance.append(int(p_value < tr.common.get_configs('p_value')))
         # return raw p values and binary flags for significance for output
         return [p_values, significance]
+
+
+
+    def conduct_mixed_anova_pingouin(self, batch_dir, output_dir=None):
+        """
+        Perform 2-way mixed ANOVA for every time bin in each video batch file using Pingouin.
+
+        Args:
+            batch_dir (str): Directory containing batch files (e.g., batch_*.csv).
+            output_dir (str): Directory to save ANOVA results.
+
+        Returns:
+            None
+        """
+        if output_dir is None:
+            output_dir = self.anova_dir  # Default to Heroku's ANOVA directory
+        logger.info(f"Starting 2-way mixed ANOVA for batch files in {batch_dir} using Pingouin...")
+
+        os.makedirs(output_dir, exist_ok=True)  # Ensure output directory exists
+
+        for batch_file in sorted(os.listdir(batch_dir)):
+            if not batch_file.startswith('batch_') or not batch_file.endswith('.csv'):
+                continue
+
+            batch_path = os.path.join(batch_dir, batch_file)
+
+            # Check if the file is empty
+            if os.path.getsize(batch_path) == 0:
+                logger.warning(f"Skipping empty batch file: {batch_file}")
+                continue
+
+            try:
+                batch_data = pd.read_csv(batch_path)
+            except Exception as e:
+                logger.error(f"Failed to read batch file {batch_file}: {e}")
+                continue
+
+            logger.info(f"Processing {batch_file} for ANOVA...")
+
+            anova_results = []  # Initialize results for this batch
+
+            for time_bin in batch_data['TimeBin'].dropna().unique():
+                time_bin_data = batch_data[batch_data['TimeBin'] == time_bin].dropna(subset=['KPNumber'])
+
+                # Validate data
+                if len(time_bin_data['EgoCar'].unique()) < 2:
+                    logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: only one level of EgoCar.")
+                    continue
+
+                if len(time_bin_data['TargetCar'].unique()) < 2:
+                    logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: only one level of TargetCar.")
+                    continue
+
+                if time_bin_data['KPNumber'].nunique() <= 1:
+                    logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: insufficient variability in KPNumber.")
+                    continue
+
+                try:
+                    # Prepare data for Pingouin's mixed_anova
+                    time_bin_data['TargetCar'] = time_bin_data['TargetCar'].astype('category')
+                    time_bin_data['EgoCar'] = time_bin_data['EgoCar'].astype('category')
+
+                    # Run Pingouin's mixed ANOVA
+                    aov = pg.mixed_anova(
+                        dv='KPNumber',  # Dependent variable
+                        within='TargetCar',  # Within-subject factor
+                        between='EgoCar',  # Between-subject factor
+                        subject='ParticipantID',  # Identifier for subjects
+                        data=time_bin_data
+                    )
+
+                    # Add results to the list
+                    results = {
+                        'TimeBin': time_bin,
+                        'Within-TargetCar-F': aov.loc[aov['Source'] == 'TargetCar', 'F'].values[0],
+                        'Within-TargetCar-p': aov.loc[aov['Source'] == 'TargetCar', 'p-unc'].values[0],
+                        'Interaction-F': aov.loc[aov['Source'] == 'Interaction', 'F'].values[0],
+                        'Interaction-p': aov.loc[aov['Source'] == 'Interaction', 'p-unc'].values[0],
+                        'Between-EgoCar-F': aov.loc[aov['Source'] == 'EgoCar', 'F'].values[0],
+                        'Between-EgoCar-p': aov.loc[aov['Source'] == 'EgoCar', 'p-unc'].values[0]
+                    }
+                    anova_results.append(results)
+
+                except Exception as e:
+                    logger.error(f"ANOVA failed for TimeBin {time_bin} in {batch_file}: {e}")
+
+            # Save results if any exist
+            if anova_results:
+                anova_file = os.path.join(output_dir, f"{batch_file.replace('.csv', '_anova_results.csv')}")
+                pd.DataFrame(anova_results).to_csv(anova_file, index=False)
+                logger.info(f"ANOVA results saved to {anova_file}.")
+            else:
+                logger.warning(f"No ANOVA results generated for {batch_file}.")
 
     def anova(self, signals):
         """
