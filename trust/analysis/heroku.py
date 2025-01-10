@@ -699,8 +699,7 @@ class Heroku:
         """Process questions that follow each stimulus.
 
         Args:
-            questions (list): list of questions with types of possible values
-                              as int or str.
+            questions (list): list of questions with types of possible values as int or str.
 
         Returns:
             dataframe: updated mapping dataframe.

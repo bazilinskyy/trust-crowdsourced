@@ -113,7 +113,8 @@ class Appen:
             # merge into one df
             df = pd.concat(dataframes, ignore_index=True)
             # drop legacy worker code column
-            df = df.drop('inoutstartend', axis=1)
+            if 'inoutstartend' in df.columns:
+                df = df.drop('inoutstartend', axis=1)
             # drop _gold columns
             df = df.drop((x for x in df.columns.tolist() if '_gold' in x), axis=1)
             # replace linebreaks
@@ -232,8 +233,7 @@ class Appen:
             nans_before[0] = df['year_ad'].isnull().sum()
             nans_before[1] = df['year_license'].isnull().sum()
             nans_before[2] = df['age'].isnull().sum()
-            # replace all non-numeric values to nan for questions involving
-            # years
+            # replace all non-numeric values to nan for questions involving years
             df['year_ad'] = df['year_ad'].apply(
                 lambda x: pd.to_numeric(x, errors='coerce'))
             df['year_license'] = df['year_license'].apply(
