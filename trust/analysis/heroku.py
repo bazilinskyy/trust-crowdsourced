@@ -544,7 +544,7 @@ class Heroku:
 
     def process_kp(self, df, filter_length=True, kp_col='kp', kp_raw_col='kp_raw'):
         """Process keypresses for resolution self.res.
-        
+
         Args:
             df (dataframe): dataframe with data.
             filter_length (bool, optional): filter out stimuli with unexpected length.
