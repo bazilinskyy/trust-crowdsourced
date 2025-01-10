@@ -3,7 +3,6 @@ import json
 import os
 import pandas as pd
 import numpy as np
-import re
 from tqdm import tqdm
 from statistics import mean
 import warnings
