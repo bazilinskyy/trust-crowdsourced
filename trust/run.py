@@ -12,32 +12,14 @@ tr.logs(show_level='info', show_color=True)
 logger = tr.CustomLogger(__name__)  # use custom logger
 
 # const
-SAVE_P = True  # save pickle files with data
-LOAD_P = False  # load pickle files with data
-SAVE_CSV = True  # load csv files with data
-FILTER_DATA = True  # filter Appen and heroku data
-CLEAN_DATA = True  # clean Appen data
-REJECT_CHEATERS = False  # reject cheaters on Appen
-CALC_COORDS = False  # extract points from heroku data
-UPDATE_MAPPING = True  # update mapping with keypress data
-SHOW_OUTPUT = True  # should figures be plotted
-SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
-SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
-SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
-SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
-SHOW_OUTPUT_KP_LAB = False  # should figures with keypress data be plotted (for lab/crowd data)
-SHOW_OUTPUT_ST_LAB = False  # should figures with stimulus data be plotted (for lab/crowd data)
-SHOW_OUTPUT_PP_LAB = False  # should figures with info about participants be plotted (for lab/crowd data)
-
-# for debugging, skip processing
-# SAVE_P = False  # save pickle files with data
-# LOAD_P = True  # load pickle files with data
+# SAVE_P = True  # save pickle files with data
+# LOAD_P = False  # load pickle files with data
 # SAVE_CSV = True  # load csv files with data
-# FILTER_DATA = False  # filter Appen and heroku data
-# CLEAN_DATA = False  # clean Appen data
+# FILTER_DATA = True  # filter Appen and heroku data
+# CLEAN_DATA = True  # clean Appen data
 # REJECT_CHEATERS = False  # reject cheaters on Appen
 # CALC_COORDS = False  # extract points from heroku data
-# UPDATE_MAPPING = False  # update mapping with keypress data
+# UPDATE_MAPPING = True  # update mapping with keypress data
 # SHOW_OUTPUT = True  # should figures be plotted
 # SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
 # SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
@@ -46,6 +28,24 @@ SHOW_OUTPUT_PP_LAB = False  # should figures with info about participants be plo
 # SHOW_OUTPUT_KP_LAB = False  # should figures with keypress data be plotted (for lab/crowd data)
 # SHOW_OUTPUT_ST_LAB = False  # should figures with stimulus data be plotted (for lab/crowd data)
 # SHOW_OUTPUT_PP_LAB = False  # should figures with info about participants be plotted (for lab/crowd data)
+
+# for debugging, skip processing
+SAVE_P = False  # save pickle files with data
+LOAD_P = True  # load pickle files with data
+SAVE_CSV = True  # load csv files with data
+FILTER_DATA = False  # filter Appen and heroku data
+CLEAN_DATA = False  # clean Appen data
+REJECT_CHEATERS = False  # reject cheaters on Appen
+CALC_COORDS = False  # extract points from heroku data
+UPDATE_MAPPING = False  # update mapping with keypress data
+SHOW_OUTPUT = True  # should figures be plotted
+SHOW_OUTPUT_KP = True  # should figures with keypress data be plotted
+SHOW_OUTPUT_ST = True  # should figures with stimulus data be plotted
+SHOW_OUTPUT_PP = True  # should figures with info about participants be plotted
+SHOW_OUTPUT_ET = False  # should figures for eye tracking be plotted
+SHOW_OUTPUT_KP_LAB = False  # should figures with keypress data be plotted (for lab/crowd data)
+SHOW_OUTPUT_ST_LAB = False  # should figures with stimulus data be plotted (for lab/crowd data)
+SHOW_OUTPUT_PP_LAB = False  # should figures with info about participants be plotted (for lab/crowd data)
 
 # todo: code for eye gaze analysis does not run on mac
 
@@ -268,10 +268,17 @@ if __name__ == '__main__':
                                   'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[3]) + ')',
                                   'paired': False}]
                 # prepare signals to compare with oneway ANOVA on the res level
-                anova_signals = [{'signals': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
-                                              df.loc['V' + str(ids[1])]['kp_raw'][0],
-                                              df.loc['V' + str(ids[2])]['kp_raw'][0],
-                                              df.loc['V' + str(ids[3])]['kp_raw'][0]],
+                # anova_signals = [{'signals': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
+                #                               df.loc['V' + str(ids[1])]['kp_raw'][0],
+                #                               df.loc['V' + str(ids[2])]['kp_raw'][0],
+                #                               df.loc['V' + str(ids[3])]['kp_raw'][0]],
+                #                   'label': 'anova'}]
+                anova_signals = [{'signal_1': mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist(),  # noqa: E501
+                                  'signal_2': mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist(),  # noqa: E501
+                                  'signal_3': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
+                                               df.loc['V' + str(ids[1])]['kp_raw'][0],
+                                               df.loc['V' + str(ids[2])]['kp_raw'][0],
+                                               df.loc['V' + str(ids[3])]['kp_raw'][0]],  # noqa: E501
                                   'label': 'anova'}]
                 # plot keypress data and slider questions
                 analysis.plot_kp_slider_videos(df,
@@ -297,7 +304,7 @@ if __name__ == '__main__':
                                                fig_save_width=1600,  # preserve ratio 225x152
                                                fig_save_height=1080,  # preserve ratio 225x152
                                                name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
-                                               ttest_signals=ttest_signals,
+                                               ttest_signals=None,
                                                ttest_marker='circle',
                                                ttest_marker_size=3,
                                                ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -318,7 +325,7 @@ if __name__ == '__main__':
                 signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
                 signal3 = tr.common.vertical_sum(mapping.loc[mapping['id'].isin(ids)]['kp_raw'].iloc[0])
                 # perform test
-                analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True)
+                analysis.twoway_anova_kp_whole(signal1, signal2, signal3, output_console=True)
             # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,
@@ -336,11 +343,15 @@ if __name__ == '__main__':
                               'signal_2': tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
                               'label': 'ttest(AV, MDV)',
                               'paired': True}]
-
             # prepare signals to compare with oneway ANOVA on the res level
-            anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
-                                          tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0])],  # noqa: E501
-                              'label': 'anova'}]
+            # anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+            #                               tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 1]['kp_raw'].iloc[0])],  # noqa: E501
+            #                   'label': 'anova'}]
+            anova_signals = [{'signal_1': mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist(),  # noqa: E501
+                              'signal_2': mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist(),  # noqa: E501
+                              'signal_3': [tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+                                           tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 1]['kp_raw'].iloc[0])],  # noqa: E501
+                              'label': 'anova'}]               
             # todo: double check that order of AV/MDV is correct
             # plot keypress data
             analysis.plot_kp_variable(mapping,
@@ -356,7 +367,7 @@ if __name__ == '__main__':
                                       # # hardcode based on the highest recorded value
                                       yaxis_range=[0, 20],
                                       yaxis_step=5,
-                                      ttest_signals=ttest_signals,
+                                      ttest_signals=None,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -377,22 +388,18 @@ if __name__ == '__main__':
             signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
             signal3 = tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 0]['kp_raw'].iloc[0])
             # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='ego car=AV')
-            # prepare signals to compare with two-way ANOVA
-            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-            signal3 = tr.common.vertical_sum(mapping.loc[mapping['ego_car'] == 1]['kp_raw'].iloc[0])
-            # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='ego car=MDV')
+            analysis.twoway_anova_kp_whole(signal1, signal2, signal3, output_console=True)
             # keypress based on the type of ego car
             # prepare pairs of signals to compare with ttest
-            ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
-                              'signal_2': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
-                              'label': 'ttest(AV, MDV)',
-                              'paired': True}]
+            # ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
+            #                   'signal_2': tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0]),  # noqa: E501
+            #                   'label': 'ttest(AV, MDV)',
+            #                   'paired': True}]
             # prepare signals to compare with oneway ANOVA on the res level
-            anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
-                                          tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0])],  # noqa: E501
+            anova_signals = [{'signal_1': mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist(),  # noqa: E501
+                              'signal_2': mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist(),  # noqa: E501
+                              'signal_3': [tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+                                           tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0])],  # noqa: E501
                               'label': 'anova'}]
             # todo: double check that order of AV/MDV is correct
             # plot keypress data
@@ -409,7 +416,7 @@ if __name__ == '__main__':
                                       # hardcode based on the highest recorded value
                                       yaxis_range=[0, 20],
                                       yaxis_step=5,
-                                      ttest_signals=ttest_signals,
+                                      ttest_signals=None,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -430,13 +437,7 @@ if __name__ == '__main__':
             signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
             signal3 = tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 0]['kp_raw'].iloc[0])
             # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='target car=AV')
-            # prepare signals to compare with two-way ANOVA
-            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-            signal3 = tr.common.vertical_sum(mapping.loc[mapping['target_car'] == 1]['kp_raw'].iloc[0])
-            # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='target car=MDV')
+            analysis.twoway_anova_kp_whole(signal1, signal2, signal3, output_console=True)
             # keypress based on the pp group
             # prepare pairs of signals to compare with ttest
             ttest_signals = [{'signal_1': tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),  # noqa: E501
@@ -464,10 +465,18 @@ if __name__ == '__main__':
                               'label': 'ttest(1, 3)',
                               'paired': True}]
             # prepare signals to compare with oneway ANOVA on the res level
-            anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
-                                          tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0]),   # noqa: E501
-                                          tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),   # noqa: E501
-                                          tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])],  # noqa: E501
+            # anova_signals = [{'signals': [tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+            #                               tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0]),   # noqa: E501
+            #                               tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),   # noqa: E501
+            #                               tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])],  # noqa: E501
+            #                   'label': 'anova'}]
+            # prepare signals to compare with oneway ANOVA on the res level
+            anova_signals = [{'signal_1': mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist(),  # noqa: E501
+                              'signal_2': mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist(),  # noqa: E501
+                              'signal_3': [[tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0]),   # keypress data  # noqa: E501
+                                            tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0]),   # noqa: E501
+                                            tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0]),   # noqa: E501
+                                            tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])]],  # noqa: E501
                               'label': 'anova'}]
             # plot keypress data
             analysis.plot_kp_variable(mapping,
@@ -484,7 +493,7 @@ if __name__ == '__main__':
                                       # hardcode based on the highest recorded value
                                       yaxis_range=[0, 20],
                                       yaxis_step=5,
-                                      ttest_signals=ttest_signals,
+                                      ttest_signals=None,
                                       ttest_marker='circle',
                                       ttest_marker_size=3,
                                       ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
@@ -505,26 +514,7 @@ if __name__ == '__main__':
             signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
             signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 0]['kp_raw'].iloc[0])
             # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=0')
-            # two-way ANOVA
-            # prepare signals to compare with two-way ANOVA
-            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-            signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 1]['kp_raw'].iloc[0])
-            # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=1')
-            # prepare signals to compare with two-way ANOVA
-            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-            signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 2]['kp_raw'].iloc[0])
-            # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=2')
-            # prepare signals to compare with two-way ANOVA
-            signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-            signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-            signal3 = tr.common.vertical_sum(mapping.loc[mapping['group'] == 3]['kp_raw'].iloc[0])
-            # perform test
-            analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True, label_str='group=3')
+            analysis.twoway_anova_kp_whole(signal1, signal2, signal3, output_console=True)
         # Visualisation of stimulus data
         if SHOW_OUTPUT_ST:
             # post stimulus questions for all stimuli

@@ -27,6 +27,8 @@ from scipy.stats import ttest_rel, ttest_ind, f_oneway
 import cv2
 from statsmodels.stats.anova import anova_lm
 from statsmodels.formula.api import ols 
+import random
+
 
 import trust as tr
 
@@ -3209,12 +3211,10 @@ class Analysis:
 
     def anova(self, signals):
         """
-        Perform an ANOVA test on three signals, computing p-values and significance.
+        Perform an ANOVA test on the signals, computing p-values and significance.
 
         Args:
-            signal_1 (list): First signal, a list of numeric values.
-            signal_2 (list): Second signal, a list of numeric values.
-            signal_3 (list): Third signal, a list of numeric values.
+            signals (list of lists): signals, a list of numeric values.
 
         Returns:
             list: A list containing two elements:
@@ -3238,7 +3238,40 @@ class Analysis:
         # return raw p-values and binary flags for significance for output
         return [p_values, significance]
 
-    def twoway_anova_kp(self, signal1, signal2, signal3, output_console=True, label_str=None):
+    def twoway_anova_kp_res(self, signal_1, signal_2, signal_3):
+        """
+        Perform two-way ANOVA test on the signals, computing p-values and significance.
+
+        Args:
+            signal_1 (list): First signal, a list of numeric values.
+            signal_2 (list): Second signal, a list of numeric values.
+            signal_3 (list): Third signal, a list of numeric values.
+
+        Returns:
+            list: A list containing two elements:
+                  - p_values (list): Raw p-values for each bin.
+                  - significance (list): Binary flags (0 or 1) indicating whether
+                    the p-value for each bin is below the threshold configured in
+                    `tr.common.get_configs('p_value')`.
+        """
+        # check if the lengths of the three signals are the same
+        # convert signals to numpy arrays if they are lists
+        p_values = []  # record raw p-values for each bin
+        significance = []  # record binary flags (0 or 1) if p-value < tr.common.get_configs('p_value')
+        # p_values = [random.randint(0, 1) for _ in range(len(signal_1))]  # generate random list
+        # significance = [random.randint(0, 1) for _ in range(len(signal_1))]  # generate random list
+        # perform ANOVA test for each value (treated as an independent bin)
+        # transposed_data = list(zip(*signals['signal_']))
+        # for i in range(len(transposed_data)):
+        #     f_stat, p_value = f_oneway(*transposed_data[i])
+        #     # record raw p-value
+        #     p_values.append(p_value)
+        #     # determine significance for this value
+        #     significance.append(int(p_value < tr.common.get_configs('p_value')))
+        # return raw p-values and binary flags for significance for output
+        return [p_values, significance]
+
+    def twoway_anova_kp_whole(self, signal1, signal2, signal3, output_console=True, label_str=None):
         """Perform twoway ANOVA on 2 independent variables and 1 dependent variable (as list of lists).
 
         Args:
@@ -3372,11 +3405,18 @@ class Analysis:
             # calculate for given signals one by one
             for signals in anova_signals:
                 # receive significance values
-                [p_values, significance] = self.anova(signals)
+                # [p_values, significance] = self.anova(signals)
+                # # save results to csv
+                # self.save_stats_csv(t=list(range(len(signals['signals'][0]))),
+                #                     p_values=p_values,
+                #                     name_file=signals['label'] + '_' + name_file + '.csv')
+                [p_values, significance] = self.twoway_anova_kp_res(signal_1=signals['signal_1'],
+                                                                    signal_2=signals['signal_2'],
+                                                                    signal_3=signals['signal_3'])
                 # save results to csv
-                self.save_stats_csv(t=list(range(len(signals['signals'][0]))),
-                                    p_values=p_values,
-                                    name_file=signals['label'] + '_' + name_file + '.csv')
+                # self.save_stats_csv(t=list(range(len(signals['signal_1']))),
+                #                     p_values=p_values,
+                #                     name_file=signals['label'] + '_' + name_file + '.csv')
                 # add to the plot
                 marker_x = []  # x-coordinates for stars
                 marker_y = []  # y-coordinates for stars
