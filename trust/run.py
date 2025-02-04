@@ -5,7 +5,6 @@ from tqdm import tqdm
 import os
 import re
 from statistics import mean
-
 import trust as tr
 
 tr.logs(show_level='info', show_color=True)
@@ -51,7 +50,11 @@ if __name__ == '__main__':
     files_heroku = tr.common.get_configs('files_heroku')
     output_dir = "output"
     heroku = tr.analysis.Heroku(files_data=files_heroku, save_p=SAVE_P, load_p=LOAD_P, save_csv=SAVE_CSV, output_dir=output_dir)
-
+        # Path configuration (adjust these paths as necessary)
+    # batch_dir = "output/batches"
+    # glm_output_dir = "output/glm_results"
+    # Ensure the output directory exists
+    # os.makedirs(glm_output_dir, exist_ok=True)
     # read heroku data
     heroku_data = heroku.read_data(filter_data=FILTER_DATA)
     # directly count participants in each group
@@ -76,7 +79,7 @@ if __name__ == '__main__':
         qa = tr.analysis.QA(file_cheaters=tr.common.get_configs('file_cheaters'),
                             job_id=tr.common.get_configs('appen_job'))
         qa.reject_users()
-        qa.ban_users()
+        qa.ban_users() 
     # merge heroku and appen dataframes into one
     all_data = heroku_data.merge(appen_data, left_on='worker_code', right_on='worker_code')
     logger.info('Data from {} participants included in analysis.', all_data.shape[0])
@@ -99,12 +102,13 @@ if __name__ == '__main__':
         points, points_duration = tr.common.load_from_p(file_coords, 'points data')
     # update mapping with keypress data
     if UPDATE_MAPPING:
+        analysis = tr.analysis.Analysis()
         # read in mapping of stimuli
         mapping = heroku.read_mapping()
         # process keypresses and update mapping
         mapping = heroku.process_kp(filter_length=False)
         heroku.process_kp_to_batches()
-        # Perform 2-way mixed ANOVA on the batch files
+
 
         # post-trial questions to process
         questions = [{'question': 'slider-0', 'type': 'num'},
@@ -112,6 +116,8 @@ if __name__ == '__main__':
                      {'question': 'slider-2', 'type': 'num'}]
         # process post-trial questions and update mapping
         mapping = heroku.process_stimulus_questions(questions)
+        heroku.process_questions_to_batches(questions)
+        analysis.conduct_rank_transformed_anova_for_questions(output_dir=output_dir, questions=questions)
         # rename columns with responses to post-stimulus questions to meaningful names
         mapping = mapping.rename(columns={'slider-0': 'comfort',
                                           'slider-1': 'safety',
@@ -123,14 +129,17 @@ if __name__ == '__main__':
     # Output
     if SHOW_OUTPUT:
         analysis = tr.analysis.Analysis()
-        logger.info("Performing 2-way mixed ANOVA on batch files...")
-        analysis = tr.analysis.Analysis()  # Create an Analysis object
-        analysis.conduct_mixed_anova_pingouin(batch_dir=heroku.batch_dir, output_dir=heroku.anova_dir)
-
-        logger.info(f"Processing completed. ANOVA results saved in {heroku.anova_dir}.")
+        analysis.conduct_nonparametric_tests(output_dir=output_dir)
+        logger.info("Starting rank-transformed ANOVA analysis for kp...")
+        analysis.conduct_rank_transformed_anova(output_dir=output_dir)
+        # analysis.conduct_glmm_poisson(batch_dir=batch_dir, output_dir=output_dir)
+        logger.info("ANOVA analysis completed successfully!")
 
         num_stimuli = tr.common.get_configs('num_stimuli')
         logger.info('Creating figures.')
+        # # heroku.process_slider_responses(heroku_data=heroku.heroku_data, batch_dir=batch_dir)
+        # analysis.conduct_mixed_anova_questions(batch_dir=batch_dir, output_dir=output_dir)
+
         # Visualisation of keypress data
         if SHOW_OUTPUT_KP:
             # all keypresses with confidence interval
@@ -201,83 +210,102 @@ if __name__ == '__main__':
                                    'start': start,
                                    'end': end,
                                    'annotation': vert_line_annotations[x]})
-                # prepare pairs of signals to compare with ttest
-                ttest_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
-                                  'signal_2': df.loc['V' + str(ids[1])]['kp_raw'][0],
-                                  'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[1]) + ')',
-                                  'paired': True},
-                                 {'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
-                                  'signal_2': df.loc['V' + str(ids[2])]['kp_raw'][0],
-                                  'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[1]) + ')',
-                                  'paired': False},
-                                 {'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
-                                  'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[3]) + ')',
-                                  'paired': False},
-                                 {'signal_1': df.loc['V' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
-                                  'signal_2': df.loc['V' + str(ids[2])]['kp_raw'][0],
-                                  'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[2]) + ')',
-                                  'paired': False},
-                                 {'signal_1': df.loc['V' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
-                                  'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(V' + str(ids[2]) + ', V' + str(ids[3]) + ')',
-                                  'paired': True},
-                                 {'signal_1': df.loc['V' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
-                                  'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
-                                  'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[3]) + ')',
-                                  'paired': False}]
-                # prepare signals to compare with oneway ANOVA on the res level
-                anova_signals = [{'signals': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
-                                              df.loc['V' + str(ids[1])]['kp_raw'][0],
-                                              df.loc['V' + str(ids[2])]['kp_raw'][0],
-                                              df.loc['V' + str(ids[3])]['kp_raw'][0]],
-                                  'label': 'anova'}]
+                # # prepare pairs of signals to compare with ttest
+                # ttest_signals = [{'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 1 = within
+                #                   'signal_2': df.loc['V' + str(ids[1])]['kp_raw'][0],
+                #                   'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[1]) + ')',
+                #                   'paired': True},
+                #                  {'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 2 = between
+                #                   'signal_2': df.loc['V' + str(ids[2])]['kp_raw'][0],
+                #                   'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[1]) + ')',
+                #                   'paired': False},
+                #                  {'signal_1': df.loc['V' + str(ids[0])]['kp_raw'][0],  # 0 and 3 = between
+                #                   'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
+                #                   'label': 'ttest(V' + str(ids[0]) + ', V' + str(ids[3]) + ')',
+                #                   'paired': False},
+                #                  {'signal_1': df.loc['V' + str(ids[1])]['kp_raw'][0],  # 1 and 2 = between
+                #                   'signal_2': df.loc['V' + str(ids[2])]['kp_raw'][0],
+                #                   'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[2]) + ')',
+                #                   'paired': False},
+                #                  {'signal_1': df.loc['V' + str(ids[2])]['kp_raw'][0],  # 2 and 3 = within
+                #                   'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
+                #                   'label': 'ttest(V' + str(ids[2]) + ', V' + str(ids[3]) + ')',
+                #                   'paired': True},
+                #                  {'signal_1': df.loc['V' + str(ids[1])]['kp_raw'][0],  # 1 and 3 = between
+                #                   'signal_2': df.loc['V' + str(ids[3])]['kp_raw'][0],
+                #                   'label': 'ttest(V' + str(ids[1]) + ', V' + str(ids[3]) + ')',
+                #                   'paired': False}]
+                # # prepare signals to compare with oneway ANOVA on the res level
+                # anova_signals = [{'signals': [df.loc['V' + str(ids[0])]['kp_raw'][0],  # keypress data
+                #                               df.loc['V' + str(ids[1])]['kp_raw'][0],
+                #                               df.loc['V' + str(ids[2])]['kp_raw'][0],
+                #                               df.loc['V' + str(ids[3])]['kp_raw'][0]],
+                #                   'label': 'anova'}]
                 # plot keypress data and slider questions
-                analysis.plot_kp_slider_videos(df,
-                                               y=['comfort', 'safety', 'expectation'],
-                                               # hardcode based on the longest stimulus
-                                               xaxis_kp_range=[0, 43],
-                                               # hardcode based on the highest recorded value
-                                               yaxis_kp_range=[0, 70],
-                                               yaxis_step=10,
-                                               events=events,
-                                               events_width=1,
-                                               events_dash='dot',
-                                               events_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               events_annotations_font_size=12,
-                                               events_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               yaxis_slider_title=None,
-                                               show_text_labels=True,
-                                               stacked=True,
-                                               yaxis_slider_show=False,
-                                               font_size=16,
-                                               legend_x=0.71,
-                                               legend_y=1.0,
-                                               fig_save_width=1600,  # preserve ratio 225x152
-                                               fig_save_height=1080,  # preserve ratio 225x152
-                                               name_file='kp_videos_sliders_'+','.join([str(i) for i in ids]),
-                                               ttest_signals=ttest_signals,
-                                               ttest_marker='circle',
-                                               ttest_marker_size=3,
-                                               ttest_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               ttest_annotations_font_size=10,
-                                               ttest_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               anova_signals=anova_signals,
-                                               anova_marker='cross',
-                                               anova_marker_size=3,
-                                               anova_marker_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501
-                                               anova_annotations_font_size=10,
-                                               anova_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',  # noqa: E501,
-                                               ttest_anova_row_height=1.0,
-                                               save_file=True,
-                                               save_final=tr.common.get_configs('save_figures'))
-                # two-way ANOVA
-                # prepare signals to compare with two-way ANOVA
-                signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
-                signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
-                signal3 = tr.common.vertical_sum(mapping.loc[mapping['id'].isin(ids)]['kp_raw'].iloc[0])
-                # perform test
-                analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True)
+                # Replace signal preparation with paths to precomputed CSV files
+                ttest_results_file = os.path.join(tr.settings.output_dir, 'statistics', f'batch_{stim}_ttest_results.csv')
+                anova_results_file = os.path.join(tr.settings.output_dir, 'statistics', f'batch_{stim}_keypress_data_rank_anova_results.csv')
+
+                # Pass these files directly to the plotting function
+                analysis.plot_kp_slider_videos(
+                    df,
+                    stim=stim,
+                    y=['comfort', 'safety', 'expectation'],
+                    # Hardcoded based on the longest stimulus
+                    xaxis_kp_range=[0, 43],
+                    # Adjusted range for ANOVA markers
+                    yaxis_kp_range=[-10, 600],
+                    yaxis_slider_range=[0, 200],
+                    yaxis_step=50,
+                    events=events,
+                    events_width=1,
+                    events_dash='dot',
+                    events_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',
+                    events_annotations_font_size=12,
+                    events_annotations_colour='white' if tr.common.get_configs('plotly_template') == 'plotly_dark' else 'black',
+                    yaxis_slider_title=None,
+                    show_text_labels=True,
+                    stacked=True,
+                    yaxis_slider_show=False,
+                    font_size=16,
+                    legend_x=0.71,
+                    legend_y=1.0,
+                    fig_save_width=1600,  # Preserve ratio 225x152
+                    fig_save_height=1280,  # Preserve ratio 225x152
+                    name_file=f'kp_videos_sliders_{",".join([str(i) for i in ids])}',
+                    anova_results_file=anova_results_file,
+                    # ttest_signals=None,  # T-test results are no longer required
+                    # anova_signals=None,  # Load precomputed ANOVA results
+                    # anova_results_path=os.path.join(tr.settings.output_dir, f'batch_{stim}_keypress_data_rank_anova_results.csv'),  # Precomputed ANOVA CSV
+                    within_marker='diamond',
+                    within_marker_size=3,
+                    within_marker_colour='blue',
+                    between_marker='diamond',
+                    between_marker_size=3,
+                    between_marker_colour='green',
+                    interaction_marker='diamond',
+                    interaction_marker_size=3,
+                    interaction_marker_colour='red',
+                    comp_mixed_marker='diamond',
+                    comp_mixed_marker_size=3,
+                    comp_mixed_marker_colour='purple',
+                    comp_simple_marker='diamond',
+                    comp_simple_marker_size=3,
+                    comp_simple_marker_colour='red',
+                    anova_annotations_font_size=10,
+                    anova_annotations_colour='black',
+                    ttest_anova_row_height=1.0,
+                    save_file=True,
+                    save_final=tr.common.get_configs('save_figures')
+                )
+
+
+                # # prepare signals to compare with two-way ANOVA
+                # signal1 = mapping.loc[mapping['id'].isin(ids)]['target_car'].tolist()
+                # signal2 = mapping.loc[mapping['id'].isin(ids)]['ego_car'].tolist()
+                # signal3 = tr.common.vertical_sum(mapping.loc[mapping['id'].isin(ids)]['kp_raw'].iloc[0])
+                # # perform test
+                # analysis.twoway_anova_kp(signal1, signal2, signal3, output_console=True)
             # keypresses of an individual stimulus for an individual pp
             # analysis.plot_kp_video_pp(mapping,
             #                           heroku_data,

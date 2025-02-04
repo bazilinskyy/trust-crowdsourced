@@ -11,6 +11,9 @@ import warnings
 from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point
 import trust as tr
+import scipy.stats as stats
+from scipy.stats import ks_1samp, norm
+from scipy.stats import shapiro, levene
 
 # warning about partial assignment
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -711,16 +714,19 @@ class Heroku:
             self.mapping.to_csv(os.path.join(tr.settings.output_dir, self.file_mapping_csv))
         # return new mapping
         return self.mapping
-        
-    def process_kp_to_batches(self, filter_length=True):
-        logger.info('Processing keypress data into 21 video batches with res={} ms.', self.res)
-        os.makedirs(self.batch_dir, exist_ok=True)
+
+    def process_kp_to_batches(self, output_dir=None, filter_length=True):
+
+        if output_dir is None:
+            output_dir = tr.settings.output_dir  # Default output directory
+        logger.info('Processing keypress data into 21 video batches with res={} ms.'.format(self.res))
+        os.makedirs(output_dir, exist_ok=True)
 
         self.heroku_data['EgoCar'] = self.heroku_data['participant_group'].map(lambda x: 0 if x in [0, 1] else 1)
         video_batches = [[i, i + 21, i + 42, i + 63] for i in range(21)]
 
         for batch_num, videos in enumerate(video_batches):
-            logger.info(f'Processing batch {batch_num + 1} for videos: {videos}')
+            logger.info(f'Processing batch {batch_num} for videos: {videos}')
             batch_data = []
 
             for video_num in videos:
@@ -763,17 +769,36 @@ class Heroku:
                                 'ParticipantID': participant_id,
                                 'EgoCar': ego_car,
                                 'TargetCar': target_car,
+                                'VideoNumber': video_num,
                                 'TimeBin': rt_bin,
                                 'KPNumber': kp_count
                             })
 
             # Create a DataFrame
             batch_df = pd.DataFrame(batch_data)
+            # Map TimeBin to TimeIndex based on sorted order
+            if 'TimeBin' in batch_df.columns:
+                time_bin_mapping = {value: index for index, value in enumerate(sorted(batch_df['TimeBin'].unique()))}
+                batch_df['TimeIndex'] = batch_df['TimeBin'].map(time_bin_mapping)
+            else:
+                logger.warning(f"'TimeBin' column is missing in batch {batch_num}. Skipping TimeIndex generation.")
+
+
+            # Ensure VideoNumber is in the DataFrame
+            if 'VideoNumber' not in batch_df.columns:
+                logger.error(f"'VideoNumber' column is missing in batch {batch_num}. Skipping batch.")
+                continue
 
             # Remove incomplete data
             batch_df = batch_df.dropna(subset=['TimeBin', 'KPNumber'])
 
-            # Check if all conditions are present for each group
+            # Add TimeIndex
+            logger.info(f"Adding TimeIndex to batch {batch_num}.")
+            unique_bins = sorted(batch_df['TimeBin'].unique())  # Sort TimeBin values
+            bin_to_index = {time_bin: idx for idx, time_bin in enumerate(unique_bins)}  # Map TimeBin to sequential indices
+            batch_df['TimeIndex'] = batch_df['TimeBin'].map(bin_to_index)  # Add TimeIndex column
+
+            # Validate and save batch data
             valid_data = []
             for time_bin in batch_df['TimeBin'].unique():
                 time_bin_data = batch_df[batch_df['TimeBin'] == time_bin]
@@ -781,16 +806,122 @@ class Heroku:
                 if group_counts.min() > 1:  # Ensure at least 2 participants per group-condition combination
                     valid_data.append(time_bin_data)
 
-            # Combine valid data and save
             if valid_data:
                 final_df = pd.concat(valid_data)
                 final_df['EgoCar'] = final_df['EgoCar'].astype('category')
                 final_df['TargetCar'] = final_df['TargetCar'].astype('category')
-                batch_file = os.path.join(self.batch_dir, f'batch_{batch_num + 1}_keypress_data.csv')
-                final_df.to_csv(batch_file, index=False)
-                logger.info(f"Batch {batch_num + 1} data saved to {batch_file}.")
+
+                # Save the batch data if self.save_csv is True
+
+                if self.save_csv:
+                    batch_file = os.path.join(tr.settings.output_dir, f'batch_{batch_num}_keypress_data.csv')
+                    final_df.to_csv(batch_file, index=False)
+                    logger.info(f"Batch {batch_num} data saved to {batch_file}.")
             else:
-                logger.warning(f"No valid data for batch {batch_num + 1}. File not created.")
+                logger.warning(f"No valid data for batch {batch_num}. File not created.")
+
+
+
+    def calculate_descriptive_statistics(self, batch_dir, output_dir):
+        """
+        Calculate descriptive statistics, Kolmogorov-Smirnov, and Levene's test for each batch file.
+
+        Args:
+            batch_dir (str): Directory containing batch files.
+            output_dir (str): Directory to save descriptive statistics files.
+
+        Returns:
+            None
+        """
+        os.makedirs(output_dir, exist_ok=True)  # Ensure the output directory exists
+
+        for batch_file in sorted(os.listdir(batch_dir)):
+            if not batch_file.startswith('batch_') or not batch_file.endswith('.csv'):
+                continue
+
+            batch_path = os.path.join(batch_dir, batch_file)
+
+            # Check if the file is empty
+            if os.path.getsize(batch_path) == 0:
+                logger.warning(f"Skipping empty batch file: {batch_file}")
+                continue
+
+            try:
+                batch_data = pd.read_csv(batch_path)
+                logger.debug(f"Processing {batch_file}: Columns: {batch_data.columns}")
+            except Exception as e:
+                logger.error(f"Failed to read batch file {batch_file}: {e}")
+                continue
+
+            if 'VideoNumber' not in batch_data.columns or 'TimeBin' not in batch_data.columns:
+                logger.error(f"Missing required columns in {batch_file}. Available columns: {batch_data.columns}")
+                continue
+
+            logger.info(f"Processing {batch_file} for descriptive statistics...")
+
+            descriptive_stats = []
+            for (video_num, time_bin), group_data in batch_data.groupby(['VideoNumber', 'TimeBin']):
+                if group_data['KPNumber'].isnull().all():
+                    logger.warning(f"No valid data for Video {video_num}, TimeBin {time_bin}. Skipping...")
+                    continue
+
+                stats = {
+                    'VideoNumber': video_num,
+                    'TimeBin': time_bin,
+                    'mean': group_data['KPNumber'].mean(),
+                    'std': group_data['KPNumber'].std(),
+                    'min': group_data['KPNumber'].min(),
+                    'max': group_data['KPNumber'].max(),
+                    'count': group_data['KPNumber'].count()
+                }
+
+                # Debugging input data for Kolmogorov-Smirnov test
+                logger.debug(f"Data for Kolmogorov-Smirnov test: {group_data['KPNumber']}")
+
+                try:
+                    if len(group_data) > 3 and stats['std'] > 0:  # At least 4 data points and non-zero std
+                        # Test against a normal distribution with the same mean and std
+                        theoretical_cdf = norm(loc=stats['mean'], scale=stats['std']).cdf
+                        ks_stat, p_value = ks_1samp(group_data['KPNumber'], theoretical_cdf)
+                        # Ensure p-value is in range [0, 1]
+                        if not (0 <= p_value <= 1):
+                            logger.warning(f"Invalid KS p-value for Video {video_num}, TimeBin {time_bin}: {p_value}")
+                            p_value = None  # Reset invalid p-values
+                        stats['KS-stat'] = ks_stat
+                        stats['KS-p'] = p_value
+                    else:
+                        stats['KS-stat'], stats['KS-p'] = None, None
+                except Exception as e:
+                    logger.warning(f"Kolmogorov-Smirnov test failed for Video {video_num}, TimeBin {time_bin}: {e}")
+                    stats['KS-stat'], stats['KS-p'] = None, None
+
+                # Debugging input data for Levene's test
+                logger.debug(f"Data for Levene's Test: {group_data}")
+
+                try:
+                    group_values = [
+                        group['KPNumber'].values
+                        for _, group in group_data.groupby('EgoCar')
+                        if len(group) > 1
+                    ]
+                    if len(group_values) > 1:
+                        levene_stat, levene_p = levene(*group_values)
+                        stats['Levene-stat'] = levene_stat
+                        stats['Levene-p'] = levene_p
+                    else:
+                        stats['Levene-stat'], stats['Levene-p'] = None, None
+                except Exception as e:
+                    logger.warning(f"Levene's test failed for Video {video_num}, TimeBin {time_bin}: {e}")
+                    stats['Levene-stat'], stats['Levene-p'] = None, None
+
+                descriptive_stats.append(stats)
+
+            if descriptive_stats:
+                descriptive_file = os.path.join(output_dir, f"{batch_file.replace('.csv', '_descriptive_statistics.csv')}")
+                pd.DataFrame(descriptive_stats).to_csv(descriptive_file, index=False)
+                logger.info(f"Descriptive statistics saved to {descriptive_file}.")
+            else:
+                logger.warning(f"No descriptive statistics generated for {batch_file}.")
 
 
     def process_stimulus_questions(self, questions):
@@ -891,6 +1022,111 @@ class Heroku:
             self.mapping.to_csv(os.path.join(tr.settings.output_dir, self.file_mapping_csv))
         # return new mapping
         return self.mapping
+
+    def process_questions_to_batches(self, questions, output_dir=None, filter_length=True):
+        """
+        Process post-stimulus questions into video batches.
+
+        Args:
+            questions (list): List of question definitions (e.g., {'question': 'slider-0', 'type': 'num'}).
+            filter_length (bool): Whether to filter videos by their duration.
+
+        Returns:
+            None
+        """
+        if output_dir is None:
+            output_dir = tr.settings.output_dir  # Default output directory
+        logger.info('Processing question data into video batches.')
+        os.makedirs(output_dir, exist_ok=True)
+
+        self.heroku_data['EgoCar'] = self.heroku_data['participant_group'].map(lambda x: 0 if x in [0, 1] else 1)
+        video_batches = [[i, i + 21, i + 42, i + 63] for i in range(21)]
+
+        for batch_num, videos in enumerate(video_batches):
+            logger.info(f'Processing batch {batch_num} for videos: {videos}')
+            batch_data = []
+
+            for video_num in videos:
+                video_id = f'V{video_num}'
+                if video_id not in self.mapping.index:
+                    logger.warning(f"Video {video_id} not found in mapping. Skipping...")
+                    continue
+
+                for rep in range(self.num_repeat):
+                    video_as = f'video_{video_num}-as-{rep}'
+                    video_order = f'video_{video_num}-qs-{rep}'
+
+                    for row_index, row in self.heroku_data.iterrows():
+                        participant_id = row.name
+                        ego_car = row['EgoCar']
+                        target_car = 0 if (video_num % 2 == 0) else 1
+
+                        if ((ego_car == 0 and video_num >= 42) or
+                            (ego_car == 1 and video_num < 42)):
+                            continue
+
+                        if video_as not in self.heroku_data.columns or video_order not in self.heroku_data.columns:
+                            continue
+
+                        answers = row[video_as]
+                        order = row[video_order]
+
+                        if not isinstance(answers, list) or not isinstance(order, list):
+                            continue
+
+                        if 'injection' in order:
+                            del answers[order.index('injection')]
+                            del order[order.index('injection')]
+
+                        question_data = {}
+                        for q in questions:
+                            question_name = q['question']  # Extract the question name
+                            if question_name in order:
+                                idx = order.index(question_name)
+                                question_data[question_name] = answers[idx]
+                            else:
+                                question_data[question_name] = None
+
+                        batch_data.append({
+                            'ParticipantID': participant_id,
+                            'EgoCar': ego_car,
+                            'TargetCar': target_car,
+                            'VideoNumber': video_num,
+                            **question_data
+                        })
+
+            # Create a DataFrame
+            batch_df = pd.DataFrame(batch_data)
+
+            # Ensure VideoNumber is in the DataFrame
+            if 'VideoNumber' not in batch_df.columns:
+                logger.error(f"'VideoNumber' column is missing in batch {batch_num}. Skipping batch.")
+                continue
+
+            # Remove rows with all NaN question data
+            question_columns = [q['question'] for q in questions if q['question'] in batch_df.columns]
+            batch_df = batch_df.dropna(subset=question_columns, how='all')
+
+            # Validate and save batch data
+            valid_data = []
+            for video_num in batch_df['VideoNumber'].unique():
+                video_data = batch_df[batch_df['VideoNumber'] == video_num]
+                group_counts = video_data.groupby(['EgoCar', 'TargetCar']).size()
+                if group_counts.min() > 1:  # Ensure at least 2 participants per group-condition combination
+                    valid_data.append(video_data)
+
+            if valid_data:
+                final_df = pd.concat(valid_data)
+                final_df['EgoCar'] = final_df['EgoCar'].astype('category')
+                final_df['TargetCar'] = final_df['TargetCar'].astype('category')
+                if self.save_csv:
+                        batch_file = os.path.join(tr.settings.output_dir, f'batch_{batch_num}_poststimulus_data.csv')
+                        final_df.to_csv(batch_file, index=False)
+                        logger.info(f"Batch {batch_num} question data saved to {batch_file}.")
+            else:
+                logger.warning(f"No valid data for batch {batch_num}. File not created.")
+
+
 
     def filter_data(self, df):
         """

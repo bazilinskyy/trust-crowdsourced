@@ -30,8 +30,15 @@ from statsmodels.formula.api import ols
 import statsmodels.api as sm
 from statsmodels.stats.anova import AnovaRM
 import logging
+import scipy.stats as stats
+from scipy.stats import ks_1samp, norm
+from scipy.stats import shapiro, levene
+from statsmodels.formula.api import mixedlm
 import trust as tr
 import pingouin as pg
+from scipy.stats import rankdata
+from scipy.stats import wilcoxon, mannwhitneyu
+from statsmodels.stats.multitest import multipletests
 
 
 matplotlib.use('TkAgg')
@@ -2113,19 +2120,53 @@ class Analysis:
         else:
             fig.show()
 
-    def plot_kp_slider_videos(self, df, y: list, y_legend=None, x=None, events=None, events_width=1, events_dash='dot',
+
+    def plot_kp_slider_videos(self, df, stim, y: list, y_legend=None, x=None, events=None, events_width=1, events_dash='dot',
                               events_colour='black', events_annotations_font_size=20,
                               events_annotations_colour='black', xaxis_kp_title='Time (s)',
                               yaxis_kp_title='Percentage of trials with response key pressed',
-                              xaxis_kp_range=None, yaxis_kp_range=None, stacked=False, pretty_text=False,
+                              xaxis_kp_range=None, yaxis_kp_range=None, yaxis_slider_range=None, stacked=False, pretty_text=False,
                               orientation='v', xaxis_slider_title='Stimulus', yaxis_slider_show=False,
                               yaxis_slider_title=None, show_text_labels=False, xaxis_ticklabels_slider_show=True,
                               yaxis_ticklabels_slider_show=False, name_file='kp_videos_sliders', save_file=False,
-                              save_final=False, fig_save_width=1320, fig_save_height=680, legend_x=0.7, legend_y=0.95,
-                              font_family=None, font_size=None, ttest_signals=None, ttest_marker='circle',
-                              ttest_marker_size=3,  ttest_marker_colour='black', ttest_annotations_font_size=10,
-                              ttest_annotations_colour='black', anova_signals=None, anova_marker='cross',
-                              anova_marker_size=3, anova_marker_colour='black', anova_annotations_font_size=10,
+                              save_final=False, fig_save_width=1600, fig_save_height=1280, legend_x=0.7, legend_y=0.95,
+                              font_family=None, font_size=None, 
+                              # ttest_results_file=None, 
+                              # ttest_marker='circle',
+                              # ttest_marker_size=3,  
+                              # ttest_marker_colour='black', 
+                              # ttest_annotations_font_size=10,
+                              # ttest_annotations_colour='black', 
+                              anova_results_file=None,
+                              nonparametric_results_file=None, 
+                              within_marker = 'diamond',
+                              within_marker_size = 3,
+                              within_marker_colour = 'blue',
+                              between_marker = 'diamond',
+                              between_marker_size = 3,
+                              between_marker_colour = 'green',
+                              interaction_marker = 'diamond',
+                              interaction_marker_size = 3,
+                              interaction_marker_colour = 'red',
+                              within_ego0_marker='square',
+                              within_ego0_marker_size=4,
+                              within_ego0_marker_colour='blue',
+                              within_ego1_marker='diamond',
+                              within_ego1_marker_size=4,
+                              within_ego1_marker_colour='blue',
+                              within_target0_marker='square',
+                              within_target0_marker_size=4,
+                              within_target0_marker_colour='green',
+                              within_target1_marker='diamond',
+                              within_target1_marker_size=4,
+                              within_target1_marker_colour='green',
+                              comp_mixed_marker='diamond',
+                              comp_mixed_marker_size=4,
+                              comp_mixed_marker_colour='purple',
+                              comp_simple_marker='diamond',
+                              comp_simple_marker_size=4,
+                              comp_simple_marker_colour='red',
+                              anova_annotations_font_size=10,
                               anova_annotations_colour='black', ttest_anova_row_height=0.5, yaxis_step=10):
         """Plot keypresses with multiple variables as a filter and slider questions for the stimuli.
 
@@ -2178,24 +2219,30 @@ class Analysis:
             yaxis_step (int): step between ticks on y axis.
         """
         logger.info('Creating figure keypress and slider data for {}.', df.index.tolist())
+        logger.info(f"Creating figure for stimulus group: {stim}")
         # calculate times
         times = np.array(range(self.res, df['video_length'].max() + self.res, self.res)) / 1000
         # plotly
         fig = subplots.make_subplots(rows=1,
                                      cols=2,
                                      column_widths=[0.8, 0.2],
-                                     # subplot_titles=('Mean keypress values', 'Responses to sliders'),
+                                     subplot_titles=('Mean keypress values', 'Responses to sliders'),
                                      specs=[[{}, {}]],
                                      horizontal_spacing=0.00,
                                      shared_xaxes=False)
-        # adjust ylim, if ttest results need to be plotted
-        if ttest_signals:
-            # assume one row takes ttest_anova_row_height on y axis
-            yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(ttest_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
-        # adjust ylim, if anova results need to be plotted
-        if anova_signals:
-            # assume one row takes ttest_anova_row_height on y axis
-            yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(anova_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
+        # # adjust ylim, if ttest results need to be plotted
+        # if ttest_signals:
+        #     # assume one row takes ttest_anova_row_height on y axis
+        #     yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(ttest_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
+        # # adjust ylim, if anova results need to be plotted
+        # if anova_signals:
+        #     # assume one row takes ttest_anova_row_height on y axis
+        #     yaxis_kp_range[0] = round(yaxis_kp_range[0] - len(anova_signals) * ttest_anova_row_height - ttest_anova_row_height)  # noqa: E501
+        # Adjust ylim based on t-test and ANOVA annotations
+        # if ttest_results_file:
+        #     yaxis_kp_range[0] -= ttest_anova_row_height
+        if anova_results_file:
+            yaxis_kp_range[0] -= ttest_anova_row_height
         # plot keypress data
         for index, row in df.iterrows():
             values = row['kp']  # keypress data
@@ -2256,28 +2303,63 @@ class Analysis:
                           row=1,
                           col=2)
         # draw ttest and anova rows
-        self.draw_ttest_anova(fig=fig,
-                              times=times,
-                              name_file=name_file,
-                              yaxis_range=yaxis_kp_range,
-                              yaxis_step=yaxis_step,
-                              ttest_signals=ttest_signals,
-                              ttest_marker=ttest_marker,
-                              ttest_marker_size=ttest_marker_size,
-                              ttest_marker_colour=ttest_marker_colour,
-                              ttest_annotations_font_size=ttest_annotations_font_size,
-                              ttest_annotations_colour=ttest_annotations_colour,
-                              anova_signals=anova_signals,
-                              anova_marker=anova_marker,
-                              anova_marker_size=anova_marker_size,
-                              anova_marker_colour=anova_marker_colour,
-                              anova_annotations_font_size=anova_annotations_font_size,
-                              anova_annotations_colour=anova_annotations_colour,
-                              ttest_anova_row_height=ttest_anova_row_height)
-        # update axis
+        # self.draw_anova_from_precomputed_results(
+        #                                             fig=fig,
+        #                                             times=times,
+        #                                             anova_results_path=os.path.join(self.anova_dir, f'batch_{stim}_keypress_data_rank_anova_results.csv'),
+        #                                             yaxis_range=yaxis_kp_range,
+        #                                             yaxis_step=yaxis_step,
+        #                                             anova_marker=anova_marker,
+        #                                             anova_marker_size=anova_marker_size,
+        #                                             anova_marker_colour=anova_marker_colour,
+        #                                             anova_annotations_font_size=anova_annotations_font_size,
+        #                                             anova_annotations_colour=anova_annotations_colour
+        #                                         )
+
+        self.draw_ttest_anova_from_files(fig=fig,
+                                          times=times,
+                                          name_file=name_file,
+                                          stim=stim,
+                                          yaxis_range=yaxis_kp_range,
+                                          yaxis_step=yaxis_step,
+                                          # ttest_results_file=None, 
+                                          # ttest_marker=None,
+                                          # ttest_marker_size=None,
+                                          # ttest_marker_colour=ttest_marker_colour,
+                                          # ttest_annotations_font_size=ttest_annotations_font_size,
+                                          # ttest_annotations_colour=ttest_annotations_colour,
+                                          anova_results_file=os.path.join(tr.settings.output_dir, 'statistics', f"batch_{stim}_keypress_data_rank_anova_results.csv"),
+                                          nonparametric_results_file=os.path.join(tr.settings.output_dir, 'statistics', f"batch_{stim}_keypress_data_nonparametric_results.csv"),
+                                          within_marker='diamond', within_marker_size=4, within_marker_colour='blue',
+                                          between_marker='diamond', between_marker_size=4, between_marker_colour='green',
+                                          interaction_marker='diamond', interaction_marker_size=4, interaction_marker_colour='red',
+                                          within_ego0_marker='square',
+                                          within_ego0_marker_size=4,
+                                          within_ego0_marker_colour='blue',
+                                          within_ego1_marker='diamond',
+                                          within_ego1_marker_size=4,
+                                          within_ego1_marker_colour='blue',
+                                          within_target0_marker='square',
+                                          within_target0_marker_size=4,
+                                          within_target0_marker_colour='green',
+                                          within_target1_marker='diamond',
+                                          within_target1_marker_size=4,
+                                          within_target1_marker_colour='green',
+                                          comp_mixed_marker='diamond',
+                                          comp_mixed_marker_size=4,
+                                          comp_mixed_marker_colour='purple',
+                                          comp_simple_marker='diamond',
+                                          comp_simple_marker_size=4,
+                                          comp_simple_marker_colour='red',
+
+                                          # anova_marker_size=anova_marker_size,
+                                          # anova_marker_colour=anova_marker_colour,
+                                          anova_annotations_font_size=anova_annotations_font_size,
+                                          anova_annotations_colour=anova_annotations_colour,
+                                          ttest_anova_row_height=ttest_anova_row_height)
+        # update slider axis
         fig.update_xaxes(title_text=xaxis_slider_title, row=1, col=2)
-        fig.update_yaxes(title_text=yaxis_slider_title, row=1, col=2)
-        fig.update_yaxes(visible=yaxis_slider_show, row=1, col=2)
+        fig.update_yaxes(title_text=yaxis_slider_title, range=yaxis_slider_range, visible=yaxis_slider_show, row=1, col=2)
         fig.update_xaxes(showticklabels=xaxis_ticklabels_slider_show, row=1, col=2)
         fig.update_yaxes(showticklabels=yaxis_ticklabels_slider_show, row=1, col=2)
         # update template
@@ -2413,7 +2495,7 @@ class Analysis:
         if not name_file:
             name_file = 'kp_' + variable + '-' + '-'.join(str(val) for val in values)
         # plotly figure
-        fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=True)
+        fig = subplots.make_subplots(rows=1, cols=1, shared_xaxes=False)
         # plot each variable in data
         for data in range(len(extracted_data)):
             # custom labels for legend
@@ -2443,24 +2525,24 @@ class Analysis:
                          events_annotations_font_size=events_annotations_font_size,
                          events_annotations_colour=events_annotations_colour)
         # draw ttest and anova rows
-        self.draw_ttest_anova(fig=fig,
-                              times=times,
-                              name_file=name_file,
-                              yaxis_range=yaxis_range,
-                              yaxis_step=yaxis_step,
-                              ttest_signals=ttest_signals,
-                              ttest_marker=ttest_marker,
-                              ttest_marker_size=ttest_marker_size,
-                              ttest_marker_colour=ttest_marker_colour,
-                              ttest_annotations_font_size=ttest_annotations_font_size,
-                              ttest_annotations_colour=ttest_annotations_colour,
-                              anova_signals=anova_signals,
-                              anova_marker=anova_marker,
-                              anova_marker_size=anova_marker_size,
-                              anova_marker_colour=anova_marker_colour,
-                              anova_annotations_font_size=anova_annotations_font_size,
-                              anova_annotations_colour=anova_annotations_colour,
-                              ttest_anova_row_height=ttest_anova_row_height)
+        # self.draw_ttest_anova(fig=fig,
+        #                       times=times,
+        #                       name_file=name_file,
+        #                       yaxis_range=yaxis_range,
+        #                       yaxis_step=yaxis_step,
+        #                       ttest_signals=ttest_signals,
+        #                       ttest_marker=ttest_marker,
+        #                       ttest_marker_size=ttest_marker_size,
+        #                       ttest_marker_colour=ttest_marker_colour,
+        #                       ttest_annotations_font_size=ttest_annotations_font_size,
+        #                       ttest_annotations_colour=ttest_annotations_colour,
+        #                       anova_signals=anova_signals,
+        #                       anova_marker=anova_marker,
+        #                       anova_marker_size=anova_marker_size,
+        #                       anova_marker_colour=anova_marker_colour,
+        #                       anova_annotations_font_size=anova_annotations_font_size,
+        #                       anova_annotations_colour=anova_annotations_colour,
+        #                       ttest_anova_row_height=ttest_anova_row_height)
         # create tabs
         buttons = list([dict(label='All',
                              method='update',
@@ -2511,6 +2593,98 @@ class Analysis:
         # open it in localhost instead
         else:
             fig.show()
+
+    # def conduct_mixed_anova_questions(self, batch_dir, output_dir=None):
+    #     """
+    #     Perform 2-way mixed ANOVA for post-stimulus questions for each batch file.
+
+    #     Args:
+    #         batch_dir (str): Directory containing batch files (e.g., batch_*.csv).
+    #         output_dir (str): Directory to save ANOVA results.
+
+    #     Returns:
+    #         None
+    #     """
+    #     if output_dir is None:
+    #         output_dir = self.anova_dir
+    #     logger.info(f"Starting 2-way mixed ANOVA for post-stimulus questions in {batch_dir}...")
+
+    #     os.makedirs(output_dir, exist_ok=True)
+
+    #     for batch_file in sorted(os.listdir(batch_dir)):
+    #         if not batch_file.startswith('batch_') or not batch_file.endswith('.csv'):
+    #             continue
+
+    #         batch_path = os.path.join(batch_dir, batch_file)
+
+    #         if os.path.getsize(batch_path) == 0:
+    #             logger.warning(f"Skipping empty batch file: {batch_file}")
+    #             continue
+
+    #         try:
+    #             batch_data = pd.read_csv(batch_path)
+    #         except Exception as e:
+    #             logger.error(f"Failed to read batch file {batch_file}: {e}")
+    #             continue
+
+    #         logger.info(f"Processing {batch_file} for ANOVA...")
+
+    #         anova_results = []
+
+    #         # Process each question
+    #         for question_col in [col for col in batch_data.columns if col.startswith('question_')]:
+    #             for time_bin in batch_data['TimeBin'].dropna().unique():
+    #                 time_bin_data = batch_data[batch_data['TimeBin'] == time_bin].dropna(subset=[question_col])
+
+    #                 if len(time_bin_data['EgoCar'].unique()) < 2:
+    #                     logger.warning(f"Skipping TimeBin {time_bin} for {question_col}: only one level of EgoCar.")
+    #                     continue
+
+    #                 if len(time_bin_data['TargetCar'].unique()) < 2:
+    #                     logger.warning(f"Skipping TimeBin {time_bin} for {question_col}: only one level of TargetCar.")
+    #                     continue
+
+    #                 if time_bin_data[question_col].nunique() <= 1:
+    #                     logger.warning(f"Skipping TimeBin {time_bin} for {question_col}: insufficient variability.")
+    #                     continue
+
+    #                 try:
+    #                     # Prepare data for Pingouin's mixed_anova
+    #                     time_bin_data['TargetCar'] = time_bin_data['TargetCar'].astype('category')
+    #                     time_bin_data['EgoCar'] = time_bin_data['EgoCar'].astype('category')
+
+    #                     # Run ANOVA
+    #                     aov = pg.mixed_anova(
+    #                         dv=question_col,
+    #                         within='TargetCar',
+    #                         between='EgoCar',
+    #                         subject='ParticipantID',
+    #                         data=time_bin_data
+    #                     )
+
+    #                     results = {
+    #                         'TimeBin': time_bin,
+    #                         'Question': question_col,
+    #                         'Within-TargetCar-F': aov.loc[aov['Source'] == 'TargetCar', 'F'].values[0],
+    #                         'Within-TargetCar-p': aov.loc[aov['Source'] == 'TargetCar', 'p-unc'].values[0],
+    #                         'Interaction-F': aov.loc[aov['Source'] == 'Interaction', 'F'].values[0],
+    #                         'Interaction-p': aov.loc[aov['Source'] == 'Interaction', 'p-unc'].values[0],
+    #                         'Between-EgoCar-F': aov.loc[aov['Source'] == 'EgoCar', 'F'].values[0],
+    #                         'Between-EgoCar-p': aov.loc[aov['Source'] == 'EgoCar', 'p-unc'].values[0]
+    #                     }
+
+    #                     anova_results.append(results)
+
+    #                 except Exception as e:
+    #                     logger.error(f"ANOVA failed for {question_col}, TimeBin {time_bin}: {e}")
+
+    #         # Save results if any exist
+    #         if anova_results:
+    #             anova_file = os.path.join(output_dir, f"{batch_file.replace('.csv', '_questions_anova_results.csv')}")
+    #             pd.DataFrame(anova_results).to_csv(anova_file, index=False)
+    #             logger.info(f"ANOVA results for questions saved to {anova_file}.")
+    #         else:
+    #             logger.warning(f"No ANOVA results generated for {batch_file}.")
 
     def plot_kp_variables_or(self, df, variables, y_legend=None, xaxis_title='Time (s)',
                              yaxis_title='Percentage of trials with response key pressed', xaxis_range=None,
@@ -3212,32 +3386,34 @@ class Analysis:
 
 
 
-    def conduct_mixed_anova_pingouin(self, batch_dir, output_dir=None):
+    def conduct_rank_transformed_anova_for_questions(self, output_dir, questions=None):
         """
-        Perform 2-way mixed ANOVA for every time bin in each video batch file using Pingouin.
+        Perform rank-transformed 2-way mixed ANOVA and homogeneity tests for post-stimulus questions.
 
         Args:
-            batch_dir (str): Directory containing batch files (e.g., batch_*.csv).
-            output_dir (str): Directory to save ANOVA results.
+            questions (list): List of questions to analyze.
 
         Returns:
             None
         """
-        if output_dir is None:
-            output_dir = self.anova_dir  # Default to Heroku's ANOVA directory
-        logger.info(f"Starting 2-way mixed ANOVA for batch files in {batch_dir} using Pingouin...")
+        stats_dir = os.path.join(tr.settings.output_dir, self.folder_stats)  # Use consistent stats directory
+        os.makedirs(stats_dir, exist_ok=True)
 
-        os.makedirs(output_dir, exist_ok=True)  # Ensure output directory exists
+        logger.info(f"Starting rank-transformed ANOVA with homogeneity tests for questions batch files in {tr.settings.output_dir}...")
+        batch_files = [
+            f for f in sorted(os.listdir(tr.settings.output_dir))
+            if f.startswith('batch_') and f.endswith('_question_data.csv')
+        ]
 
-        for batch_file in sorted(os.listdir(batch_dir)):
-            if not batch_file.startswith('batch_') or not batch_file.endswith('.csv'):
-                continue
+        if not batch_files:
+            logger.warning(f"No valid batch files found in {tr.settings.output_dir}.")
+            return
 
-            batch_path = os.path.join(batch_dir, batch_file)
+        for batch_file in batch_files:
+            batch_path = os.path.join(tr.settings.output_dir, batch_file)
 
-            # Check if the file is empty
             if os.path.getsize(batch_path) == 0:
-                logger.warning(f"Skipping empty batch file: {batch_file}")
+                logger.warning(f"Skipping empty batch file: {batch_file} (File is empty).")
                 continue
 
             try:
@@ -3246,62 +3422,650 @@ class Analysis:
                 logger.error(f"Failed to read batch file {batch_file}: {e}")
                 continue
 
-            logger.info(f"Processing {batch_file} for ANOVA...")
+            if 'VideoNumber' not in batch_data.columns:
+                logger.error(f"Missing 'VideoNumber' column in {batch_file}. Skipping file.")
+                continue
 
-            anova_results = []  # Initialize results for this batch
+            logger.info(f"Processing {batch_file} for rank-transformed ANOVA and homogeneity tests...")
 
-            for time_bin in batch_data['TimeBin'].dropna().unique():
-                time_bin_data = batch_data[batch_data['TimeBin'] == time_bin].dropna(subset=['KPNumber'])
+            homogeneity_results = []  # Store Levene's test results
+            anova_results = []  # Store ANOVA results
 
-                # Validate data
-                if len(time_bin_data['EgoCar'].unique()) < 2:
-                    logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: only one level of EgoCar.")
+            for question in questions:
+                question_name = question['question']
+                if question_name not in batch_data.columns:
+                    logger.warning(f"Question '{question_name}' not found in {batch_file}. Skipping question.")
                     continue
 
-                if len(time_bin_data['TargetCar'].unique()) < 2:
-                    logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: only one level of TargetCar.")
-                    continue
+                # Rank transform data for the current question
+                batch_data[f'{question_name}_Rank'] = rankdata(batch_data[question_name], method='average')
 
-                if time_bin_data['KPNumber'].nunique() <= 1:
-                    logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: insufficient variability in KPNumber.")
-                    continue
-
+                # Perform homogeneity test
                 try:
-                    # Prepare data for Pingouin's mixed_anova
-                    time_bin_data['TargetCar'] = time_bin_data['TargetCar'].astype('category')
-                    time_bin_data['EgoCar'] = time_bin_data['EgoCar'].astype('category')
+                    group_values = [
+                        group[f'{question_name}_Rank'].values
+                        for _, group in batch_data.groupby(['EgoCar', 'TargetCar'])
+                        if len(group) > 1
+                    ]
+                    if len(group_values) > 1:
+                        levene_stat, levene_p = levene(*group_values)
+                    else:
+                        levene_stat, levene_p = None, None
 
-                    # Run Pingouin's mixed ANOVA
+                    # Log and store homogeneity results
+                    homogeneity_results.append({
+                        'BatchFile': batch_file,
+                        'Question': question_name,
+                        'Levene-stat': levene_stat,
+                        'Levene-p': levene_p,
+                    })
+
+                    if levene_p is not None and levene_p < 0.05:
+                        logger.warning(f"Homogeneity assumption violated for Question {question_name} in {batch_file}.")
+
+                except Exception as e:
+                    logger.error(f"Levene's test failed for Question {question_name} in {batch_file}: {e}")
+
+                # Perform ANOVA on the 4 videos in the batch for the current question
+                try:
+                    anova_data = batch_data
+
+                    if len(anova_data['EgoCar'].unique()) < 2 or len(anova_data['TargetCar'].unique()) < 2:
+                        logger.warning(f"Skipping ANOVA for Question {question_name} in {batch_file}: insufficient factor levels.")
+                        continue
+
                     aov = pg.mixed_anova(
-                        dv='KPNumber',  # Dependent variable
+                        dv=f'{question_name}_Rank',  # Dependent variable (rank-transformed data)
                         within='TargetCar',  # Within-subject factor
                         between='EgoCar',  # Between-subject factor
                         subject='ParticipantID',  # Identifier for subjects
-                        data=time_bin_data
+                        data=anova_data
                     )
 
-                    # Add results to the list
-                    results = {
-                        'TimeBin': time_bin,
+                    # Store ANOVA results
+                    anova_results.append({
+                        'BatchFile': batch_file,
+                        'Question': question_name,
                         'Within-TargetCar-F': aov.loc[aov['Source'] == 'TargetCar', 'F'].values[0],
                         'Within-TargetCar-p': aov.loc[aov['Source'] == 'TargetCar', 'p-unc'].values[0],
                         'Interaction-F': aov.loc[aov['Source'] == 'Interaction', 'F'].values[0],
                         'Interaction-p': aov.loc[aov['Source'] == 'Interaction', 'p-unc'].values[0],
                         'Between-EgoCar-F': aov.loc[aov['Source'] == 'EgoCar', 'F'].values[0],
-                        'Between-EgoCar-p': aov.loc[aov['Source'] == 'EgoCar', 'p-unc'].values[0]
+                        'Between-EgoCar-p': aov.loc[aov['Source'] == 'EgoCar', 'p-unc'].values[0],
+                    })
+
+                except Exception as e:
+                    logger.error(f"ANOVA failed for Question {question_name} in {batch_file}: {e}")
+
+            # Save homogeneity results
+            if homogeneity_results:
+                homogeneity_file = os.path.join(stats_dir, f"{batch_file.replace('.csv', '_homogeneity_results.csv')}")
+                pd.DataFrame(homogeneity_results).to_csv(homogeneity_file, index=False)
+                logger.info(f"Homogeneity results saved to {homogeneity_file}.")
+
+            # Save ANOVA results
+            if anova_results:
+                anova_file = os.path.join(stats_dir, f"{batch_file.replace('.csv', '_rank_anova_results.csv')}")
+                pd.DataFrame(anova_results).to_csv(anova_file, index=False)
+                logger.info(f"Rank-transformed ANOVA results saved to {anova_file}.")
+
+            # Log if no results were generated
+            if not homogeneity_results:
+                logger.warning(f"No homogeneity results generated for {batch_file}.")
+            if not anova_results:
+                logger.warning(f"No rank-transformed ANOVA results generated for {batch_file}.")
+
+    def conduct_rank_transformed_anova(self, output_dir):
+
+        """
+        Perform rank-transformed 2-way mixed ANOVA and homogeneity tests for each time bin in each video batch file using Pingouin.
+
+        Args:
+            batch_dir (str): Directory containing batch files (e.g., batch_*.csv).
+            output_dir (str): Directory to save ANOVA and homogeneity test results.
+
+        Returns:
+            None
+        """
+        stats_dir = os.path.join(tr.settings.output_dir, self.folder_stats)
+        os.makedirs(stats_dir, exist_ok=True)
+
+        logger.info(f"Processing batch files in directory: {tr.settings.output_dir}")
+        batch_files = [
+            f for f in os.listdir(tr.settings.output_dir)
+            if f.startswith('batch_') and f.endswith('_keypress_data.csv')
+        ]
+        batch_files = [
+            f for f in batch_files if int(f.split('_')[1]) < 21
+        ]
+
+        if not batch_files:
+            logger.warning(f"No valid batch files found in {tr.settings.output_dir}.")
+            return
+
+        for batch_file in tqdm(sorted(batch_files), desc="Processing batch files"):
+            logger.info(f"Processing batch file: {batch_file}")
+            batch_path = os.path.join(tr.settings.output_dir, batch_file)
+
+            if os.path.getsize(batch_path) == 0:
+                logger.warning(f"Skipping empty batch file: {batch_file}")
+                continue
+
+            try:
+                batch_data = pd.read_csv(batch_path)
+                if 'TimeIndex' not in batch_data.columns or 'TimeBin' not in batch_data.columns:
+                    logger.error(f"'TimeIndex' or 'TimeBin' column is missing in {batch_file}. Skipping...")
+                    continue
+            except Exception as e:
+                logger.error(f"Failed to read batch file {batch_file}: {e}")
+                continue
+
+            all_anova_results = []  # Initialize ANOVA results
+            homogeneity_results = []  # Initialize homogeneity test results
+
+            for time_bin in batch_data['TimeBin'].dropna().unique():
+                try:
+                    time_bin_data = batch_data[batch_data['TimeBin'] == time_bin].dropna(subset=['KPNumber'])
+                    # Retrieve TimeIndex corresponding to the TimeBin
+                    time_index = batch_data[batch_data['TimeBin'] == time_bin]['TimeIndex'].iloc[0]  # Retrieve TimeIndex for this TimeBin
+
+                # Ensure sufficient data for ANOVA
+                    if len(time_bin_data['EgoCar'].unique()) < 2 or len(time_bin_data['TargetCar'].unique()) < 2:
+                        logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: insufficient unique levels.")
+                        continue
+                    if time_bin_data['KPNumber'].nunique() <= 1:
+                        logger.warning(f"Skipping TimeBin {time_bin} in {batch_file}: insufficient variability.")
+                        continue
+                    # Rank-transform the data
+                    time_bin_data['RankedKP'] = time_bin_data['KPNumber'].rank()
+
+                    # Homogeneity Test (Levene's Test)
+                    group_values = [
+                        group['RankedKP'].values
+                        for _, group in time_bin_data.groupby(['EgoCar', 'TargetCar'])
+                        if len(group) > 1
+                    ]
+                    if len(group_values) > 1:
+                        levene_stat, levene_p = levene(*group_values)
+                    else:
+                        levene_stat, levene_p = None, None
+                    # Log Homogeneity Test results
+                    if levene_p is not None and levene_p < 0.05:
+                        logger.warning(f"Homogeneity assumption violated for TimeBin {time_bin} in {batch_file}.")
+
+                    homogeneity_results.append({
+                        'BatchFile': batch_file,
+                        'TimeBin': time_bin,
+                        'TimeIndex': time_index,  # Add TimeIndex to Homogeneity Test results
+                        'Levene-stat': levene_stat,
+                        'Levene-p': levene_p,
+                    })
+
+                    # try:
+                    #     time_index = batch_data[batch_data['TimeBin'] == time_bin]['TimeIndex'].iloc[0]
+                    # except IndexError:
+                    #     logger.error(f"No matching TimeIndex found for TimeBin {time_bin} in {batch_file}.")
+                    #     continue
+
+                     # Prepare data for Pingouin's mixed_anova
+                    time_bin_data['TargetCar'] = time_bin_data['TargetCar'].astype('category')
+                    time_bin_data['EgoCar'] = time_bin_data['EgoCar'].astype('category')
+
+                    # Run mixed ANOVA on ranks
+                    aov = pg.mixed_anova(
+                        # Dependent variable (ranked keypress numbers)
+                        dv='RankedKP',
+                        # Within-subject factor
+                        within='TargetCar',
+                        between='EgoCar',  # Between-subject factor
+                        subject='ParticipantID',  # Identifier for subjects
+                        data=time_bin_data
+                    )
+                    results = {
+                        'TimeBin': time_bin,
+                        'TimeIndex': time_index,  # Add TimeIndex to ANOVA results
+                        'Within-TargetCar-F': aov.loc[aov['Source'] == 'TargetCar', 'F'].values[0],
+                        'Within-TargetCar-p': aov.loc[aov['Source'] == 'TargetCar', 'p-unc'].values[0],
+                        'Within-TargetCar-np2': aov.loc[aov['Source'] == 'TargetCar', 'np2'].values[0],  
+                        # Add partial eta squared
+                        'Interaction-F': aov.loc[aov['Source'] == 'Interaction', 'F'].values[0],
+                        'Interaction-p': aov.loc[aov['Source'] == 'Interaction', 'p-unc'].values[0],
+                        'Interaction-np2': aov.loc[aov['Source'] == 'Interaction', 'np2'].values[0],  
+                        # Add partial eta squared
+                        'Between-EgoCar-F': aov.loc[aov['Source'] == 'EgoCar', 'F'].values[0],
+                        'Between-EgoCar-p': aov.loc[aov['Source'] == 'EgoCar', 'p-unc'].values[0],
+                        'Between-EgoCar-np2': aov.loc[aov['Source'] == 'EgoCar', 'np2'].values[0]  
+                        # Add partial eta squared
                     }
-                    anova_results.append(results)
+                    # Log when p-values are less than 0.05
+                    for key in ['Within-TargetCar-p', 'Interaction-p', 'Between-EgoCar-p']:
+                        if results[key] < 0.05:
+                            logger.warning(f"Significant p-value ({key}={results[key]}) for TimeBin {time_bin} in {batch_file}.")
+                    # Conduct post-hoc tests if interaction is significant
+                    if results['Interaction-p'] < 0.05:
+                        logger.info(f"Significant interaction found for TimeBin {time_bin} in {batch_file}. Performing post-hoc tests...")
+                        results = self.perform_posthoc_tests(time_bin_data, results)
+
+                    all_anova_results.append(results)
 
                 except Exception as e:
                     logger.error(f"ANOVA failed for TimeBin {time_bin} in {batch_file}: {e}")
 
-            # Save results if any exist
-            if anova_results:
-                anova_file = os.path.join(output_dir, f"{batch_file.replace('.csv', '_anova_results.csv')}")
-                pd.DataFrame(anova_results).to_csv(anova_file, index=False)
-                logger.info(f"ANOVA results saved to {anova_file}.")
+                # Save Homogeneity Test results
+            homogeneity_file = os.path.join(stats_dir, f"{batch_file.replace('.csv', '_homogeneity_results.csv')}")
+            if homogeneity_results:
+                pd.DataFrame(homogeneity_results).to_csv(homogeneity_file, index=False)
+                logger.info(f"Homogeneity results saved to {homogeneity_file}.")
             else:
-                logger.warning(f"No ANOVA results generated for {batch_file}.")
+                logger.warning(f"No homogeneity test results generated for {batch_file}.")
+
+            # Save ANOVA results
+            anova_file = os.path.join(stats_dir, f"{batch_file.replace('.csv', '_rank_anova_results.csv')}")
+            if all_anova_results:
+                pd.DataFrame(all_anova_results).to_csv(anova_file, index=False)
+                logger.info(f"Rank-transformed ANOVA results saved to {anova_file}.")
+            else:
+                logger.warning(f"No rank-transformed ANOVA results generated for {batch_file}.")
+
+
+    def perform_posthoc_tests(self, data, anova_results):
+        """
+        Conduct post-hoc pairwise comparisons for interaction effects and append the results to the ANOVA file.
+
+        Args:
+            data (DataFrame): Data for a specific time bin (must be rank-transformed).
+            anova_results (dict): ANOVA results for this TimeBin to which post-hoc results will be added.
+
+        Returns:
+            dict: Updated ANOVA results with post-hoc tests included.
+        """
+        try:
+            logger.info("Starting post-hoc tests for interaction effects.")
+
+            # Ensure the data is rank-transformed
+            if 'RankedKP' not in data.columns:
+                raise ValueError("Input data is not rank-transformed. 'RankedKP' column is missing.")
+
+            posthoc_results = []
+
+            # Perform within-group pairwise tests
+            complete_within_data = data.dropna(subset=['TargetCar', 'RankedKP']).copy()
+            participant_counts = complete_within_data.groupby(['ParticipantID', 'TargetCar']).size().unstack()
+            valid_participants = participant_counts.dropna().index  # Participants with data in all conditions
+            filtered_within_data = complete_within_data[complete_within_data['ParticipantID'].isin(valid_participants)]
+
+            if len(valid_participants) > 1:  # Ensure at least two participants for within-group tests
+                within_posthoc = pg.pairwise_tests(
+                    dv='RankedKP',
+                    within='TargetCar',
+                    subject='ParticipantID',
+                    padjust=None,  # No automatic adjustment here; we'll handle it manually
+                    parametric=False,  # Use non-parametric tests for ranked data
+                    data=filtered_within_data
+                )
+                # Manually adjust p-values
+                p_unc = within_posthoc['p-unc'].values
+                reject, p_adjust, _, _ = multipletests(p_unc, method='holm')
+                within_posthoc['p-adjust'] = p_adjust
+
+                within_posthoc['ContrastType'] = 'Within-Group'
+                posthoc_results.append(within_posthoc)
+            else:
+                logger.warning("Not enough valid participants for within-group post-hoc tests.")
+
+            # Perform between-group pairwise tests (no participant filtering needed)
+            between_posthoc = pg.pairwise_tests(
+                dv='RankedKP',
+                between='EgoCar',
+                padjust=None,  # No automatic adjustment here; we'll handle it manually
+                parametric=False,  # Use non-parametric tests for ranked data
+                data=data
+            )
+            # Manually adjust p-values
+            p_unc = between_posthoc['p-unc'].values
+            reject, p_adjust, _, _ = multipletests(p_unc, method='holm')
+            between_posthoc['p-adjust'] = p_adjust
+
+            between_posthoc['ContrastType'] = 'Between-Group'
+            posthoc_results.append(between_posthoc)
+
+            # Combine post-hoc results
+            if posthoc_results:
+                combined_posthoc = pd.concat(posthoc_results, ignore_index=True)
+                combined_posthoc = combined_posthoc.to_dict(orient='records')
+                anova_results['PostHocResults'] = combined_posthoc
+                logger.info("Post-hoc tests completed and added to ANOVA results.")
+            else:
+                anova_results['PostHocResults'] = []
+                logger.warning("No post-hoc results were generated.")
+
+            return anova_results
+
+        except Exception as e:
+            logger.error(f"Error performing post-hoc tests: {e}")
+            return anova_results
+
+
+
+
+    def conduct_nonparametric_tests(self, output_dir):
+        """
+        Conduct non-parametric tests, report mean, SD, sample size, median, mean rank, and direction of group comparison.
+
+        Args:
+            output_dir (str): Directory to save test results.
+
+        Returns:
+            None
+        """
+        stats_dir = os.path.join(tr.settings.output_dir, self.folder_stats)
+        os.makedirs(stats_dir, exist_ok=True)
+        logger.info(f"Processing batch files in directory: {tr.settings.output_dir}")
+
+        batch_files = [
+            f for f in os.listdir(tr.settings.output_dir)
+            if f.startswith('batch_') and f.endswith('_keypress_data.csv')
+        ]
+
+        if not batch_files:
+            logger.warning(f"No valid batch files found in {tr.settings.output_dir}.")
+            return
+
+        # Ensure the output directory exists
+        os.makedirs(output_dir, exist_ok=True)
+
+        for batch_file in sorted(batch_files):
+            logger.info(f"Processing batch file: {batch_file}")
+            batch_path = os.path.join(tr.settings.output_dir, batch_file)
+
+            try:
+                batch_data = pd.read_csv(batch_path)
+                if 'TimeIndex' not in batch_data.columns or 'TimeBin' not in batch_data.columns:
+                    logger.error(f"'TimeIndex' or 'TimeBin' column is missing in {batch_file}. Skipping...")
+                    continue
+            except Exception as e:
+                logger.error(f"Failed to read batch file {batch_file}: {e}")
+                continue
+
+            test_results = []  # Initialize container for results
+
+            for time_bin in batch_data['TimeBin'].dropna().unique():
+                try:
+                    time_bin_data = batch_data[batch_data['TimeBin'] == time_bin]
+                    time_index = time_bin_data['TimeIndex'].iloc[0]
+
+                    # Within-group tests (TargetCar: 1 vs 0) for each EgoCar level
+                    for ego in [0, 1]:
+                        within_data = time_bin_data[time_bin_data['EgoCar'] == ego]
+                        participant_counts = within_data.groupby(['ParticipantID', 'TargetCar']).size().unstack()
+                        valid_participants = participant_counts.dropna().index
+                        filtered_data = within_data[within_data['ParticipantID'].isin(valid_participants)]
+
+
+                        if len(valid_participants) > 1:  # Ensure at least two participants
+                            group_0 = filtered_data[filtered_data['TargetCar'] == 0]['KPNumber']
+                            group_1 = filtered_data[filtered_data['TargetCar'] == 1]['KPNumber']
+
+                            # Calculate descriptive statistics
+                            group_0_mean, group_0_sd, group_0_n = group_0.mean(), group_0.std(), len(group_0)
+                            group_1_mean, group_1_sd, group_1_n = group_1.mean(), group_1.std(), len(group_1)
+                            group_0_median = group_0.median()
+                            group_1_median = group_1.median()
+                            logger.info(f"Ego={ego}, TimeBin={time_bin}: Group 0 sample size={len(group_0)}, Group 1 sample size={len(group_1)}")
+
+
+                            if len(group_0) > 0 and len(group_1) > 0:
+                                try:
+                                    result = pg.wilcoxon(group_1, group_0, alternative='two-sided')
+                                    stat = result['W-val'].iloc[0]
+                                    p_value = result['p-val'].iloc[0]
+
+                                    # Calculate ranks
+                                    combined = pd.concat([group_0, group_1])
+                                    ranks = combined.rank()
+                                    group_0_mean_rank = ranks[:len(group_0)].mean()
+                                    group_1_mean_rank = ranks[len(group_0):].mean()
+
+                                    # Determine direction based on mean rank
+                                    # direction = 'Group1 > Group0' if group_1_mean_rank > group_0_mean_rank else 'Group0 > Group1'
+                                    direction = 'AV > MDV' if group_1_mean_rank > group_0_mean_rank else 'MDV > AV'
+
+                                    test_results.append({
+                                        'TimeBin': time_bin,
+                                        'TimeIndex': time_index,
+                                        'Comparison': f'Within Ego={ego}: TargetCar=1 vs TargetCar=0',
+                                        'Group0_Mean': group_0_mean,
+                                        'Group0_SD': group_0_sd,
+                                        'Group0_N': group_0_n,
+                                        'Group0_Median': group_0_median,
+                                        'Group0_MeanRank': group_0_mean_rank,
+                                        'Group1_Mean': group_1_mean,
+                                        'Group1_SD': group_1_sd,
+                                        'Group1_N': group_1_n,
+                                        'Group1_Median': group_1_median,
+                                        'Group1_MeanRank': group_1_mean_rank,
+                                        'Statistic': stat,
+                                        'p-value': p_value,
+                                        'Direction': direction
+                                    })
+                                except Exception as e:
+                                    logger.error(f"Error in Wilcoxon test for TimeBin {time_bin}, Ego={ego}: {e}")
+
+                    # Between-group tests (EgoCar: 1 vs 0) for each TargetCar level
+                    for target in [0, 1]:
+                        between_data = time_bin_data[time_bin_data['TargetCar'] == target]
+                        group_0 = between_data[between_data['EgoCar'] == 0]['KPNumber']
+                        group_1 = between_data[between_data['EgoCar'] == 1]['KPNumber']
+
+                        # Calculate descriptive statistics
+                        group_0_mean, group_0_sd, group_0_n = group_0.mean(), group_0.std(), len(group_0)
+                        group_1_mean, group_1_sd, group_1_n = group_1.mean(), group_1.std(), len(group_1)
+                        group_0_median = group_0.median()
+                        group_1_median = group_1.median()
+                        logger.info(f"Target={target}, TimeBin={time_bin}: Group 0 sample size={len(group_0)}, Group 1 sample size={len(group_1)}")
+
+                        if len(group_0) > 0 and len(group_1) > 0:
+                            try:
+                                stat, p_value = mannwhitneyu(group_1, group_0, alternative='two-sided')
+
+                                # Calculate ranks
+                                combined = pd.concat([group_0, group_1])
+                                ranks = combined.rank()
+                                group_0_mean_rank = ranks[:len(group_0)].mean()
+                                group_1_mean_rank = ranks[len(group_0):].mean()
+
+                                # Determine direction based on mean rank
+                                # direction = 'Group1 > Group0' if group_1_mean_rank > group_0_mean_rank else 'Group0 > Group1'
+                                direction = 'AV > MDV' if group_1_mean_rank > group_0_mean_rank else 'MDV > AV'
+
+                                test_results.append({
+                                    'TimeBin': time_bin,
+                                    'TimeIndex': time_index,
+                                    'Comparison': f'Within Target={target}: EgoCar=1 vs EgoCar=0',
+                                    'Group0_Mean': group_0_mean,
+                                    'Group0_SD': group_0_sd,
+                                    'Group0_N': group_0_n,
+                                    'Group0_Median': group_0_median,
+                                    'Group0_MeanRank': group_0_mean_rank,
+                                    'Group1_Mean': group_1_mean,
+                                    'Group1_SD': group_1_sd,
+                                    'Group1_N': group_1_n,
+                                    'Group1_Median': group_1_median,
+                                    'Group1_MeanRank': group_1_mean_rank,
+                                    'Statistic': stat,
+                                    'p-value': p_value,
+                                    'Direction': direction
+                                })
+                            except Exception as e:
+                                logger.error(f"Error in Mann-Whitney U test for TimeBin {time_bin}, Target={target}: {e}")
+                    # Additional comparisons across EgoCar and TargetCar combinations
+                    comparisons = [
+                        {'GroupA': (1, 0), 'GroupB': (0, 1), 'Label': 'Ego=1,Target=0 vs Ego=0,Target=1'},
+                        {'GroupA': (1, 1), 'GroupB': (0, 0), 'Label': 'Ego=1,Target=1 vs Ego=0,Target=0'},
+                    ]
+
+                    for comp in comparisons:
+                        group_a = time_bin_data[
+                            (time_bin_data['EgoCar'] == comp['GroupA'][0]) &
+                            (time_bin_data['TargetCar'] == comp['GroupA'][1])
+                        ]['KPNumber']
+                        group_b = time_bin_data[
+                            (time_bin_data['EgoCar'] == comp['GroupB'][0]) &
+                            (time_bin_data['TargetCar'] == comp['GroupB'][1])
+                        ]['KPNumber']
+
+
+                        if len(group_a) > 0 and len(group_b) > 0:
+                            try:
+                                stat, p_value = mannwhitneyu(group_a, group_b, alternative='two-sided')
+
+                                # Calculate ranks
+                                combined = pd.concat([group_a, group_b])
+                                ranks = combined.rank()
+                                group_a_mean_rank = ranks[:len(group_a)].mean()
+                                group_b_mean_rank = ranks[len(group_a):].mean()
+
+                                # Determine direction based on mean rank
+                                direction = '(1,0) > (0,1)' if group_a_mean_rank > group_b_mean_rank else '(0,1) > (1,0)'
+
+                                test_results.append({
+                                    'TimeBin': time_bin,
+                                    'TimeIndex': time_index,
+                                    'Comparison': comp['Label'],
+                                    'Group0_Mean': group_a.mean(),
+                                    'Group0_SD': group_a.std(),
+                                    'Group0_N': len(group_a),
+                                    'Group0_Median': group_a.median(),
+                                    'Group0_MeanRank': group_a_mean_rank,
+                                    'Group1_Mean': group_b.mean(),
+                                    'Group1_SD': group_b.std(),
+                                    'Group1_N': len(group_b),
+                                    'Group1_Median': group_b.median(),
+                                    'Group1_MeanRank': group_b_mean_rank,
+                                    'Statistic': stat,
+                                    'p-value': p_value,
+                                    'Direction': direction
+                                })
+                            except Exception as e:
+                                logger.error(f"Error in Mann-Whitney U test for {comp['Label']} in TimeBin {time_bin}: {e}")
+
+
+                except Exception as e:
+                    logger.error(f"Error processing TimeBin {time_bin} in {batch_file}: {e}")
+
+            # Save results to CSV
+            results_file = os.path.join(stats_dir, f"{batch_file.replace('.csv', '_nonparametric_results.csv')}")
+            if test_results:
+                pd.DataFrame(test_results).to_csv(results_file, index=False)
+                logger.info(f"Non-parametric test results saved to {results_file}.")
+            else:
+                logger.warning(f"No valid comparisons found for {batch_file}.")
+
+
+
+
+
+    # def conduct_mixed_anova_pingouin(self, batch_dir, output_dir=None):
+    #     """
+    #     Perform 2-way mixed ANOVA with normality tests and shifted Box-Cox transformation for every time bin.
+
+    #     Args:
+    #         batch_dir (str): Directory containing batch files.
+    #         output_dir (str): Directory to save ANOVA results.
+
+    #     Returns:
+    #         None
+    #     """
+    #     if output_dir is None:
+    #         output_dir = self.anova_dir  # Default to Heroku's ANOVA directory
+    #     logger.info(f"Starting 2-way mixed ANOVA with Box-Cox transformation for batch files in {batch_dir}...")
+
+    #     os.makedirs(output_dir, exist_ok=True)  # Ensure output directory exists
+
+    #     for batch_file in sorted(os.listdir(batch_dir)):
+    #         if not batch_file.startswith('batch_') or not batch_file.endswith('.csv'):
+    #             continue
+
+    #         batch_path = os.path.join(batch_dir, batch_file)
+
+    #         if os.path.getsize(batch_path) == 0:
+    #             logger.warning(f"Skipping empty batch file: {batch_file}")
+    #             continue
+
+    #         try:
+    #             batch_data = pd.read_csv(batch_path)
+    #         except Exception as e:
+    #             logger.error(f"Failed to read batch file {batch_file}: {e}")
+    #             continue
+
+    #         logger.info(f"Processing {batch_file} for ANOVA with Box-Cox transformation...")
+
+    #         anova_results = []  # Initialize results for this batch
+
+    #         for time_bin in batch_data['TimeBin'].dropna().unique():
+    #             time_bin_data = batch_data[batch_data['TimeBin'] == time_bin].dropna(subset=['KPNumber'])
+
+    #             if len(time_bin_data['KPNumber'].dropna()) == 0:
+    #                 logger.warning(f"No valid data for TimeBin {time_bin} in {batch_file}. Skipping...")
+    #                 continue
+
+    #             # Shift KPNumber values for Box-Cox transformation
+    #             try:
+    #                 shifted_kp = time_bin_data['KPNumber'] + 1  # Add 1 to make all values strictly positive
+    #                 transformed_kp, lambda_ = boxcox(shifted_kp)
+    #                 time_bin_data['TransformedKP'] = transformed_kp
+    #                 logger.info(f"Box-Cox transformation applied (lambda={lambda_:.4f}) for TimeBin {time_bin}.")
+    #             except Exception as e:
+    #                 logger.warning(f"Box-Cox transformation failed for TimeBin {time_bin}: {e}")
+    #                 continue
+
+    #             # Run normality tests
+    #             for video_num in time_bin_data['VideoNumber'].unique():
+    #                 video_data = time_bin_data[time_bin_data['VideoNumber'] == video_num]
+    #                 try:
+    #                     if len(video_data['TransformedKP'].dropna()) > 3:
+    #                         w_stat, p_value = shapiro(video_data['TransformedKP'])
+    #                         results[f'Video-{video_num}-Shapiro-W'] = w_stat
+    #                         results[f'Video-{video_num}-Shapiro-p'] = p_value
+    #                     else:
+    #                         results[f'Video-{video_num}-Shapiro-W'] = None
+    #                         results[f'Video-{video_num}-Shapiro-p'] = None
+    #                 except Exception as e:
+    #                     logger.error(f"Shapiro-Wilk test failed for Video {video_num}, TimeBin {time_bin}: {e}")
+
+    #             # Perform ANOVA on transformed data
+    #             try:
+    #                 time_bin_data['TargetCar'] = time_bin_data['TargetCar'].astype('category')
+    #                 time_bin_data['EgoCar'] = time_bin_data['EgoCar'].astype('category')
+
+    #                 aov = pg.mixed_anova(
+    #                     dv='TransformedKP',  # Use transformed KPNumber
+    #                     within='TargetCar',
+    #                     between='EgoCar',
+    #                     subject='ParticipantID',
+    #                     data=time_bin_data
+    #                 )
+
+    #                 results = {
+    #                     'TimeBin': time_bin,
+    #                     'Within-TargetCar-F': aov.loc[aov['Source'] == 'TargetCar', 'F'].values[0],
+    #                     'Within-TargetCar-p': aov.loc[aov['Source'] == 'TargetCar', 'p-unc'].values[0],
+    #                     'Interaction-F': aov.loc[aov['Source'] == 'Interaction', 'F'].values[0],
+    #                     'Interaction-p': aov.loc[aov['Source'] == 'Interaction', 'p-unc'].values[0],
+    #                     'Between-EgoCar-F': aov.loc[aov['Source'] == 'EgoCar', 'F'].values[0],
+    #                     'Between-EgoCar-p': aov.loc[aov['Source'] == 'EgoCar', 'p-unc'].values[0]
+    #                 }
+    #                 anova_results.append(results)
+    #             except Exception as e:
+    #                 logger.error(f"ANOVA failed for TimeBin {time_bin} in {batch_file}: {e}")
+
+    #         # Save results if any exist
+    #         if anova_results:
+    #             anova_file = os.path.join(output_dir, f"{batch_file.replace('.csv', '_anova_results.csv')}")
+    #             pd.DataFrame(anova_results).to_csv(anova_file, index=False)
+    #             logger.info(f"ANOVA results saved to {anova_file}.")
+    #         else:
+    #             logger.warning(f"No ANOVA results generated for {batch_file}.")
 
     def anova(self, signals):
         """
@@ -3386,129 +4150,474 @@ class Analysis:
         df['p-value'] = p_values
         df.to_csv(os.path.join(path, name_file))
 
-    def draw_ttest_anova(self, fig, times, name_file, yaxis_range, yaxis_step, ttest_signals, ttest_marker,
-                         ttest_marker_size, ttest_marker_colour, ttest_annotations_font_size, ttest_annotations_colour,
-                         anova_signals, anova_marker, anova_marker_size, anova_marker_colour,
-                         anova_annotations_font_size, anova_annotations_colour, ttest_anova_row_height):
-        """Draw ttest and anova test rows.
+    # def draw_ttest_anova(self, fig, times, name_file, yaxis_range, yaxis_step, ttest_signals, ttest_marker,
+    #                      ttest_marker_size, ttest_marker_colour, ttest_annotations_font_size, ttest_annotations_colour,
+    #                      anova_signals, anova_marker, anova_marker_size, anova_marker_colour,
+    #                      anova_annotations_font_size, anova_annotations_colour, ttest_anova_row_height):
+    #     """Draw ttest and anova test rows.
+
+    #     Args:
+    #         fig (figure): figure object.
+    #         name_file (str): name of file to save.
+    #         yaxis_range (list): range of x axis in format [min, max] for the keypress plot.
+    #         yaxis_step (int): step between ticks on y axis.
+    #         ttest_signals (list): signals to compare with ttest. None = do not compare.
+    #         ttest_marker (str): symbol of markers for the ttest.
+    #         ttest_marker_size (int): size of markers for the ttest.
+    #         ttest_marker_colour (str): colour of markers for the ttest.
+    #         ttest_annotations_font_size (int): font size of annotations for ttest.
+    #         ttest_annotations_colour (str): colour of annotations for ttest.
+    #         anova_signals (dict): signals to compare with ANOVA. None = do not compare.
+    #         anova_marker (str): symbol of markers for the ANOVA.
+    #         anova_marker_size (int): size of markers for the ANOVA.
+    #         anova_marker_colour (str): colour of markers for the ANOVA.
+    #         anova_annotations_font_size (int): font size of annotations for ANOVA.
+    #         anova_annotations_colour (str): colour of annotations for ANOVA.
+    #         ttest_anova_row_height (int): height of row of ttest/anova markers.
+    #     """
+    #     # count lines to calculate increase in coordinates of drawing
+    #     counter_ttest = 0
+    #     # count lines to calculate increase in coordinates of drawing
+    #     counter_anova = 0
+    #     # output ttest
+    #     if ttest_signals:
+    #         for signals in ttest_signals:
+    #             # receive significance values
+    #             [p_values, significance] = self.ttest(signal_1=signals['signal_1'],
+    #                                                   signal_2=signals['signal_2'],
+    #                                                   paired=signals['paired'])
+    #             # save results to csv
+    #             self.save_stats_csv(t=list(range(len(signals['signal_1']))),
+    #                                 p_values=p_values,
+    #                                 name_file=signals['label'] + '_' + name_file + '.csv')
+    #             # add to the plot
+    #             # plot stars based on random lists
+    #             marker_x = []  # x-coordinates for stars
+    #             marker_y = []  # y-coordinates for stars
+    #             # assuming `times` and `signals['signal_1']` correspond to x and y data points
+    #             for i in range(len(significance)):
+    #                 if significance[i] == 1:  # if value indicates a star
+    #                     marker_x.append(times[i])  # use the corresponding x-coordinate
+    #                     # dynamically set y-coordinate, offset by ttest_anova_row_height for each signal_index
+    #                     marker_y.append(-ttest_anova_row_height - counter_ttest * ttest_anova_row_height)
+    #             # add scatter plot trace with cleaned data
+    #             fig.add_trace(go.Scatter(x=marker_x,
+    #                                      y=marker_y,
+    #                                      # list of possible values: https://plotly.com/python/marker-style
+    #                                      mode='markers',
+    #                                      marker=dict(symbol=ttest_marker,  # marker
+    #                                                  size=ttest_marker_size,  # adjust size
+    #                                                  color=ttest_marker_colour),  # adjust colour
+    #                                      text=p_values,
+    #                                      showlegend=False,
+    #                                      hovertemplate=signals['label'] + ': time=%{x}, p_value=%{text}'),
+    #                           row=1,
+    #                           col=1)
+    #             # add label with signals that are compared
+    #             fig.add_annotation(text=signals['label'],
+    #                                # put labels at the start of the x axis, as they are likely no significant effects
+    #                                # in the start of the trial
+    #                                x=1,
+    #                                # draw in the negative range of y axis
+    #                                y=-ttest_anova_row_height - counter_ttest * ttest_anova_row_height,
+    #                                showarrow=False,
+    #                                font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
+    #             # increase counter of lines drawn
+    #             counter_ttest = counter_ttest + 1
+    #     # output ANOVA
+    #     if anova_signals:
+    #         # if ttest was plotted, take into account for y of the first row or marker
+    #         if counter_ttest > 0:
+    #             counter_anova = counter_ttest
+    #         # calculate for given signals one by one
+    #         for signals in anova_signals:
+    #             # receive significance values
+    #             [p_values, significance] = self.anova(signals)
+    #             # save results to csv
+    #             self.save_stats_csv(t=list(range(len(signals['signals'][0]))),
+    #                                 p_values=p_values,
+    #                                 name_file=signals['label'] + '_' + name_file + '.csv')
+    #             # add to the plot
+    #             marker_x = []  # x-coordinates for stars
+    #             marker_y = []  # y-coordinates for stars
+    #             # assuming `times` and `signals['signal_1']` correspond to x and y data points
+    #             for i in range(len(significance)):
+    #                 if significance[i] == 1:  # if value indicates a star
+    #                     marker_x.append(times[i])  # use the corresponding x-coordinate
+    #                     # dynamically set y-coordinate, slightly offset for each signal_index
+    #                     marker_y.append(-ttest_anova_row_height - counter_anova * ttest_anova_row_height)
+    #             # add scatter plot trace with cleaned data
+    #             fig.add_trace(go.Scatter(x=marker_x,
+    #                                      y=marker_y,
+    #                                      # list of possible values: https://plotly.com/python/marker-style
+    #                                      mode='markers',
+    #                                      marker=dict(symbol=anova_marker,  # marker
+    #                                                  size=anova_marker_size,  # adjust size
+    #                                                  color=anova_marker_colour),  # adjust colour
+    #                                      text=p_values,
+    #                                      showlegend=False,
+    #                                      hovertemplate='time=%{x}, p_value=%{text}'),
+    #                           row=1,
+    #                           col=1)
+    #             # add label with signals that are compared
+    #             fig.add_annotation(text=signals['label'],
+    #                                # put labels at the start of the x axis, as they are likely no significant effects
+    #                                # in the start of the trial
+    #                                x=1,
+    #                                # draw in the negative range of y axis
+    #                                y=-ttest_anova_row_height - counter_anova * ttest_anova_row_height,
+    #                                showarrow=False,
+    #                                font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
+    #             # increase counter of lines drawn
+    #             counter_anova = counter_anova + 1
+    #     # hide ticks of negative values on y axis assuming that ticks are at step of 5
+    #     r = range(0, fig.layout['yaxis']['range'][1] + 1, yaxis_step)
+    #     fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
+
+    def draw_ttest_anova_from_files(self, fig, stim, times, name_file, yaxis_range, yaxis_step, 
+                                anova_results_file, nonparametric_results_file,
+                                within_marker, within_marker_size, within_marker_colour, 
+                                between_marker, between_marker_size, between_marker_colour, 
+                                interaction_marker, interaction_marker_size, interaction_marker_colour,
+                                anova_annotations_font_size, anova_annotations_colour, 
+                                within_ego0_marker, within_ego0_marker_size, within_ego0_marker_colour, 
+                                within_ego1_marker, within_ego1_marker_size, within_ego1_marker_colour,
+                                within_target0_marker, within_target0_marker_size, within_target0_marker_colour,
+                                within_target1_marker, within_target1_marker_size, within_target1_marker_colour,
+                                comp_mixed_marker,comp_mixed_marker_size,comp_mixed_marker_colour,
+                                comp_simple_marker,comp_simple_marker_size,comp_simple_marker_colour,
+                                ttest_anova_row_height):
+        """
+        Draw t-test and ANOVA test rows using precomputed results from files, including F and p-value annotations.
 
         Args:
-            fig (figure): figure object.
-            name_file (str): name of file to save.
-            yaxis_range (list): range of x axis in format [min, max] for the keypress plot.
-            yaxis_step (int): step between ticks on y axis.
-            ttest_signals (list): signals to compare with ttest. None = do not compare.
-            ttest_marker (str): symbol of markers for the ttest.
-            ttest_marker_size (int): size of markers for the ttest.
-            ttest_marker_colour (str): colour of markers for the ttest.
-            ttest_annotations_font_size (int): font size of annotations for ttest.
-            ttest_annotations_colour (str): colour of annotations for ttest.
-            anova_signals (dict): signals to compare with ANOVA. None = do not compare.
-            anova_marker (str): symbol of markers for the ANOVA.
-            anova_marker_size (int): size of markers for the ANOVA.
-            anova_marker_colour (str): colour of markers for the ANOVA.
-            anova_annotations_font_size (int): font size of annotations for ANOVA.
-            anova_annotations_colour (str): colour of annotations for ANOVA.
-            ttest_anova_row_height (int): height of row of ttest/anova markers.
+            fig: Plotly figure object.
+            times: List of time points for the x-axis.
+            name_file: Name of the plot file.
+            yaxis_range: Range of y-axis for keypress plots.
+            yaxis_step: Step size for y-axis ticks.
+            ttest_results_file: Path to CSV file with t-test results.
+            anova_results_file: Path to CSV file with ANOVA results.
+            ...
         """
-        # count lines to calculate increase in coordinates of drawing
-        counter_ttest = 0
-        # count lines to calculate increase in coordinates of drawing
-        counter_anova = 0
-        # output ttest
-        if ttest_signals:
-            for signals in ttest_signals:
-                # receive significance values
-                [p_values, significance] = self.ttest(signal_1=signals['signal_1'],
-                                                      signal_2=signals['signal_2'],
-                                                      paired=signals['paired'])
-                # save results to csv
-                self.save_stats_csv(t=list(range(len(signals['signal_1']))),
-                                    p_values=p_values,
-                                    name_file=signals['label'] + '_' + name_file + '.csv')
-                # add to the plot
-                # plot stars based on random lists
-                marker_x = []  # x-coordinates for stars
-                marker_y = []  # y-coordinates for stars
-                # assuming `times` and `signals['signal_1']` correspond to x and y data points
-                for i in range(len(significance)):
-                    if significance[i] == 1:  # if value indicates a star
-                        marker_x.append(times[i])  # use the corresponding x-coordinate
-                        # dynamically set y-coordinate, offset by ttest_anova_row_height for each signal_index
-                        marker_y.append(-ttest_anova_row_height - counter_ttest * ttest_anova_row_height)
-                # add scatter plot trace with cleaned data
-                fig.add_trace(go.Scatter(x=marker_x,
-                                         y=marker_y,
-                                         # list of possible values: https://plotly.com/python/marker-style
-                                         mode='markers',
-                                         marker=dict(symbol=ttest_marker,  # marker
-                                                     size=ttest_marker_size,  # adjust size
-                                                     color=ttest_marker_colour),  # adjust colour
-                                         text=p_values,
-                                         showlegend=False,
-                                         hovertemplate=signals['label'] + ': time=%{x}, p_value=%{text}'),
-                              row=1,
-                              col=1)
-                # add label with signals that are compared
-                fig.add_annotation(text=signals['label'],
-                                   # put labels at the start of the x axis, as they are likely no significant effects
-                                   # in the start of the trial
-                                   x=1,
-                                   # draw in the negative range of y axis
-                                   y=-ttest_anova_row_height - counter_ttest * ttest_anova_row_height,
-                                   showarrow=False,
-                                   font=dict(size=ttest_annotations_font_size, color=ttest_annotations_colour))
-                # increase counter of lines drawn
-                counter_ttest = counter_ttest + 1
-        # output ANOVA
-        if anova_signals:
-            # if ttest was plotted, take into account for y of the first row or marker
-            if counter_ttest > 0:
-                counter_anova = counter_ttest
-            # calculate for given signals one by one
-            for signals in anova_signals:
-                # receive significance values
-                [p_values, significance] = self.anova(signals)
-                # save results to csv
-                self.save_stats_csv(t=list(range(len(signals['signals'][0]))),
-                                    p_values=p_values,
-                                    name_file=signals['label'] + '_' + name_file + '.csv')
-                # add to the plot
-                marker_x = []  # x-coordinates for stars
-                marker_y = []  # y-coordinates for stars
-                # assuming `times` and `signals['signal_1']` correspond to x and y data points
-                for i in range(len(significance)):
-                    if significance[i] == 1:  # if value indicates a star
-                        marker_x.append(times[i])  # use the corresponding x-coordinate
-                        # dynamically set y-coordinate, slightly offset for each signal_index
-                        marker_y.append(-ttest_anova_row_height - counter_anova * ttest_anova_row_height)
-                # add scatter plot trace with cleaned data
-                fig.add_trace(go.Scatter(x=marker_x,
-                                         y=marker_y,
-                                         # list of possible values: https://plotly.com/python/marker-style
-                                         mode='markers',
-                                         marker=dict(symbol=anova_marker,  # marker
-                                                     size=anova_marker_size,  # adjust size
-                                                     color=anova_marker_colour),  # adjust colour
-                                         text=p_values,
-                                         showlegend=False,
-                                         hovertemplate='time=%{x}, p_value=%{text}'),
-                              row=1,
-                              col=1)
-                # add label with signals that are compared
-                fig.add_annotation(text=signals['label'],
-                                   # put labels at the start of the x axis, as they are likely no significant effects
-                                   # in the start of the trial
-                                   x=1,
-                                   # draw in the negative range of y axis
-                                   y=-ttest_anova_row_height - counter_anova * ttest_anova_row_height,
-                                   showarrow=False,
-                                   font=dict(size=anova_annotations_font_size, color=anova_annotations_colour))
-                # increase counter of lines drawn
-                counter_anova = counter_anova + 1
-        # hide ticks of negative values on y axis assuming that ticks are at step of 5
-        r = range(0, fig.layout['yaxis']['range'][1] + 1, yaxis_step)
-        fig.update_layout(yaxis={'tickvals': list(r), 'ticktext': [t if t >= 0 else '' for t in r]})
+        logger.info(f"Loading ANOVA results for stimulus {stim}")
+        anova_results_file = os.path.join(
+            tr.settings.output_dir, 'statistics', f'batch_{stim}_keypress_data_rank_anova_results.csv'
+        )
+        nonparametric_results_file = os.path.join(
+            tr.settings.output_dir, 'statistics', f'batch_{stim}_keypress_data_nonparametric_results.csv'
+        )
+        if not os.path.exists(anova_results_file):
+            logger.warning(f"ANOVA results file not found: {anova_results_file}")
+            return
+        # counter_ttest = 0
+        counter_within = 1
+        counter_between = 2
+        counter_interaction = 3
+        counter_within_ego0 = 4
+        counter_within_ego1 = 5
+        counter_within_target0 = 6
+        counter_within_target1 = 7
+        counter_comp_mixed=8
+        counter_comp_simple=9
+
+        # # Load t-test results
+        # if ttest_results_file:
+        #     ttest_results = pd.read_csv(ttest_results_file)
+        #     for _, row in ttest_results.iterrows():
+        #         significance = row['p-value'] < 0.05
+        #         marker_x = [times[int(row['TimeIndex'])]] if significance else []
+        #         marker_y = [-ttest_anova_row_height - counter_ttest * ttest_anova_row_height]
+        #         fig.add_trace(go.Scatter(
+        #             x=marker_x, y=marker_y,
+        #             mode='markers',
+        #             marker=dict(symbol=ttest_marker, size=ttest_marker_size, color=ttest_marker_colour),
+        #             text=row['p-value'],
+        #             hovertemplate=f"{row['label']}: p-value=%{{text}}",
+        #             showlegend=False
+        #         ))
+        #         counter_ttest += 1
+    # Load Non-Parametric Results
+        if nonparametric_results_file and os.path.exists(nonparametric_results_file):
+            nonparametric_results = pd.read_csv(nonparametric_results_file)
+            significant_results = nonparametric_results[nonparametric_results['p-value'] < 0.05]
+
+            for _, row in significant_results.iterrows():
+                time_index = int(row['TimeIndex'])
+                x_coord = times[time_index]
+                comparison = row['Comparison']
+                direction_text = row['Direction']
+                hover_text = (
+                    f"Comparison: {comparison}<br>"
+                    f"Statistic: {row['Statistic']:.2f}<br>"
+                    f"p-value: {row['p-value']:.3f}<br>"
+                    f"Direction: {direction_text}"
+                )
+                # Define marker properties for each comparison
+                if comparison == "Within Ego=0: TargetCar=1 vs TargetCar=0":
+                    marker_y = [-ttest_anova_row_height * counter_within_ego0]
+                    marker_style = dict(symbol=within_ego0_marker, size=within_ego0_marker_size, color=within_ego0_marker_colour)
+                    annotation_text = "Within Ego=0"
+                elif comparison == "Within Ego=1: TargetCar=1 vs TargetCar=0":
+                    marker_y = [-ttest_anova_row_height * counter_within_ego1]
+                    marker_style = dict(symbol=within_ego1_marker, size=within_ego1_marker_size, color=within_ego1_marker_colour)
+                    annotation_text = "Within Ego=1"
+                elif comparison == "Within Target=0: EgoCar=1 vs EgoCar=0":
+                    marker_y = [-ttest_anova_row_height * counter_within_target0]
+                    marker_style = dict(symbol=within_target0_marker, size=within_target0_marker_size, color=within_target0_marker_colour)
+                    annotation_text = "Within Target=0"
+                elif comparison == "Within Target=1: EgoCar=1 vs EgoCar=0":
+                    marker_y = [-ttest_anova_row_height * counter_within_target1]
+                    marker_style = dict(symbol=within_target1_marker, size=within_target1_marker_size, color=within_target1_marker_colour)
+                    annotation_text = "Within Target=1"
+                elif comparison == "Ego=1,Target=0 vs Ego=0,Target=1":
+                    marker_y = [-ttest_anova_row_height * counter_comp_mixed]
+                    marker_style = dict(symbol=comp_mixed_marker, size=comp_mixed_marker_size, color=comp_mixed_marker_colour)
+                    annotation_text = "comp mixed"
+                elif comparison == "Ego=1,Target=1 vs Ego=0,Target=0":
+                    marker_y = [-ttest_anova_row_height * counter_comp_simple]
+                    marker_style = dict(symbol=comp_simple_marker, size=comp_simple_marker_size, color=comp_simple_marker_colour)
+                    annotation_text = "comp simple"
+                else:
+                    continue
+
+                # Add marker to the plot
+                fig.add_trace(go.Scatter(
+                    x=[x_coord],
+                    y=marker_y,
+                    mode='markers',
+                    marker=marker_style,
+                    text=hover_text,  # Preformatted hover text
+                    hovertemplate="%{text}<br>Time: %{x:.2f}s<extra></extra>",  # Dynamic hover template
+                    showlegend=False
+                ))
+
+                # Add row title annotation
+                fig.add_annotation(
+                    text=annotation_text,
+                    x=-1,
+                    y=marker_y[0],
+                    showarrow=False,
+                    font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                    align='left'
+                )
+                # # Plot Within Ego=0: TargetCar=1 vs TargetCar=0
+                # if comparison == "Within Ego=0: TargetCar=1 vs TargetCar=0":
+                #     fig.add_trace(go.Scatter(
+                #         x=[x_coord],
+                #         y=[-ttest_anova_row_height * counter_within_ego0],
+                #         mode='markers',
+                #         marker=dict(symbol=within_ego0_marker, size=within_ego0_marker_size, color=within_ego0_marker_colour),
+                #         text=(
+                #             f"{comparison}<br>"
+                #             # f"Group MDV MeanRank: {row['Group0_MeanRank']:.2f}, SD: {row['SD_Group1']:.2f}, N: {row['N_Group1']}<br>"
+                #             # f"Group AV MeanRank: {row['Group1_MeanRank']:.2f}, SD: {row['SD_Group2']:.2f}, N: {row['N_Group2']}<br>"
+                #             f"U={row['Statistic']:.2f}, p={row['p-value']:.3f}, Direction: {row['Direction']}, Direction: {direction_text}"
+                #         ),
+                #         hovertemplate=(
+                #             "<b>Within Ego=0</b><br>"
+                #             "Time: %{x:.2f}s<br>"
+                #             "Statistic: %{text}<extra></extra>"
+                #             "%{text}<br>"
+                #             "Direction: %{text}<extra></extra>"
+                #         ),
+                #         showlegend=False
+                #     ))
+                #     fig.add_annotation(
+                #         text="Within Ego=0",
+                #         x=-1,
+                #         y=-ttest_anova_row_height * counter_within_ego0,
+                #         showarrow=False,
+                #         font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                #         align='left'
+                #     )
+
+                # # Plot Within Ego=1: TargetCar=1 vs TargetCar=0
+                # elif comparison == "Within Ego=1: TargetCar=1 vs TargetCar=0":
+                #     fig.add_trace(go.Scatter(
+                #         x=[x_coord],
+                #         y=[-ttest_anova_row_height * counter_within_ego1],
+                #         mode='markers',
+                #         marker=dict(symbol=within_ego1_marker, size=within_ego1_marker_size, color=within_ego1_marker_colour),
+                #         text=(
+                #             f"{comparison}<br>"
+                #             # f"Group1 Mean: {row['Mean_Group1']:.2f}, SD: {row['SD_Group1']:.2f}, N: {row['N_Group1']}<br>"
+                #             # f"Group2 Mean: {row['Mean_Group2']:.2f}, SD: {row['SD_Group2']:.2f}, N: {row['N_Group2']}<br>"
+                #             f"U={row['Statistic']:.2f}, p={row['p-value']:.3f}, Direction: {direction_text}"
+                #         ),
+                #         hovertemplate=(
+                #             "<b>Within Ego=1</b><br>"
+                #             "Time: %{x:.2f}s<br>"
+                #             "Statistic: %{text}<extra></extra>"
+                #             "p-value: %{text}<br>"
+                #             "Direction: %{text}<extra></extra>"
+                #         ),
+                #         showlegend=False
+                #     ))
+                #     fig.add_annotation(
+                #         text="Within Ego=1",
+                #         x=-1,
+                #         y=-ttest_anova_row_height * counter_within_ego1,
+                #         showarrow=False,
+                #         font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                #         align='left'
+                #     )
+
+                # # Plot Within Target=0: EgoCar=1 vs EgoCar=0
+                # elif comparison == "Within Target=0: EgoCar=1 vs EgoCar=0":
+                #     fig.add_trace(go.Scatter(
+                #         x=[x_coord],
+                #         y=[-ttest_anova_row_height * counter_within_target0],
+                #         mode='markers',
+                #         marker=dict(symbol=within_target0_marker, size=within_target0_marker_size, color=within_target0_marker_colour),
+                #         text=(
+                #             f"{comparison}<br>"
+                #             # f"Group1 Mean: {row['Mean_Group1']:.2f}, SD: {row['SD_Group1']:.2f}, N: {row['N_Group1']}<br>"
+                #             # f"Group2 Mean: {row['Mean_Group2']:.2f}, SD: {row['SD_Group2']:.2f}, N: {row['N_Group2']}<br>"
+                #             f"U={row['Statistic']:.2f}, p={row['p-value']:.3f}, Direction: {direction_text}"
+                #         ),
+                #         hovertemplate=(
+                #             "<b>Within Ego=0</b><br>"
+                #             "Time: %{x:.2f}s<br>"
+                #             "Statistic: %{text}<extra></extra>"
+                #             "p-value: %{text}<br>"
+                #             "Direction: %{text}<extra></extra>"
+                #         ),
+                #         showlegend=False
+                #     ))
+                #     fig.add_annotation(
+                #         text="Within Target=0",
+                #         x=-1,
+                #         y=-ttest_anova_row_height * counter_within_target0,
+                #         showarrow=False,
+                #         font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                #         align='left'
+                #     )
+
+                # # Plot Within Target=1: EgoCar=1 vs EgoCar=0
+                # elif comparison == "Within Target=1: EgoCar=1 vs EgoCar=0":
+                #     fig.add_trace(go.Scatter(
+                #         x=[x_coord],
+                #         y=[-ttest_anova_row_height * counter_within_target1],
+                #         mode='markers',
+                #         marker=dict(symbol=within_target1_marker, size=within_target1_marker_size, color=within_target1_marker_colour),
+                #         text=(
+                #             f"{comparison}<br>"
+                #             # f"Group1 Mean: {row['Mean_Group1']:.2f}, SD: {row['SD_Group1']:.2f}, N: {row['N_Group1']}<br>"
+                #             # f"Group2 Mean: {row['Mean_Group2']:.2f}, SD: {row['SD_Group2']:.2f}, N: {row['N_Group2']}<br>"
+                #             f"U={row['Statistic']:.2f}, p={row['p-value']:.3f}, Direction: {direction_text}"
+                #         ),
+                #         hovertemplate=(
+                #             "<b>Within Target=1</b><br>"
+                #             "Time: %{x:.2f}s<br>"
+                #             "Statistic: %{text}<extra></extra>"
+                #             "p-value: %{text}<br>"
+                #             "Direction: %{text}<extra></extra>"
+                #         ),
+                #         showlegend=False
+                #     ))
+                #     fig.add_annotation(
+                #         text="Within Target=1",
+                #         x=-1,
+                #         y=-ttest_anova_row_height * counter_within_target1,
+                #         showarrow=False,
+                #         font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                #         align='left'
+                #     )
+
+        else:
+            logger.warning(f"Non-parametric results file not found: {nonparametric_results_file}")
+
+        # Update axis and layout
+        fig.update_yaxes(range=yaxis_range, tickvals=list(range(0, yaxis_range[1], yaxis_step)))
+
+        # Load ANOVA results
+        if anova_results_file:
+            anova_results = pd.read_csv(anova_results_file)
+            for _, row in anova_results.iterrows():
+                time_index = int(row['TimeIndex'])
+                x_coord = times[time_index]
+                
+                # Plot within-group p-value marker
+                if row['Within-TargetCar-p'] < 0.05:  # Significant marker
+                    fig.add_trace(go.Scatter(
+                        x=[x_coord],
+                        y=[-ttest_anova_row_height * counter_within],  # First row
+                        mode='markers',
+                        marker=dict(symbol=within_marker, size=within_marker_size, color=within_marker_colour),
+                        text=f"F={row['Within-TargetCar-F']:.2f}, p={row['Within-TargetCar-p']:.3f}",  # Add both F and p values
+                        hovertemplate=(
+                            "<b>Within Group</b><br>""Time: %{:.2f}s<br>"
+                            "F-value: {:.2f}<br>"
+                            "p-value: {:.3f}"
+                        ).format(x_coord, row['Within-TargetCar-F'], row['Within-TargetCar-p']),
+                        showlegend=False
+                    ))
+                        # Add row title annotation
+                    fig.add_annotation(
+                        text="Within",
+                        x=-1,  # Place annotation at the start of the x-axis
+                        y=-ttest_anova_row_height * counter_within,
+                        showarrow=False,
+                        font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                        align='left'
+                    )
+
+                # Plot between-group p-value marker
+                if row['Between-EgoCar-p'] < 0.05:  # Significant marker
+                    fig.add_trace(go.Scatter(
+                        x=[x_coord],
+                        y=[-ttest_anova_row_height * counter_between],  # Second row
+                        mode='markers',
+                        marker=dict(symbol=between_marker, size=between_marker_size, color=between_marker_colour),
+                        text=f"F={row['Between-EgoCar-F']:.2f}, p={row['Between-EgoCar-p']:.3f}",  # Add both F and p values
+                        hovertemplate=(
+                            "<b>Between Group</b><br>""Time: %{:.2f}s<br>"
+                            "F-value: {:.2f}<br>"
+                            "p-value: {:.3f}"
+                        ).format(x_coord, row['Between-EgoCar-F'], row['Between-EgoCar-p']),
+                        showlegend=False
+                    ))
+                        # Add row title annotation
+                    fig.add_annotation(
+                        text="Between",
+                        x=-1,  # Place annotation at the start of the x-axis
+                        y=-ttest_anova_row_height * counter_between,
+                        showarrow=False,
+                        font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                        align='left'
+                    )
+
+                # Plot interaction p-value marker
+                if row['Interaction-p'] < 0.05:  # Significant marker
+                    fig.add_trace(go.Scatter(
+                        x=[x_coord],
+                        y=[-ttest_anova_row_height * counter_interaction],  # Third row
+                        mode='markers',
+                        marker=dict(symbol=interaction_marker, size=interaction_marker_size, color=interaction_marker_colour),
+                        text=f"F={row['Interaction-F']:.2f}, p={row['Interaction-p']:.3f}",  # Add both F and p values
+                        hovertemplate=(
+                            "<b>Interaction</b><br>""Time: %{:.2f}s<br>"
+                            "F-value: {:.2f}<br>"
+                            "p-value: {:.3f}"
+                        ).format(x_coord, row['Interaction-F'], row['Interaction-p']),
+                        showlegend=False
+                    ))
+                        # Add row title annotation
+                    fig.add_annotation(
+                        text="Interaction",
+                        x=-1,  # Place annotation at the start of the x-axis
+                        y=-ttest_anova_row_height * counter_interaction,
+                        showarrow=False,
+                        font=dict(size=anova_annotations_font_size, color=anova_annotations_colour),
+                        align='left'
+                    )
+
+
+
+        # Update axis and layout
+        fig.update_yaxes(range=yaxis_range, tickvals=list(range(0, yaxis_range[1], yaxis_step)))
+
 
     def draw_events(self, fig, yaxis_range, events, events_width, events_dash, events_colour,
                     events_annotations_font_size, events_annotations_colour):
@@ -3570,4 +4679,4 @@ class Analysis:
                                        showarrow=False,
                                        font=dict(size=events_annotations_font_size, color=events_annotations_colour))
                 # increase counter of lines drawn
-                counter_lines = counter_lines + 1
+                counter_lines = counter_lines + 2
