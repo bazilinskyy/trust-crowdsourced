@@ -26,14 +26,7 @@ from scipy.stats.kde import gaussian_kde
 from scipy.stats import ttest_rel, ttest_ind, f_oneway
 import cv2
 from statsmodels.stats.anova import anova_lm
-from statsmodels.formula.api import ols 
-import statsmodels.api as sm
-from statsmodels.stats.anova import AnovaRM
-import logging
-import scipy.stats as stats
-from scipy.stats import ks_1samp, norm
-from scipy.stats import shapiro, levene
-from statsmodels.formula.api import mixedlm
+from statsmodels.formula.api import ols
 import trust as tr
 import pingouin as pg
 from scipy.stats import rankdata
@@ -90,7 +83,9 @@ class Analysis:
             os.makedirs(path)
         # video file in the folder with stimuli
         cap = cv2.VideoCapture(
-            os.path.join(tr.common.get_configs('path_stimuli'), 'video_' + str(id_video) + '.mp4'))
+            os.path.join(
+                tr.common.get_configs('path_stimuli'),
+                'video_' + str(id_video) + '.mp4'))
         # timestamp
         t = mapping.loc['video_' + str(id_video)][t]
         self.time = int(t)
@@ -107,7 +102,9 @@ class Analysis:
             cap.set(cv2.CAP_PROP_POS_FRAMES, round(fps * k / 1000))
             ret, frame = cap.read()
             if ret:
-                filename = os.path.join(path, 'frame_' + str([round(k / hm_resolution_int)]) + '.jpg')
+                filename = os.path.join(
+                    path,
+                    'frame_' + str([round(k / hm_resolution_int)]) + '.jpg')
                 cv2.imwrite(filename, frame, [cv2.IMWRITE_JPEG_QUALITY, 20])
 
     def create_histogram(self, image, points, id_video, density_coef=10, suffix='_histogram.jpg', save_file=False):
@@ -3925,8 +3922,13 @@ class Analysis:
                                 group_a_mean_rank = ranks[:len(group_a)].mean()
                                 group_b_mean_rank = ranks[len(group_a):].mean()
 
-                                # Determine direction based on mean rank
-                                direction = '(1,0) > (0,1)' if group_a_mean_rank > group_b_mean_rank else '(0,1) > (1,0)'
+                                # Determine direction
+                                if comp['Label'] == 'Ego=1,Target=0 vs Ego=0,Target=1':
+                                    direction = '(1,0) > (0,1)' if group_a_mean_rank > group_b_mean_rank else '(0,1) > (1,0)'
+                                elif comp['Label'] == 'Ego=1,Target=1 vs Ego=0,Target=0':
+                                    direction = '(1,1) > (0,0)' if group_a_mean_rank > group_b_mean_rank else '(0,0) > (1,1)'
+                                else:
+                                    direction = 'Undetermined'
 
                                 test_results.append({
                                     'TimeBin': time_bin,
