@@ -146,6 +146,23 @@ class Heroku:
                 # record worker_code in the row. assuming that each row has at
                 # least one worker_code
                 worker_code = [d['worker_code'] for d in list_row['data'] if 'worker_code' in d][0]
+                # 读取筛选开关
+                only_lab = tr.common.get_configs('only_lab')
+                only_crowd = tr.common.get_configs('only_crowd')
+
+                # 互斥检查
+                if only_lab and only_crowd:
+                    raise ValueError("Config error: only_lab and only_crowd cannot both be 1.")
+
+                # 根据 worker_code 判别来源（你们的 lab 代码含 'lab_pp_'; 其它视为 crowd）
+                is_lab = re.search(r"lab_pp_", worker_code) is not None
+
+                # 应用过滤：只保留需要的来源
+                if only_lab and not is_lab:
+                    continue
+                if only_crowd and is_lab:
+                    continue
+
                 if tr.common.get_configs('only_lab') == 1:
                     if re.search("lab_pp_", worker_code) is None:
                         continue
@@ -716,14 +733,27 @@ class Heroku:
         return self.mapping
 
     def process_kp_to_batches(self, output_dir=None, filter_length=True):
+        """
+        Process keypress data into batches and automatically create combined datasets:
+        - `combined_by_ego.csv` (EgoCar = [0: Videos 0-41, 1: Videos 42-83])
+        - `combined_by_target.csv` (TargetCar = [0: Videos 0-20, 42-62], 1: Videos 21-41, 63-83])
 
+        Args:
+            output_dir (str, optional): Directory to save batch files.
+            filter_length (bool, optional): Whether to filter data based on video duration.
+
+        Returns:
+            None (saves batch and combined files).
+        """
         if output_dir is None:
             output_dir = tr.settings.output_dir  # Default output directory
-        logger.info('Processing keypress data into 21 video batches with res={} ms.'.format(self.res))
+        logger.info(f"Processing keypress data into 21 video batches with res={self.res} ms.")
         os.makedirs(output_dir, exist_ok=True)
 
         self.heroku_data['EgoCar'] = self.heroku_data['participant_group'].map(lambda x: 0 if x in [0, 1] else 1)
         video_batches = [[i, i + 21, i + 42, i + 63] for i in range(21)]
+        
+        all_batches = []  # To store data for later combination
 
         for batch_num, videos in enumerate(video_batches):
             logger.info(f'Processing batch {batch_num} for videos: {videos}')
@@ -774,36 +804,31 @@ class Heroku:
                                 'KPNumber': kp_count
                             })
 
-            # Create a DataFrame
+            # Create and clean batch DataFrame
             batch_df = pd.DataFrame(batch_data)
-            # Map TimeBin to TimeIndex based on sorted order
             if 'TimeBin' in batch_df.columns:
                 time_bin_mapping = {value: index for index, value in enumerate(sorted(batch_df['TimeBin'].unique()))}
                 batch_df['TimeIndex'] = batch_df['TimeBin'].map(time_bin_mapping)
             else:
                 logger.warning(f"'TimeBin' column is missing in batch {batch_num}. Skipping TimeIndex generation.")
 
-
-            # Ensure VideoNumber is in the DataFrame
             if 'VideoNumber' not in batch_df.columns:
                 logger.error(f"'VideoNumber' column is missing in batch {batch_num}. Skipping batch.")
                 continue
 
-            # Remove incomplete data
             batch_df = batch_df.dropna(subset=['TimeBin', 'KPNumber'])
 
-            # Add TimeIndex
             logger.info(f"Adding TimeIndex to batch {batch_num}.")
-            unique_bins = sorted(batch_df['TimeBin'].unique())  # Sort TimeBin values
-            bin_to_index = {time_bin: idx for idx, time_bin in enumerate(unique_bins)}  # Map TimeBin to sequential indices
-            batch_df['TimeIndex'] = batch_df['TimeBin'].map(bin_to_index)  # Add TimeIndex column
+            unique_bins = sorted(batch_df['TimeBin'].unique())
+            bin_to_index = {time_bin: idx for idx, time_bin in enumerate(unique_bins)}
+            batch_df['TimeIndex'] = batch_df['TimeBin'].map(bin_to_index)
 
             # Validate and save batch data
             valid_data = []
             for time_bin in batch_df['TimeBin'].unique():
                 time_bin_data = batch_df[batch_df['TimeBin'] == time_bin]
                 group_counts = time_bin_data.groupby(['EgoCar', 'TargetCar']).size()
-                if group_counts.min() > 1:  # Ensure at least 2 participants per group-condition combination
+                if group_counts.min() > 1:
                     valid_data.append(time_bin_data)
 
             if valid_data:
@@ -811,14 +836,50 @@ class Heroku:
                 final_df['EgoCar'] = final_df['EgoCar'].astype('category')
                 final_df['TargetCar'] = final_df['TargetCar'].astype('category')
 
-                # Save the batch data if self.save_csv is True
-
                 if self.save_csv:
-                    batch_file = os.path.join(tr.settings.output_dir, f'batch_{batch_num}_keypress_data.csv')
+                    batch_file = os.path.join(output_dir, f'batch_{batch_num}_keypress_data.csv')
                     final_df.to_csv(batch_file, index=False)
                     logger.info(f"Batch {batch_num} data saved to {batch_file}.")
+
+                # Collect all batch data for later combination
+                all_batches.append(final_df)
             else:
                 logger.warning(f"No valid data for batch {batch_num}. File not created.")
+
+        # **🔹 Step 2: Combine All Batches and Save Two Additional Files**
+        if all_batches:
+            combined_df = pd.concat(all_batches, ignore_index=True)
+            combined_df['Scenario'] = combined_df['VideoNumber'] % 21
+
+            # **Group by EgoCar**
+            df_ego_0 = combined_df[combined_df['VideoNumber'].between(0, 41)]
+            df_ego_1 = combined_df[combined_df['VideoNumber'].between(42, 83)]
+            df_ego_combined = pd.concat([df_ego_0.assign(EgoGroup=0), df_ego_1.assign(EgoGroup=1)])
+
+            # **Group by TargetCar**
+            df_target_0 = combined_df[combined_df['VideoNumber'].between(0, 20) | combined_df['VideoNumber'].between(42, 62)]
+            df_target_1 = combined_df[combined_df['VideoNumber'].between(21, 41) | combined_df['VideoNumber'].between(63, 83)]
+            df_target_combined = pd.concat([df_target_0.assign(TargetGroup=0), df_target_1.assign(TargetGroup=1)])
+
+            # Save the grouped datasets
+            ego_file = os.path.join(output_dir, "combined_by_ego.csv")
+            target_file = os.path.join(output_dir, "combined_by_target.csv")
+
+            df_ego_combined.to_csv(ego_file, index=False)
+            df_target_combined.to_csv(target_file, index=False)
+
+            logger.info(f"✅ Combined file (grouped by EgoCar) saved at: {ego_file}")
+            logger.info(f"✅ Combined file (grouped by TargetCar) saved at: {target_file}")
+         # **🔹 Step 2: Combine All Batches and Save New Combined File**
+
+            combined_file = os.path.join(output_dir, "combined_by_4_conditions.csv")
+            combined_df.to_csv(combined_file, index=False)
+
+            logger.info(f"✅ Combined file (grouped by 4 conditions) saved at: {combined_file}")
+
+        else:
+            logger.warning("⚠️ No valid data found to create combined files.")
+
 
 
 
@@ -937,6 +998,8 @@ class Heroku:
         logger.info('Processing post-stimulus questions')
         # array in which arrays of video_as data is stored
         mapping_as = []
+        mean_answers_dict = {q['question']: [] for q in questions if q['type'] == 'num'}
+        std_answers_dict = {q['question'] + '_std': [] for q in questions if q['type'] == 'num'}
         # loop through all stimuli
         for num in tqdm(range(self.num_stimuli)):
             # calculate length of array with answers
@@ -985,10 +1048,15 @@ class Heroku:
                     # convert to float
                     answers[i] = [list(map(float, sublist))
                                   for sublist in answers[i]]
+                    mean_per_pp = [np.nanmean(j) for j in answers[i]]
                     # calculate mean of mean of responses of each participant
                     with warnings.catch_warnings():
                         warnings.simplefilter('ignore', category=RuntimeWarning)
                         answers[i] = np.nanmean([np.nanmean(j) for j in answers[i]])
+                        mean_val = np.nanmean(mean_per_pp)
+                        std_val = np.nanstd(mean_per_pp)
+                    mean_answers_dict[q['question']].append(mean_val)
+                    std_answers_dict[q['question'] + '_std'].append(std_val)
             # save question data in array
             mapping_as.append(answers)
         # add column with data to current mapping file
@@ -1025,7 +1093,7 @@ class Heroku:
 
     def process_questions_to_batches(self, questions, output_dir=None, filter_length=True):
         """
-        Process post-stimulus questions into video batches.
+        Process post-stimulus questions into video batches with individual slider answers.
 
         Args:
             questions (list): List of question definitions (e.g., {'question': 'slider-0', 'type': 'num'}).
@@ -1035,12 +1103,15 @@ class Heroku:
             None
         """
         if output_dir is None:
-            output_dir = tr.settings.output_dir  # Default output directory
+            output_dir = tr.settings.output_dir
         logger.info('Processing question data into video batches.')
         os.makedirs(output_dir, exist_ok=True)
 
         self.heroku_data['EgoCar'] = self.heroku_data['participant_group'].map(lambda x: 0 if x in [0, 1] else 1)
         video_batches = [[i, i + 21, i + 42, i + 63] for i in range(21)]
+
+        # Identify end-slider columns
+        slider_columns = [f'end-slider-{i}-0' for i in range(0, 6)]
 
         for batch_num, videos in enumerate(video_batches):
             logger.info(f'Processing batch {batch_num} for videos: {videos}')
@@ -1078,9 +1149,15 @@ class Heroku:
                             del answers[order.index('injection')]
                             del order[order.index('injection')]
 
+                        # Collect individual slider responses
+                        slider_responses = {
+                            f'end-slider-{i}': row.get(f'end-slider-{i}-0', None)
+                            for i in range(1, 6)
+                        }
+
                         question_data = {}
                         for q in questions:
-                            question_name = q['question']  # Extract the question name
+                            question_name = q['question']
                             if question_name in order:
                                 idx = order.index(question_name)
                                 question_data[question_name] = answers[idx]
@@ -1092,13 +1169,13 @@ class Heroku:
                             'EgoCar': ego_car,
                             'TargetCar': target_car,
                             'VideoNumber': video_num,
+                            **slider_responses,  # Add individual slider values
                             **question_data
                         })
 
             # Create a DataFrame
             batch_df = pd.DataFrame(batch_data)
 
-            # Ensure VideoNumber is in the DataFrame
             if 'VideoNumber' not in batch_df.columns:
                 logger.error(f"'VideoNumber' column is missing in batch {batch_num}. Skipping batch.")
                 continue
@@ -1112,22 +1189,146 @@ class Heroku:
             for video_num in batch_df['VideoNumber'].unique():
                 video_data = batch_df[batch_df['VideoNumber'] == video_num]
                 group_counts = video_data.groupby(['EgoCar', 'TargetCar']).size()
-                if group_counts.min() > 1:  # Ensure at least 2 participants per group-condition combination
+                if group_counts.min() > 1:
                     valid_data.append(video_data)
 
             if valid_data:
                 final_df = pd.concat(valid_data)
                 final_df['EgoCar'] = final_df['EgoCar'].astype('category')
                 final_df['TargetCar'] = final_df['TargetCar'].astype('category')
+
                 if self.save_csv:
-                        batch_file = os.path.join(tr.settings.output_dir, f'batch_{batch_num}_poststimulus_data.csv')
-                        final_df.to_csv(batch_file, index=False)
-                        logger.info(f"Batch {batch_num} question data saved to {batch_file}.")
+                    batch_file = os.path.join(tr.settings.output_dir, f'batch_{batch_num}_poststimulus_data.csv')
+                    final_df.to_csv(batch_file, index=False)
+                    logger.info(f"Batch {batch_num} question data saved to {batch_file}.")
             else:
                 logger.warning(f"No valid data for batch {batch_num}. File not created.")
 
+    def extract_postexperiment_end_sliders(self, save_csv=True, output_dir=None):
+        """
+        Extract one-row-per-participant post-experiment end-slider data (1..5) with EgoCar grouping.
 
+        Returns
+        -------
+        df_out : pd.DataFrame
+            Columns: ParticipantID, EgoCar, end-slider-1, ..., end-slider-5
+        """
+        import os, re
+        import pandas as pd
 
+        if output_dir is None:
+            output_dir = tr.settings.output_dir
+        os.makedirs(output_dir, exist_ok=True)
+
+        df = self.heroku_data.copy()
+        # —— 标准化 EgoCar：沿用你现有逻辑
+        df['EgoCar'] = df['participant_group'].map(lambda x: 0 if x in [0, 1] else 1)
+
+        # —— 找到 end-slider 列（尽量兼容：既支持 end-slider-1-0，也能兜底 end-slider-1）
+        # 优先匹配带 “-0” 的版本；若不存在，再找不带尾缀的版本
+        desired = {}
+        for i in range(1, 6):
+            with_suffix = f'end-slider-{i}-0'
+            no_suffix  = f'end-slider-{i}'
+            if with_suffix in df.columns:
+                desired[f'end-slider-{i}'] = with_suffix
+            elif no_suffix in df.columns:
+                desired[f'end-slider-{i}'] = no_suffix
+            else:
+                # 进一步兜底：匹配 end-slider-i-<任意数字>，取第一个非空列
+                pattern = re.compile(rf'^end-slider-{i}-\d+$')
+                candidates = [c for c in df.columns if pattern.match(c)]
+                chosen = None
+                for c in candidates:
+                    if df[c].notna().any():
+                        chosen = c
+                        break
+                if chosen is not None:
+                    desired[f'end-slider-{i}'] = chosen
+                else:
+                    # 没有就先跳过，稍后这一列会是全 NaN
+                    desired[f'end-slider-{i}'] = None
+
+        # —— 组装输出列
+        out_cols = ['EgoCar']
+        for new_name, src in desired.items():
+            if src is not None and src in df.columns:
+                df[new_name] = df[src]
+            else:
+                df[new_name] = pd.NA
+            out_cols.append(new_name)
+
+        # —— 只保留每位 participant 一行
+        df_out = df[out_cols].copy()
+        df_out.insert(0, 'ParticipantID', df.index)
+
+        # 如果有重复 participant（理论上不该有），这里“首个非空优先”
+        # （先按 ParticipantID 聚合，把每列的第一个非空值拿出来）
+        if df_out['ParticipantID'].duplicated().any():
+            agg_dict = {'EgoCar': 'first'}
+            for k in [c for c in df_out.columns if c.startswith('end-slider-')]:
+                agg_dict[k] = lambda s: next((x for x in s if pd.notna(x)), pd.NA)
+            df_out = (df_out
+                      .groupby('ParticipantID', as_index=False)
+                      .agg(agg_dict))
+
+        # —— 去掉 end-sliders 全空的 participant
+        slider_cols = [c for c in df_out.columns if c.startswith('end-slider-')]
+        df_out = df_out.dropna(subset=slider_cols, how='all')
+
+        # —— 类型与整洁
+        df_out['EgoCar'] = df_out['EgoCar'].astype('category')
+
+        if save_csv and getattr(self, 'save_csv', True):
+            fp_all = os.path.join(output_dir, 'postexperiment_end_sliders_by_participant.csv')
+            df_out.to_csv(fp_all, index=False)
+            # 也按 EgoCar 分两份，方便你后续分析
+            for ego_val, sub in df_out.groupby('EgoCar'):
+                fp = os.path.join(output_dir, f'postexperiment_end_sliders_ego{ego_val}.csv')
+                sub.to_csv(fp, index=False)
+
+        return df_out
+
+   
+
+    def load_and_combine_batches(self, output_dir=None):
+        """
+        Load all batch files from self.output_dir and merge them into one DataFrame.
+
+        Returns:
+            DataFrame: Merged DataFrame containing all batch data.
+        """
+        all_batches = []
+        if output_dir is None:
+            output_dir = tr.settings.output_dir  # Default output directory        
+
+        for file in os.listdir(self.output_dir):
+            if file.startswith('batch_') and file.endswith('_keypress_data.csv'):
+                batch_path = os.path.join(self.output_dir, file)
+
+                # Skip empty files
+                if os.path.getsize(batch_path) == 0:
+                    print(f"Skipping empty file: {file}")
+                    continue
+
+                try:
+                    df_batch = pd.read_csv(batch_path)
+
+                    # Ensure required columns exist
+                    if 'TimeIndex' not in df_batch.columns or 'TimeBin' not in df_batch.columns:
+                        print(f"Skipping {file} due to missing columns.")
+                        continue
+
+                    all_batches.append(df_batch)
+                except Exception as e:
+                    print(f"Error reading {file}: {e}")
+                    continue
+
+        if not all_batches:
+            raise ValueError("No valid batch files found.")
+
+        combined_df = pd.concat(all_batches, ignore_index=True)
+        return combined_df
     def filter_data(self, df):
         """
         Filter data.
